@@ -48,10 +48,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             sizes="100vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-t from-white to-orange-100" />
+          <div className="absolute inset-0 bg-gradient-to-b from-orange-300 to-orange-300" />
         )}
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-400/40 via-amber-600/30 to-white"/>
       </div>
 
       {/* Content */}
