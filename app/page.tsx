@@ -92,7 +92,7 @@ export default function Home() {
 
         {/* Web3 Benefits Placeholder */}
         <section className="py-16 sm:py-20 lg:py-24 bg-white px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
                 Web3 Benefits Placeholder
@@ -102,8 +102,8 @@ export default function Home() {
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h3 className="text-xl font-semibold mb-4">Decentralized Benefits</h3>
+              <div className="">
+                <h3 className="text-xl font-semibold mb-4 text">Decentralized Benefits</h3>
                 <ul className="space-y-3 text-gray-600">
                   <li>• Data ownership and control</li>
                   <li>• Censorship resistance</li>
@@ -132,7 +132,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-square bg-gradient-to-br from-green-200 to-blue-200 rounded-lg"></div>
+                <div key={i} className="aspect-square bg-gradient-to-br from-slate-300 to-orange-300 rounded-lg"></div>
               ))}
             </div>
           </div>
