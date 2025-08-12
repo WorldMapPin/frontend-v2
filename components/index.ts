@@ -3,6 +3,8 @@
 
 export { default as Navbar } from './Navbar'
 export { default as Footer } from './Footer'
+export { default as HeroSection } from './HeroSection'
+export type { HeroSectionProps, CTAButton } from './HeroSection'
 
 // Export icon components
 export { DiscordIcon, TelegramIcon, InstagramIcon, SocialIcon } from './icons'

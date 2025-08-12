@@ -37,7 +37,7 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   ]
 
   return (
-    <footer className={`bg-gray-50 border-t ${className}`} role="contentinfo">
+    <footer className={`bg-gray-50 border-t border-gray-100 ${className}`} role="contentinfo">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0 gap-4">
           {/* Copyright text */}
