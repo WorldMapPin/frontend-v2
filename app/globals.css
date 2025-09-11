@@ -26,3 +26,481 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Mobile Map Styles */
+.mobile-map-container {
+  @apply w-full h-full;
+}
+
+/* Original Marker Styles from Old Code */
+.custom-marker-clustering-map .marker {
+  box-sizing: initial; 
+}
+
+.custom-marker-clustering-map .marker.cluster {
+  width: 3rem; /* Google Maps default cluster size */
+  height: 3rem; /* Google Maps default cluster size */
+  background: #FFB74D;
+  opacity: 0.8;
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  color: black;
+  font-size: 14px;
+  font-weight: bold; /* Text weight */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Subtle text shadow */
+  line-height: 40px; /* Center the text vertically */
+  text-align: center;
+  overflow: hidden; /* Hide any overflow content */
+  border-radius: 50%; /* Rounded corners for a circular shape */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for 3D effect */
+  transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
+}
+
+.custom-marker-clustering-map .marker.cluster:hover {
+  transform: scale(1.1); /* Slightly enlarge on hover */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5); /* Increase shadow on hover */
+}
+
+.custom-marker-clustering-map .marker.cluster span {
+  color: white; /* White color for text */
+  width: 100%;
+  text-align: center;
+}
+
+/* Mobile Post Card Styles */
+.mobile-post-card {
+  @apply transition-all duration-300 ease-out;
+}
+
+.mobile-post-card:hover {
+  @apply transform scale-[1.02] shadow-xl;
+}
+
+/* Mobile Marker Styles */
+.mobile-feature-marker {
+  @apply cursor-pointer transition-transform duration-200;
+}
+
+.mobile-feature-marker:hover {
+  @apply transform scale-110;
+}
+
+.mobile-cluster-marker {
+  @apply cursor-pointer transition-all duration-200;
+}
+
+.mobile-cluster-marker:hover {
+  @apply transform scale-110;
+}
+
+/* Custom Animations */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.mobile-post-popup.slide-down {
+  animation: slide-down 0.3s ease-in forwards;
+}
+
+/* Button Click Animation */
+.view-location-btn.clicked {
+  transform: scale(0.95);
+  background-color: #1d4ed8 !important; /* Darker blue when clicked */
+}
+
+/* Location Highlight Styles - Only Pulsating Animation */
+.location-highlight {
+  /* position: relative; */
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  /* align-items: center; */
+  /* justify-content: center; */
+  pointer-events: none; /* Prevents blocking clicks on underlying markers */
+  z-index: 1; /* Lower z-index to stay behind other markers */
+}
+
+.location-highlight .animate-ping {
+  animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Line Clamp Utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  .mobile-post-card {
+    @apply mx-2;
+  }
+  
+  .mobile-feature-marker {
+    @apply transform scale-90;
+  }
+  
+  .mobile-cluster-marker {
+    @apply transform scale-90;
+  }
+}
+
+/* Smooth scrolling for mobile */
+.mobile-map-container {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom scrollbar for mobile */
+.mobile-post-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mobile-post-card::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.mobile-post-card::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.mobile-post-card::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Old Loading Spinner Styles from OLDMAPCODE */
+.loader-container {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.loader {
+  max-width: 80px;
+  max-height: 80px;
+  animation: spin 2s linear infinite;
+}
+
+.loader img {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-container p {
+  font-weight: bold;
+  color: white;
+  margin-top: 20px;
+  font-size: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Get Code Button Styles */
+.get-code-button-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.get-code-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.get-code-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.get-code-button.active {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+}
+
+/* Code Mode Interface Styles */
+.code-mode-div {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  box-sizing: border-box;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.code-mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.code-mode-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.back-button {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.code-description-input {
+  display: block;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  width: 100%;
+  text-align: center;
+  font-family: "Quicksand", sans-serif;
+  font-size: 14px;
+  opacity: 0.9;
+  height: 45px;
+  box-sizing: border-box;
+  pointer-events: all;
+  margin-bottom: 15px;
+  padding: 0 15px;
+  transition: border-color 0.2s ease;
+}
+
+.code-description-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.info-text {
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  font-weight: 500;
+  color: #666;
+}
+
+.code-to-copy {
+  box-sizing: border-box;
+  padding: 15px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+  user-select: all;
+}
+
+.code-to-copy:hover {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Map wrapper styles */
+.map-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Map interactive state when code interface is visible */
+.mobile-map-container.code-mode-active {
+  cursor: crosshair;
+}
+
+.mobile-map-container.code-mode-active:hover {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Floating Context Menu Styles */
+.floating-context-menu {
+  position: fixed;
+  z-index: 2000;
+  pointer-events: auto;
+  animation: contextMenuAppear 0.2s ease-out;
+}
+
+.context-menu-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px;
+  min-width: 160px;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.context-menu-item:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+}
+
+.add-pin-button:hover {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.context-menu-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+@keyframes contextMenuAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .get-code-button-container {
+    top: 15px;
+    right: 15px;
+  }
+  
+  .get-code-button {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .code-mode-div {
+    width: 95%;
+    bottom: 60px;
+    padding: 15px;
+  }
+  
+  .code-mode-header h3 {
+    font-size: 16px;
+  }
+  
+  .code-description-input {
+    height: 40px;
+    font-size: 13px;
+  }
+  
+  .code-to-copy {
+    font-size: 11px;
+    padding: 12px;
+  }
+}
