@@ -20,7 +20,7 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
 
   // Handle clicks outside the menu to close it
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: Event) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }
