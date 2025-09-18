@@ -93,6 +93,12 @@ export default function Navbar({ className = '' }: NavbarProps) {
             >
               Explore
             </Link>
+            <Link
+              href="/roadmap"
+              className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+            >
+              Roadmap
+            </Link>
           </div>
         </div>
       </div>
