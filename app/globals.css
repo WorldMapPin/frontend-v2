@@ -471,6 +471,37 @@ body {
   }
 }
 
+/* Filter Component Animations */
+@keyframes filterSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes filterSlideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+}
+
+.filter-component-enter {
+  animation: filterSlideIn 0.3s ease-out;
+}
+
+.filter-component-exit {
+  animation: filterSlideOut 0.3s ease-in forwards;
+}
+
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {

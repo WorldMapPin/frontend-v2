@@ -11,13 +11,14 @@ import { OldLoadingSpinner } from './map/OldLoadingSpinner';
 import { GetCodeButton } from './map/GetCodeButton';
 import { CodeModeInterface } from './map/CodeModeInterface';
 import { FloatingContextMenu } from './map/FloatingContextMenu';
+import FilterComponent from './map/FilterComponent';
 
 // Import utilities and types
 import { convertDatafromApitoGeojson } from '../utils/dataConversion';
-import { InfoWindowData } from '../types';
+import { InfoWindowData, SearchParams } from '../types';
 import { initPerformanceCheck, getNetworkSpeed, isExtremelySlowConnection, isSlowConnection } from '../utils/performanceCheck';
 
-// Global variables for location and zoom (exact copy from OLDMAPCODE)
+// Global variables for location and zoom
 export let setGlobalLocation: (location: google.maps.places.Place | undefined) => void;
 export let setGlobalZoom: (zoom: number | undefined) => void;
 export let mapZoom = 3;
@@ -30,7 +31,13 @@ const MAP_CONFIG = {
 
 
 
-export default function MapClient() {
+interface MapClientProps {
+  initialUsername?: string;
+  initialPermlink?: string;
+  initialTag?: string;
+}
+
+export default function MapClient({ initialUsername, initialPermlink, initialTag }: MapClientProps = {}) {
   // Basic states
   const [geojson, setGeojson] = useState<any>(null);
   const [numClusters, setNumClusters] = useState(0);
@@ -48,11 +55,11 @@ export default function MapClient() {
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
   
-  // Location and zoom states (exact copy from OLDMAPCODE)
+  // Location and zoom states
   const [location, setLocation] = useState<google.maps.places.Place | undefined>(undefined);
   const [mylocationzoom, setMyLocationZoom] = useState<number | undefined>(undefined);
   
-  // Set global functions (exact copy from OLDMAPCODE)
+  // Set global functions
   setGlobalLocation = setLocation;
   setGlobalZoom = setMyLocationZoom;
   
@@ -63,6 +70,19 @@ export default function MapClient() {
     isExtremelySlow: boolean;
     isSlow: boolean;
   } | null>(null);
+
+  // Filter states
+  const [showFilter, setShowFilter] = useState(false);
+  const [searchParams, setSearchParams] = useState<SearchParams>(() => {
+    if (initialUsername) {
+      return { author: initialUsername };
+    } else if (initialPermlink) {
+      return { permlink: initialPermlink };
+    } else if (initialTag) {
+      return { tags: [initialTag] };
+    }
+    return { curated_only: false };
+  });
 
   // API key
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
@@ -119,11 +139,11 @@ export default function MapClient() {
 
   // Load markers on component mount
   useEffect(() => {
-    loadMarkers();
+    loadMarkers(false, searchParams);
   }, []);
 
   // Load markers function
-  async function loadMarkers(reloadExisting = false) {
+  async function loadMarkers(reloadExisting = false, filterParams?: SearchParams) {
     try {
       console.log('Loading markers...', reloadExisting ? '(reloading existing)' : '(initial load)');
       setLoading(true);
@@ -134,8 +154,10 @@ export default function MapClient() {
         console.log('Reloading existing geolocations:', geojson.features?.length || 0, 'features');
         setGeojson(geojson);
       } else {
-        // Fetch new data from API
-        const response = await axios.post(`https://worldmappin.com/api/marker/0/150000/`, { curated_only: false });
+        // Fetch new data from API with current search parameters
+        const params = filterParams || searchParams;
+        console.log('Fetching with search params:', params);
+        const response = await axios.post(`https://worldmappin.com/api/marker/0/150000/`, params);
         console.log('API response received:', response.data?.length || 0, 'markers');
         const geoJsonData = await convertDatafromApitoGeojson(response.data);
         console.log('GeoJSON data converted:', geoJsonData.features?.length || 0, 'features');
@@ -225,6 +247,35 @@ export default function MapClient() {
     setInfowindowData(null);
   };
 
+  // Filter handling functions
+  const handleFilter = (filterData: any) => {
+    if (filterData) {
+      const newSearchParams: SearchParams = {
+        tags: filterData.tags && filterData.tags.length > 0 ? filterData.tags : [],
+        author: filterData.username || '',
+        post_title: filterData.postTitle || '',
+        permlink: filterData.permlink || '',
+        start_date: filterData.startDate || '',
+        end_date: filterData.endDate || '',
+        curated_only: filterData.isCurated || false
+      };
+      
+      setSearchParams(newSearchParams);
+      loadMarkers(false, newSearchParams);
+    } else {
+      // Clear filter
+      const clearedParams: SearchParams = { curated_only: false };
+      setSearchParams(clearedParams);
+      loadMarkers(false, clearedParams);
+    }
+    setShowFilter(false);
+  };
+
+  const handleTagChange = (tags: string) => {
+    // Handle any special tag change logic if needed
+    console.log('Tags changed:', tags);
+  };
+
   // Expose close function globally for smooth animations
   useEffect(() => {
     (window as any).closePopup = closeTab;
@@ -301,14 +352,14 @@ export default function MapClient() {
     return { lat, lng };
   }, []);
 
-  // Expose global zoom functions for cluster markers (exact copy from OLDMAPCODE pattern)
+  // Expose global zoom functions for cluster markers
   useEffect(() => {
     (window as any).setGlobalLocation = setGlobalLocation;
     (window as any).setGlobalZoom = setGlobalZoom;
     console.log('Global zoom functions set up:', { setGlobalLocation, setGlobalZoom });
   }, []);
 
-  // Handle map idle (exact copy from OLDMAPCODE)
+  // Handle map idle
   const handleMapIdle = (e: any) => {
     setLocation(undefined); 
     setMyLocationZoom(undefined); 
@@ -391,7 +442,7 @@ export default function MapClient() {
   }, [codeMode, codeModeMarker, screenToLatLng]);
 
 
-  // Show error if API key is missing
+  
   if (!API_KEY) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-100">
@@ -428,6 +479,109 @@ export default function MapClient() {
           onToggleCodeMode={toggleCodeMode} 
         />
 
+        {/* Username Filter Banner */}
+        {searchParams.author && (
+          <div className="absolute top-4 left-4 right-4 z-30 bg-orange-500/90 backdrop-blur-md rounded-2xl px-4 py-3 shadow-lg border border-orange-200/20 transition-all duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Showing posts by</p>
+                  <p className="text-lg font-bold text-white">@{searchParams.author}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSearchParams({ curated_only: false });
+                  loadMarkers(false, { curated_only: false });
+                }}
+                className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
+              >
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Permlink Filter Banner */}
+        {searchParams.permlink && (
+          <div className="absolute top-4 left-4 right-4 z-30 bg-blue-500/90 backdrop-blur-md rounded-2xl px-4 py-3 shadow-lg border border-blue-200/20 transition-all duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Showing specific post</p>
+                  <p className="text-sm font-bold text-white truncate max-w-xs">{searchParams.permlink}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSearchParams({ curated_only: false });
+                  loadMarkers(false, { curated_only: false });
+                }}
+                className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
+              >
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Tag Filter Banner */}
+        {searchParams.tags && searchParams.tags.length > 0 && (
+          <div className="absolute top-4 left-4 right-4 z-30 bg-green-500/90 backdrop-blur-md rounded-2xl px-4 py-3 shadow-lg border border-green-200/20 transition-all duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Showing posts with tags</p>
+                  <p className="text-sm font-bold text-white">{searchParams.tags.join(', ')}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSearchParams({ curated_only: false });
+                  loadMarkers(false, { curated_only: false });
+                }}
+                className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
+              >
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Filter Button */}
+        <button
+          onClick={() => setShowFilter(true)}
+          className={`absolute z-30 bg-white/90 backdrop-blur-md hover:bg-white rounded-2xl px-4 py-3 shadow-lg border border-white/20 transition-all duration-200 flex items-center space-x-2 ${
+            searchParams.author || searchParams.permlink || (searchParams.tags && searchParams.tags.length > 0) ? 'top-20 left-4' : 'top-4 left-4'
+          }`}
+        >
+          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+          </svg>
+          <span className="text-sm font-medium text-gray-700">Filter</span>
+        </button>
+
         {/* Code Mode Interface - Show when in code mode OR when marker is set from context menu */}
         {(codeMode || codeModeMarker) && (
           <CodeModeInterface 
@@ -443,6 +597,15 @@ export default function MapClient() {
           position={contextMenuPosition}
           onAddPin={handleAddPin}
           onClose={handleCloseContextMenu}
+        />
+
+        {/* Filter Component */}
+        <FilterComponent
+          onFilter={handleFilter}
+          searchParams={searchParams}
+          onTagChange={handleTagChange}
+          isVisible={showFilter}
+          onClose={() => setShowFilter(false)}
         />
 
 
@@ -503,7 +666,7 @@ export default function MapClient() {
            !isNaN(highlightedLocation.lat) && 
            !isNaN(highlightedLocation.lng) && (
             <AdvancedMarker position={{
-              lat: highlightedLocation.lat, // Slightly lower position for visual offset
+              lat: highlightedLocation.lat,
               lng: highlightedLocation.lng
             }}>
               <div className="location-highlight">
