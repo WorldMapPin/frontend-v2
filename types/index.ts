@@ -25,10 +25,21 @@ export type MapConfig = {
 // Marker position type
 export type MarkerPosition = google.maps.LatLngLiteral;
 
+// Community data structure
+export type Community = {
+  id: string;
+  name: string;
+  description?: string;
+  apiEndpoint?: string;
+  isDefault?: boolean;
+  tag?: string; // Added for tag-based filtering
+};
+
 // Info window data structure
 export type InfoWindowData = {
   anchor: google.maps.marker.AdvancedMarkerElement;
   features: Feature<Point>[];
+  isCluster?: boolean; // Added for cluster info window
 } | null;
 
 // Performance check result
