@@ -28,6 +28,7 @@ type ClusteredMarkersProps = {
     data: {
       anchor: google.maps.marker.AdvancedMarkerElement;
       features: Feature<Point>[];
+      isCluster?: boolean;
     } | null
   ) => void;
   currentZoom?: number;
@@ -177,8 +178,8 @@ export const ClusteredMarkers = ({
             key={feature.id}
             featureId={feature.id as string}
             position={{ lat, lng }}
-            count={feature.properties?.groupedCount || 1}
-            reviewCount={feature.properties?.reviewCount || 0}
+            count={(feature.properties as any)?.groupedCount || 1}
+            reviewCount={(feature.properties as any)?.reviewCount || 0}
             onMarkerClick={handleMarkerClick}
           />
         ) : community?.id === 'foodie' ? (

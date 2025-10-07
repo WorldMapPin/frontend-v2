@@ -1,6 +1,4 @@
-// Import the actual data from the JSON file
-import tempData from './temp-distriator-data.json';
-
+// Dynamic data loading to handle missing JSON file gracefully
 export interface TempDistriatorData {
   mappedStores: any[];
   unmappedStores: any[];
@@ -10,9 +8,42 @@ export interface TempDistriatorData {
   lastUpdated: string | null;
 }
 
-// Export the data directly
-export const distriatorData: TempDistriatorData = tempData as TempDistriatorData;
+let cachedData: TempDistriatorData | null = null;
+let dataLoadAttempted = false;
 
-console.log('📂 Distriator data loaded from JSON file');
-console.log(`📊 Data contains: ${distriatorData.allStores.length} total stores, ${distriatorData.mappedStores.length} mapped, ${distriatorData.unmappedStores.length} unmapped`);
-console.log(`🕒 Last updated: ${distriatorData.lastUpdated}`);
+/**
+ * Attempts to load the temp distriator data from JSON file
+ * Returns null if file doesn't exist
+ */
+export function loadDistriatorData(): TempDistriatorData | null {
+  if (dataLoadAttempted) {
+    return cachedData;
+  }
+  
+  dataLoadAttempted = true;
+  
+  try {
+    // Try to dynamically import the JSON file
+    const tempData = require('./temp-distriator-data.json');
+    cachedData = tempData as TempDistriatorData;
+    
+    console.log('📂 Distriator data loaded from JSON file');
+    console.log(`📊 Data contains: ${cachedData.allStores.length} total stores, ${cachedData.mappedStores.length} mapped, ${cachedData.unmappedStores.length} unmapped`);
+    console.log(`🕒 Last updated: ${cachedData.lastUpdated}`);
+    
+    return cachedData;
+  } catch (error) {
+    console.log('📂 Temp distriator data file not found, will fetch from API');
+    return null;
+  }
+}
+
+/**
+ * Checks if temp data is available
+ */
+export function hasDistriatorData(): boolean {
+  if (!dataLoadAttempted) {
+    loadDistriatorData();
+  }
+  return cachedData !== null;
+}

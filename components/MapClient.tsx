@@ -75,7 +75,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     setLocation({
       location: { lat, lng },
       name: 'Store Location'
-    } as google.maps.places.Place);
+    } as unknown as google.maps.places.Place);
     setMyLocationZoom(18); // Higher zoom level for better store highlighting
   };
   
