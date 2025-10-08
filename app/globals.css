@@ -43,6 +43,21 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Animated gradient background for rank badge */
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
 /* Mobile Map Styles */
 .mobile-map-container {
   @apply w-full h-full;

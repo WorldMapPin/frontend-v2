@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import UserMapComponent from './UserMapComponent';
 import WorldCoverageMap from './WorldCoverageMap';
+import UserPosts from './UserPosts';
 import { fetchUserProfile, HiveUserProfile } from '../../../lib/hiveClient';
 import { getUserPinCount, getUserRank } from '../../../lib/worldmappinApi';
 
@@ -112,15 +113,18 @@ export function UserProfile({ username }: UserProfileProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-sm">Loading profile...</p>
+        </div>
       </div>
     );
   }
 
     if (!profileData) {
       return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">User Not Found</h1>
             <p className="text-gray-600">The user @{username} could not be found.</p>
@@ -131,7 +135,7 @@ export function UserProfile({ username }: UserProfileProps) {
 
     if (!profileData.exists) {
       return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">User Not Found</h1>
             <p className="text-gray-600">
@@ -150,57 +154,52 @@ export function UserProfile({ username }: UserProfileProps) {
       {/* Main Profile Section */}
       <div className={`transition-all duration-300 ${isMinimized ? 'h-0 overflow-hidden' : ''}`}>
         {/* Hero Section */}
-        <section className="relative py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-amber-50 to-orange-100">
+        <section className="relative py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-amber-50 to-orange-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-              {/* Close/Minimize Button */}
+            <div className="max-w-6xl mx-auto">
+              {/* Close/Minimize Button - Hidden on mobile */}
               <button
                 onClick={minimizeProfile}
-                className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+                className="hidden sm:flex absolute top-4 right-4 w-8 h-8 bg-white rounded-full shadow-lg items-center justify-center hover:bg-gray-50 transition-colors"
                 aria-label="Minimize profile"
               >
                 <span className="text-gray-600 text-xl">−</span>
               </button>
 
-              <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+              <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 sm:gap-8">
                 {/* Profile Picture */}
                 <div className="flex-shrink-0">
                   <img
                     src={profileData.profilePicture}
                     alt={`${username}'s profile`}
-                    className="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover border-4 border-white shadow-lg"
+                    className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full object-cover border-4 border-white shadow-lg"
                   />
                 </div>
 
                 {/* Profile Info */}
-                <div className="flex-1 text-center lg:text-left">
-                  <div className="mb-6">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                <div className="flex-1 text-center lg:text-left w-full">
+                  <div className="mb-4 sm:mb-6">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 px-2 lg:px-0">
                       {profileData.name}
                     </h1>
                     <a
                       href={profileData.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-lg text-amber-600 hover:text-amber-700 font-medium transition-colors"
+                      className="text-base sm:text-lg text-amber-600 hover:text-amber-700 font-medium transition-colors"
                     >
                       @{username}
                     </a>
-                    {profileData.rank && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        Curation Rank: #{profileData.rank}
-                      </p>
-                    )}
                   </div>
 
-                  <div className="space-y-3">
-                    <p className="text-gray-700 leading-relaxed">
+                  <div className="space-y-3 px-4 lg:px-0">
+                    <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
                       {profileData.about}
                     </p>
                     
                     {profileData.location && (
-                      <p className="text-gray-600 flex items-center justify-center lg:justify-start">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <p className="text-sm sm:text-base text-gray-600 flex items-center justify-center lg:justify-start">
+                        <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -208,19 +207,30 @@ export function UserProfile({ username }: UserProfileProps) {
                       </p>
                     )}
 
-                    <div className="flex items-center justify-center lg:justify-start space-x-6">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-amber-600">
+                    <div className="flex items-center justify-center lg:justify-start gap-4 sm:gap-6 pt-2">
+                      <div className="text-center lg:text-left">
+                        <div className="text-2xl sm:text-3xl font-bold text-amber-600">
                           {profileData.pinCount}
                         </div>
-                        <div className="text-sm text-gray-600">Pins</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Travel Pins</div>
                       </div>
+                      
+                      {profileData.rank && (
+                        <div className="text-center lg:text-left">
+                          <div className="flex items-center gap-1.5">
+                            <div className="text-2xl sm:text-3xl font-bold text-amber-600">
+                              #{profileData.rank}
+                            </div>
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-600">Curation Rank</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* World Coverage */}
-                <div className="flex-shrink-0">
+                {/* World Coverage - Full width on mobile, sidebar on desktop */}
+                <div className="w-full max-w-sm sm:max-w-md lg:max-w-sm flex-shrink-0">
                   <WorldCoverageMap 
                     coveragePercentage={profileData.worldCoverage || 23}
                     username={username}
@@ -232,9 +242,9 @@ export function UserProfile({ username }: UserProfileProps) {
         </section>
       </div>
 
-      {/* Minimized Profile Bar */}
+      {/* Minimized Profile Bar - Hidden on mobile */}
       {isMinimized && (
-        <div className="fixed top-16 left-0 right-0 bg-white shadow-lg border-b z-50">
+        <div className="hidden sm:block fixed top-16 left-0 right-0 bg-white shadow-lg border-b z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -265,25 +275,25 @@ export function UserProfile({ username }: UserProfileProps) {
       )}
 
       {/* User Map Section */}
-      <section className={`${isMinimized ? 'pt-20' : ''}`}>
+      <section className={`${isMinimized ? 'sm:pt-20' : ''}`}>
         <div className="bg-white border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Map Header */}
-            <div className="py-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+            <div className="py-4 sm:py-6 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-center sm:text-left">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                     {username}'s Travel Map
                   </h2>
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-sm sm:text-base text-gray-600 mt-1">
                     Explore all the amazing places {username} has visited
                   </p>
                 </div>
                 <button
                   onClick={toggleMapExpansion}
-                  className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors flex items-center space-x-2"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base font-medium"
                 >
-                  <span>{isMapExpanded ? 'Collapse Map' : 'Expand Map'}</span>
+                  <span>{isMapExpanded ? 'Collapse' : 'Expand'}</span>
                   <svg
                     className={`w-4 h-4 transition-transform ${isMapExpanded ? 'rotate-180' : ''}`}
                     fill="none"
@@ -298,9 +308,9 @@ export function UserProfile({ username }: UserProfileProps) {
 
             {/* Map Container */}
             <div className={`transition-all duration-500 overflow-hidden ${
-              isMapExpanded ? 'max-h-screen' : 'max-h-96'
+              isMapExpanded ? 'max-h-screen' : 'max-h-64 sm:max-h-96'
             }`}>
-              <div className={`${isMapExpanded ? 'h-screen' : 'h-96'}`}>
+              <div className={`${isMapExpanded ? 'h-screen' : 'h-64 sm:h-96'}`}>
                 <UserMapComponent 
                   username={username}
                   isExpanded={isMapExpanded}
@@ -310,6 +320,11 @@ export function UserProfile({ username }: UserProfileProps) {
           </div>
         </div>
       </section>
+
+      {/* User Posts Section */}
+      {!isMapExpanded && (
+        <UserPosts username={username} />
+      )}
     </div>
   );
 }
