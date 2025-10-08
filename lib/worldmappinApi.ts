@@ -25,6 +25,8 @@ export interface BasicPinData {
 // Interface for full pin/marker data from API (from marker/ids endpoint)
 export interface ApiPinData {
   id: number;
+  longitude: number;
+  lattitude: number; // Note: keeping the typo from the original API
   author: string;
   permlink: string;
   title: string;
@@ -50,14 +52,15 @@ export interface RankingData {
   tds: number;
 }
 
-// Function to fetch basic user pin data (IDs and coordinates only)
-// This endpoint returns: [{ id: number, longitude: number, lattitude: number }, ...]
-export async function fetchUserPins(username: string): Promise<BasicPinData[]> {
+// Function to fetch user pin data with full details
+// This endpoint returns basic pin data, then fetches full details for each pin
+export async function fetchUserPins(username: string): Promise<ApiPinData[]> {
   try {
     const searchParams: SearchParams = {
       author: username.toLowerCase()
     };
 
+    // First get basic pin data (IDs and coordinates)
     const response = await axios.post(
       `${BASE_API_URL}/marker/0/150000/`,
       searchParams,
@@ -68,9 +71,57 @@ export async function fetchUserPins(username: string): Promise<BasicPinData[]> {
       }
     );
 
-    console.log('fetchUserPins: Fetched', response.data.length, 'pins for', username);
+    const basicPins: BasicPinData[] = response.data;
+    console.log('fetchUserPins: Fetched', basicPins.length, 'pins for', username);
 
-    return response.data;
+    if (basicPins.length === 0) {
+      return [];
+    }
+
+    // Now fetch full details for all pins
+    const markerIds = basicPins.map((p: BasicPinData) => p.id);
+    const fullDetailsResponse = await axios.post(
+      `${BASE_API_URL}/marker/ids`,
+      { marker_ids: markerIds },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    // Merge coordinates with full details
+    const fullPins = fullDetailsResponse.data.map((fullPin: any, index: number) => {
+      const basicPin = basicPins[index];
+      const match = fullPin.postLink?.match(/@([^/]+)\/(.+)$/);
+      const author = match ? match[1] : '';
+      const permlink = match ? match[2] : '';
+
+      return {
+        id: basicPin.id,
+        longitude: basicPin.longitude,
+        lattitude: basicPin.lattitude,
+        author: author,
+        permlink: permlink,
+        title: fullPin.postTitle || 'Untitled',
+        body: fullPin.postDescription || '',
+        json_metadata: {
+          tags: [],
+          image: fullPin.postImageLink ? [fullPin.postImageLink] : [],
+          location: {
+            latitude: basicPin.lattitude,
+            longitude: basicPin.longitude
+          }
+        },
+        created: fullPin.postDate || '',
+        payout: 0,
+        votes: 0,
+        children: 0
+      } as ApiPinData;
+    });
+
+    console.log('fetchUserPins: Merged', fullPins.length, 'full pins');
+    return fullPins;
   } catch (error) {
     console.error('Error fetching user pins:', error);
     throw error;
@@ -134,7 +185,7 @@ export async function fetchUserPostsWithCoords(username: string): Promise<any[]>
     });
     
     console.log('fetchUserPostsWithCoords: Sorted coordinates by ID (descending):');
-    console.log('  IDs:', posts.map(p => p.id).join(', '));
+    console.log('  IDs:', posts.map((p: BasicPinData) => p.id).join(', '));
     
     console.log('fetchUserPostsWithCoords: Sorted posts by date (descending):');
     fullPosts.forEach((post: any, idx: number) => {
