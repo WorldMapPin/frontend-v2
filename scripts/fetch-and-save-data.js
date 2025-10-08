@@ -24,7 +24,7 @@ async function fetchAllDistriatorBusinesses() {
 
       try {
         const response = await axios.get(
-          `https://beta-api.distriator.com/business/paginated?page=${currentPage}&pageSize=${pageSize}`
+          `https://beta-api.distriator.com/business/paginated?page=${currentPage}&pageSize=${pageSize}&onlyWithHiveUsername=true`
         );
 
         const { data, pagination } = response.data;

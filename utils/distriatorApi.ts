@@ -119,7 +119,7 @@ export async function fetchAllDistriatorBusinesses(): Promise<DistriatorFetchRes
       
       try {
         const response = await axios.get<DistriatorApiResponse>(
-          `https://beta-api.distriator.com/business/paginated?page=${currentPage}&pageSize=${pageSize}`
+          `https://beta-api.distriator.com/business/paginated?page=${currentPage}&pageSize=${pageSize}&onlyWithHiveUsername=true`
         );
 
         const { data, pagination } = response.data;
