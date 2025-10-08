@@ -16,9 +16,14 @@ import { FloatingContextMenu } from './map/FloatingContextMenu';
 import FilterComponent from './map/FilterComponent';
 import CommunitySelector from './map/community/CommunitySelector';
 
+// Import journey components
+import SimpleJourneyEditor from './journey/SimpleJourneyEditor';
+import SimpleJourneyMap from './journey/SimpleJourneyMap';
+import UserPostsOnMap from './journey/UserPostsOnMap';
+
 // Import utilities and types
 import { convertDatafromApitoGeojson } from '../utils/dataConversion';
-import { InfoWindowData, SearchParams, Community } from '../types';
+import { InfoWindowData, SearchParams, Community, Journey, JourneyState } from '../types';
 import { Feature, Point } from 'geojson';
 import { initPerformanceCheck, getNetworkSpeed, isExtremelySlowConnection, isSlowConnection } from '../utils/performanceCheck';
 import { fetchCommunityPins, COMMUNITIES, getDefaultCommunity } from '../utils/communityApi';
@@ -75,7 +80,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     setLocation({
       location: { lat, lng },
       name: 'Store Location'
-    } as google.maps.places.Place);
+    } as unknown as google.maps.places.Place);
     setMyLocationZoom(18); // Higher zoom level for better store highlighting
   };
   
@@ -107,6 +112,21 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const [loadedCommunity, setLoadedCommunity] = useState<Community>(initialCommunity || getDefaultCommunity());
   const [showCommunityHeader, setShowCommunityHeader] = useState(false);
 
+  // Journey states
+  const [journeyState, setJourneyState] = useState<JourneyState>({ 
+    journeys: [], 
+    currentJourney: null, 
+    editableUsers: [], 
+    activeUser: '',
+    isEditMode: false
+  });
+  const [showJourneyControls, setShowJourneyControls] = useState(false);
+  const [authStateKey, setAuthStateKey] = useState(0); // Track auth changes to force remount
+  const [showUserPostsOnMap, setShowUserPostsOnMap] = useState(false);
+  const [userPostsUsername, setUserPostsUsername] = useState<string>('');
+  const [onUserPostClick, setOnUserPostClick] = useState<((post: any) => void) | null>(null);
+  const [selectedStartingPostId, setSelectedStartingPostId] = useState<number | null>(null);
+
   // API key
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
   
@@ -117,6 +137,16 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       console.error('Google Maps API key is missing! Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local');
     }
   }, [API_KEY]);
+
+  // Listen for auth changes to force SimpleJourneyEditor remount
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setAuthStateKey(prev => prev + 1);
+    };
+
+    window.addEventListener('hive-auth-state-change', handleAuthChange);
+    return () => window.removeEventListener('hive-auth-state-change', handleAuthChange);
+  }, []);
 
   // Map bounds
   const bounds = {
@@ -183,6 +213,24 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     if (selectedCommunity.isDefault && !initialCommunity) {
       loadMarkers(false, searchParams);
     }
+  }, []);
+
+  // Listen for center-map-on-pin events from journey editor
+  useEffect(() => {
+    const handleCenterMapOnPin = (event: CustomEvent) => {
+      const { lat, lng, zoom } = event.detail;
+      setLocation({
+        location: { lat, lng },
+        name: 'Pin Location'
+      } as unknown as google.maps.places.Place);
+      setMyLocationZoom(zoom || 15);
+    };
+
+    window.addEventListener('center-map-on-pin' as any, handleCenterMapOnPin);
+
+    return () => {
+      window.removeEventListener('center-map-on-pin' as any, handleCenterMapOnPin);
+    };
   }, []);
 
   // Load markers function
@@ -285,7 +333,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   // Handle map click for code mode
   const handleMapClick = (e: any) => {
     // Allow map clicking when in code mode OR when code interface is visible
-    if (codeMode || codeModeMarker) {
+    // But not when journey edit mode is active
+    if ((codeMode || codeModeMarker) && !journeyState.isEditMode) {
       const latLng = e.detail?.latLng;
       if (latLng) {
         setCodeModeMarker({ 
@@ -387,6 +436,41 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     // Handle any special tag change logic if needed
     console.log('Tags changed:', tags);
   };
+
+  // Journey handling functions
+  const handleJourneyChange = useCallback((journey: Journey | null) => {
+    setJourneyState(prev => ({ ...prev, currentJourney: journey }));
+  }, []);
+
+  const handleJourneyStateChange = useCallback((newState: JourneyState) => {
+    setJourneyState(newState);
+  }, []);
+
+  const handleShowUserPosts = useCallback((username: string, postClickHandler: (post: any) => void) => {
+    setShowUserPostsOnMap(true);
+    setUserPostsUsername(username);
+    setSelectedStartingPostId(null); // Reset selection
+    // Wrap the post click handler to also track the selected post ID
+    setOnUserPostClick(() => (post: any) => {
+      setSelectedStartingPostId(post.id);
+      postClickHandler(post);
+    });
+  }, []);
+
+  // Listen for hide user posts event
+  useEffect(() => {
+    const handleHideUserPosts = () => {
+      setShowUserPostsOnMap(false);
+      setUserPostsUsername('');
+      setOnUserPostClick(null);
+      setSelectedStartingPostId(null);
+    };
+
+    window.addEventListener('hide-user-posts-on-map', handleHideUserPosts);
+    return () => window.removeEventListener('hide-user-posts-on-map', handleHideUserPosts);
+  }, []);
+
+  // Simplified journey handling - no complex callbacks needed
 
   // Expose close function globally for smooth animations
   useEffect(() => {
@@ -695,6 +779,19 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
             <span className="text-sm font-medium text-white">{selectedCommunity.name}</span>
           </button>
 
+        {/* Journey Toggle Button */}
+        <button
+          onClick={() => setShowJourneyControls(!showJourneyControls)}
+          className={`absolute z-30 bg-purple-500/90 backdrop-blur-md hover:bg-purple-600 text-white rounded-2xl px-4 py-3 shadow-lg border border-purple-200/20 transition-all duration-200 flex items-center space-x-2 ${
+            searchParams.author || searchParams.permlink || (searchParams.tags && searchParams.tags.length > 0) ? 'top-36 right-4' : 'top-20 right-4'
+          }`}
+        >
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+          <span className="text-sm font-medium text-white">Journeys</span>
+        </button>
+
         {/* Community Header Image */}
         {showCommunityHeader && loadedCommunity && (
           <div className="absolute z-25 top-4 left-1/2 transform -translate-x-1/2 pointer-events-auto">
@@ -774,6 +871,16 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           onClose={() => setShowCommunitySelector(false)}
         />
 
+        {/* Journey Editor */}
+        {showJourneyControls && (
+          <SimpleJourneyEditor
+            key={`journey-editor-${authStateKey}`}
+            onJourneyChange={handleJourneyChange}
+            onStateChange={handleJourneyStateChange}
+            onShowUserPosts={handleShowUserPosts}
+          />
+        )}
+
 
         {/* Mobile Map Container */}
         <div ref={mapRef} className="map-wrapper">
@@ -800,8 +907,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
               onClick={handleMapClick}
               className={`mobile-map-container ${(codeMode || codeModeMarker) ? 'code-mode-active' : ''}`}
             >
-          {/* Clustered Markers - Show when not in full code mode */}
-          {!codeMode && geojson && (
+          {/* Clustered Markers - Show when not in full code mode and journey controls are hidden */}
+          {!codeMode && !showJourneyControls && geojson && (
             <ClusteredMarkers
               key={`${loadedCommunity?.id}-${geojson.features?.length || 0}`}
               geojson={geojson}
@@ -810,6 +917,23 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
               currentZoom={currentZoom}
               onClustersReady={handleClustersReady}
               community={loadedCommunity}
+            />
+          )}
+
+          {/* Simple Journey Map - Show when journey controls are visible */}
+          {showJourneyControls && !showUserPostsOnMap && (
+            <SimpleJourneyMap 
+              journey={journeyState.currentJourney}
+              journeyState={journeyState}
+            />
+          )}
+
+          {/* User Posts on Map - Show when selecting starting post */}
+          {showUserPostsOnMap && userPostsUsername && onUserPostClick && (
+            <UserPostsOnMap
+              username={userPostsUsername}
+              onPostClick={onUserPostClick}
+              selectedPostId={selectedStartingPostId}
             />
           )}
 

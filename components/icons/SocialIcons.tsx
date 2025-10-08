@@ -79,6 +79,7 @@ export const SocialIcon: React.FC<SocialIconProps> = ({
     rel="noopener noreferrer"
     className={`text-gray-400 hover:text-gray-600 focus:text-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1 sm:focus:ring-offset-2 rounded-sm p-1 sm:p-0 ${className}`}
     aria-label={ariaLabel}
+    suppressHydrationWarning={true}
   >
     <span className="sr-only">{name}</span>
     <Icon aria-hidden={true} />
