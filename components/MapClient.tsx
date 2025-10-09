@@ -31,7 +31,7 @@ import { fetchCommunityPins, COMMUNITIES, getDefaultCommunity } from '../utils/c
 // Global variables for location and zoom
 export let setGlobalLocation: (location: google.maps.places.Place | undefined) => void;
 export let setGlobalZoom: (zoom: number | undefined) => void;
-export let mapZoom = 3;
+export let mapZoom = 2; // Start at zoom 2, skip 3
 
 // Simple map configuration
 const MAP_CONFIG = {
@@ -55,7 +55,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const [loading, setLoading] = useState(true);
   const [clustersReady, setClustersReady] = useState(false);
   const [infowindowData, setInfowindowData] = useState<InfoWindowData>(null);
-  const [currentZoom, setCurrentZoom] = useState(3);
+  const [currentZoom, setCurrentZoom] = useState(2); // Start at 2, skip 3
+  const previousZoomRef = React.useRef(2); // Track previous zoom for direction detection
   
   // Code mode states
   const [codeMode, setCodeMode] = useState(false);
@@ -559,8 +560,31 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const handleMapIdle = (e: any) => {
     setLocation(undefined); 
     setMyLocationZoom(undefined); 
-    mapZoom = e.map.getZoom();
-    setCurrentZoom(e.map.getZoom());
+    
+    const newZoom = e.map.getZoom();
+    
+    // Skip zoom level 3 - jump to 2 or 4 depending on direction
+    if (newZoom === 3) {
+      const previousZoom = previousZoomRef.current;
+      if (previousZoom < 3) {
+        // Zooming in from 2 → skip to 4
+        e.map.setZoom(4);
+        mapZoom = 4;
+        setCurrentZoom(4);
+        previousZoomRef.current = 4;
+      } else {
+        // Zooming out from 4+ → skip to 2
+        e.map.setZoom(2);
+        mapZoom = 2;
+        setCurrentZoom(2);
+        previousZoomRef.current = 2;
+      }
+    } else {
+      mapZoom = newZoom;
+      setCurrentZoom(newZoom);
+      previousZoomRef.current = newZoom;
+    }
+    
     // Store map instance for coordinate conversion
     mapInstanceRef.current = e.map;
   };
@@ -888,8 +912,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
               mapId={MAP_CONFIG.mapId}
               mapTypeId={MAP_CONFIG.mapTypeId}
               defaultCenter={{ lat: 50, lng: 20 }}
-              defaultZoom={1}
-              minZoom={1}
+              defaultZoom={2}
+              minZoom={2}
               maxZoom={20}
               zoomControl={true}
               gestureHandling={'greedy'}

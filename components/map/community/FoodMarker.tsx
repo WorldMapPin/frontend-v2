@@ -69,26 +69,17 @@ export const FoodMarker = ({
           WebkitTouchCallout: 'none'
         }}
       >
-        {/* Food icon - cake slice */}
+        {/* Food icon - fork & knife emoji */}
         <div className={styles.foodIcon}>
-          <svg 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2"
-            className={styles.foodSvg}
-          >
-            {/* Cake slice icon */}
-            <path d="M12 2L8 8v12h8V8l-4-6z" />
-            <path d="M8 8h8" />
-            <path d="M9 10h6" />
-            <path d="M10 12h4" />
-            <circle cx="12" cy="6" r="1" fill="currentColor" />
-            <circle cx="10" cy="4" r="0.5" fill="currentColor" />
-            <circle cx="14" cy="4" r="0.5" fill="currentColor" />
-          </svg>
+          <span style={{
+            fontSize: '20px',
+            lineHeight: '1',
+            transform: 'rotate(45deg)',
+            display: 'block',
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+          }}>
+            🍽️
+          </span>
         </div>
         
         {/* Count badge - show count if more than 1 */}

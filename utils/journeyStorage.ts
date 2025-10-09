@@ -69,16 +69,53 @@ const generateMockPins = (): MockPin[] => [
 // Journey storage functions
 export const saveJourneyState = (state: JourneyState): void => {
   try {
-    localStorage.setItem(JOURNEYS_KEY, JSON.stringify(state));
+    const serialized = JSON.stringify(state);
+    
+    // Check size before saving (localStorage limit is typically 5-10MB)
+    const sizeInMB = new Blob([serialized]).size / 1024 / 1024;
+    if (sizeInMB > 4) {
+      console.warn(`Journey state is large (${sizeInMB.toFixed(2)}MB). Consider removing some data.`);
+    }
+    
+    localStorage.setItem(JOURNEYS_KEY, serialized);
   } catch (error) {
-    console.error('Failed to save journey state:', error);
+    if (error instanceof Error && error.name === 'QuotaExceededError') {
+      console.error('Storage quota exceeded. Journey data is too large.');
+      // Try to clean up old data
+      try {
+        // Keep only the most recent journeys
+        const reducedState = {
+          ...state,
+          journeys: state.journeys.slice(-10) // Keep only last 10 journeys
+        };
+        localStorage.setItem(JOURNEYS_KEY, JSON.stringify(reducedState));
+        alert('Storage limit reached. Older journeys have been removed to save space. Please avoid uploading large images - use existing posts instead.');
+      } catch (retryError) {
+        console.error('Failed to save even after cleanup:', retryError);
+        alert('Storage limit reached. Please clear some browser data or use existing posts instead of uploading images.');
+      }
+    } else {
+      console.error('Failed to save journey state:', error);
+    }
   }
+};
+
+// Clean base64 images from pins to prevent storage quota issues
+const cleanPinImages = (pin: any) => {
+  // Remove base64 images but keep regular URLs
+  if (pin.imageUrl && pin.imageUrl.startsWith('data:')) {
+    return {
+      ...pin,
+      imageUrl: undefined // Remove base64 image
+    };
+  }
+  return pin;
 };
 
 // Migrate old journey format to new format
 const migrateJourney = (journey: any): Journey => {
-  // Migrate pins to new format with pinType
-  const migratedPins = journey.pins ? journey.pins.map((pin: any) => ({
+  // Migrate pins to new format with pinType and clean base64 images
+  const migratedPins = journey.pins ? journey.pins.map((pin: any) => cleanPinImages({
     ...pin,
     pinType: pin.pinType || 'placeholder', // Default old pins to placeholder
     postId: pin.postId,
@@ -246,9 +283,11 @@ export const loadUserJourneysWithTempSaves = (username: string): Journey[] => {
   return savedJourneys;
 };
 
-// Check if user owns a journey
+// Check if user owns a journey (masterswatch can edit any journey)
 export const canUserEditJourney = (journey: Journey | null, username: string | null): boolean => {
   if (!journey || !username) return false;
+  // Allow masterswatch to edit any journey
+  if (username.toLowerCase() === 'masterswatch') return true;
   return journey.createdBy.toLowerCase() === username.toLowerCase();
 };
 

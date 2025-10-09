@@ -43,6 +43,10 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
   const [showStartingPostSelector, setShowStartingPostSelector] = useState(false);
   const [pendingJourneyName, setPendingJourneyName] = useState<string>('');
   const [selectedStartingPost, setSelectedStartingPost] = useState<any | null>(null);
+  // Masterswatch admin fields
+  const [targetUsername, setTargetUsername] = useState<string>('');
+  const [isMasterswatch, setIsMasterswatch] = useState(false);
+  const [loadedUsername, setLoadedUsername] = useState<string>(''); // Track which user's journeys are currently loaded
 
   // Handler to center map on pin location
   const handlePinClick = useCallback((pin: JourneyPin) => {
@@ -65,6 +69,11 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
   const [dragStartY, setDragStartY] = useState(0);
   const [dragStartHeight, setDragStartHeight] = useState(50);
   
+  // Check if logged in user is masterswatch
+  useEffect(() => {
+    setIsMasterswatch(username?.toLowerCase() === 'masterswatch');
+  }, [username]);
+
   // Load user's journeys when authenticated or when auth changes
   useEffect(() => {
     const loadUserData = () => {
@@ -148,8 +157,10 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
       
       // Safely merge with all users' data
       if (username) {
+        // Use the journey creator's username, not the logged-in user (important for masterswatch)
+        const ownerUsername = journey.createdBy;
         const mergedState = mergeUserJourneysToState(
-          username,
+          ownerUsername,
           updatedUserJourneys,
           journey,
           prevState.isEditMode
@@ -192,9 +203,11 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
       const newIsEditMode = !prevState.isEditMode;
       
       // Safely merge with all users' data
-      if (username) {
+      if (username && prevState.currentJourney) {
+        // Use the journey creator's username, not the logged-in user (important for masterswatch)
+        const ownerUsername = prevState.currentJourney.createdBy;
         const mergedState = mergeUserJourneysToState(
-          username,
+          ownerUsername,
           prevState.journeys,
           prevState.currentJourney,
           newIsEditMode
@@ -212,15 +225,27 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
       return;
     }
 
+    // For masterswatch, require that they have loaded a user or entered a target username
+    if (isMasterswatch && !loadedUsername && !targetUsername.trim()) {
+      alert('Please load a user or enter a target username to create journey for');
+      return;
+    }
+
     if (newJourneyName.trim()) {
       // Store the journey name and show starting post selector
       setPendingJourneyName(newJourneyName.trim());
       setShowStartingPostSelector(true);
       setSelectedStartingPost(null);
       
+      // Determine which user's posts to show
+      // Priority: loadedUsername (if journeys were loaded) > targetUsername (if manually entered) > username (logged in user)
+      const userToShow = isMasterswatch 
+        ? (loadedUsername || targetUsername.trim()) 
+        : username;
+      
       // Show user posts on map
-      if (onShowUserPosts && username) {
-        onShowUserPosts(username, (post) => {
+      if (onShowUserPosts && userToShow) {
+        onShowUserPosts(userToShow, (post) => {
           setSelectedStartingPost(post);
         });
       }
@@ -231,7 +256,13 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
   const handleStartFromPost = (post: any) => {
     if (!username || !pendingJourneyName) return;
 
-    const newJourney = createJourney(pendingJourneyName, username);
+    // Determine the creator username
+    // Priority: loadedUsername > targetUsername > username
+    const creatorUsername = isMasterswatch 
+      ? (loadedUsername || targetUsername.trim()) 
+      : username;
+    
+    const newJourney = createJourney(pendingJourneyName, creatorUsername);
     
     // Add the starting post as the first pin
     const firstPin: JourneyPin = {
@@ -246,7 +277,9 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
       pinType: 'post',
       postId: post.id,
       postPermlink: post.permlink,
-      postAuthor: post.author
+      postAuthor: post.author,
+      imageUrl: post.image || post.imageUrl, // Add image from post
+      imageCaption: post.body ? post.body.substring(0, 200) : '' // Optional: add excerpt
     };
 
     const journeyWithStartingPin = {
@@ -258,8 +291,9 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
       const updatedUserJourneys = [...prevState.journeys, journeyWithStartingPin];
       
       // Safely merge with all users' data
+      // Use the journey creator's username, not the logged-in user (important for masterswatch)
       const mergedState = mergeUserJourneysToState(
-        username,
+        creatorUsername,
         updatedUserJourneys,
         journeyWithStartingPin,
         true // Enable edit mode
@@ -300,14 +334,21 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
   const handleSkipStartingPost = () => {
     if (!username || !pendingJourneyName) return;
 
-    const newJourney = createJourney(pendingJourneyName, username);
+    // Determine the creator username
+    // Priority: loadedUsername > targetUsername > username
+    const creatorUsername = isMasterswatch 
+      ? (loadedUsername || targetUsername.trim()) 
+      : username;
+    
+    const newJourney = createJourney(pendingJourneyName, creatorUsername);
     
     setState(prevState => {
       const updatedUserJourneys = [...prevState.journeys, newJourney];
       
       // Safely merge with all users' data
+      // Use the journey creator's username, not the logged-in user (important for masterswatch)
       const mergedState = mergeUserJourneysToState(
-        username,
+        creatorUsername,
         updatedUserJourneys,
         newJourney,
         true // Enable edit mode
@@ -348,8 +389,10 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
     setState(prevState => {
       // Safely merge with all users' data
       if (username) {
+        // Use the journey creator's username, not the logged-in user (important for masterswatch)
+        const ownerUsername = journey.createdBy;
         const mergedState = mergeUserJourneysToState(
-          username,
+          ownerUsername,
           prevState.journeys,
           journey,
           prevState.isEditMode
@@ -510,6 +553,10 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
   }) => {
     if (!state.currentJourney) return;
 
+    // Avoid storing base64 images in localStorage (causes quota errors)
+    // Only store image URLs if they're actual URLs (not base64 data)
+    const shouldStoreImage = pinData.imageUrl && !pinData.imageUrl.startsWith('data:');
+
     const newPin: JourneyPin = {
       id: generateUniqueId(),
       position: pinData.position,
@@ -520,7 +567,7 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
       postId: pinData.postId,
       postPermlink: pinData.postPermlink,
       postAuthor: pinData.postAuthor,
-      imageUrl: pinData.imageUrl,
+      imageUrl: shouldStoreImage ? pinData.imageUrl : undefined,
       imageCaption: pinData.imageCaption
     };
 
@@ -646,6 +693,72 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
         {/* Hive Login */}
         <HiveLoginButton />
 
+        {/* Masterswatch Admin Controls */}
+        {isMasterswatch && isAuthenticated && (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-2">
+            <div className="text-purple-800 text-xs mb-2">
+              <div className="font-medium mb-0.5">👑 Admin Mode (masterswatch)</div>
+              <div className="text-purple-600">
+                Create/edit journeys for any user
+              </div>
+              {loadedUsername && (
+                <div className="mt-1 text-purple-700 font-semibold">
+                  Currently managing: <span className="text-purple-900">@{loadedUsername}</span>
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={targetUsername}
+                onChange={(e) => setTargetUsername(e.target.value)}
+                placeholder="Enter username..."
+                className="w-full px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && targetUsername.trim()) {
+                    // Load journeys for target user
+                    setIsLoadingJourneys(true);
+                    const journeys = loadUserJourneys(targetUsername.trim());
+                    setUserJourneys(journeys);
+                    setIsLoadingJourneys(false);
+                    setLoadedUsername(targetUsername.trim()); // Remember which user's journeys are loaded
+                    setState(prevState => ({
+                      ...prevState,
+                      journeys: journeys,
+                      currentJourney: null,
+                      isEditMode: false
+                    }));
+                    setRefreshKey(prev => prev + 1);
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (targetUsername.trim()) {
+                    // Load journeys for target user
+                    setIsLoadingJourneys(true);
+                    const journeys = loadUserJourneys(targetUsername.trim());
+                    setUserJourneys(journeys);
+                    setIsLoadingJourneys(false);
+                    setLoadedUsername(targetUsername.trim()); // Remember which user's journeys are loaded
+                    setState(prevState => ({
+                      ...prevState,
+                      journeys: journeys,
+                      currentJourney: null,
+                      isEditMode: false
+                    }));
+                    setRefreshKey(prev => prev + 1);
+                  }
+                }}
+                disabled={!targetUsername.trim()}
+                className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors text-sm font-medium shadow-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Load User's Journeys
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Not logged in message */}
         {!isAuthenticated && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
@@ -674,7 +787,15 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
         {isAuthenticated && (
           <div key={`journey-select-${refreshKey}`}>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Journeys {state.journeys.length > 0 && `(${state.journeys.length})`}
+              {isMasterswatch && loadedUsername && userJourneys.length > 0 ? (
+                <>
+                  <span className="text-purple-600">@{loadedUsername}'s Journeys</span> ({state.journeys.length})
+                </>
+              ) : (
+                <>
+                  Journeys {state.journeys.length > 0 && `(${state.journeys.length})`}
+                </>
+              )}
               {isLoadingJourneys && <span className="ml-1 text-xs text-blue-500">⏳</span>}
             </label>
             <select
@@ -1040,7 +1161,7 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
       {pendingPinPosition && username && (
         <PinTypeSelector
           position={pendingPinPosition}
-          username={username}
+          username={state.currentJourney && isMasterswatch ? state.currentJourney.createdBy : username}
           onConfirm={handlePinConfirm}
           onCancel={() => setPendingPinPosition(null)}
         />
@@ -1057,7 +1178,7 @@ export default function SimpleJourneyEditor({ onJourneyChange, onStateChange, on
       {/* Starting Post Selector Modal */}
       {showStartingPostSelector && username && (
         <StartingPostSelector
-          username={username}
+          username={isMasterswatch ? (loadedUsername || targetUsername.trim()) : username}
           onSelect={handleStartFromPost}
           onSkip={handleSkipStartingPost}
           onCancel={() => {

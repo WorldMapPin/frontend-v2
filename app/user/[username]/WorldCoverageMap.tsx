@@ -44,16 +44,16 @@ function WorldMapVisualization({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   return (
-    <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 mb-4">
+    <div className="relative bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-4 mb-4">
       <div className="text-center text-xs font-medium text-gray-700 mb-3">
         World Coverage Map
       </div>
       
-      <div className="relative" style={{ width: '100%', height: '300px' }}>
+      <div className="relative" style={{ width: '100%', height: '500px' }}>
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
-            scale: 100,
+            scale: 150,
             center: [0, 20]
           }}
           className="w-full h-full"
@@ -70,13 +70,13 @@ function WorldMapVisualization({
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={isVisited ? '#10b981' : '#d1d5db'}
+                      fill={isVisited ? '#FFA97B' : '#d1d5db'}
                       stroke="#ffffff"
                       strokeWidth={0.5}
                       style={{
                         default: { outline: 'none' },
                         hover: { 
-                          fill: isVisited ? '#059669' : '#9ca3af',
+                          fill: isVisited ? '#FF8C5A' : '#9ca3af',
                           outline: 'none',
                           cursor: 'pointer'
                         },
@@ -120,7 +120,7 @@ function WorldMapVisualization({
       {/* Legend */}
       <div className="flex items-center justify-center space-x-6 mt-4 text-xs">
         <div className="flex items-center space-x-2">
-          <div className="w-5 h-5 rounded" style={{ backgroundColor: '#10b981' }}></div>
+          <div className="w-5 h-5 rounded" style={{ backgroundColor: '#FFA97B' }}></div>
           <span className="text-gray-700 font-medium">Visited Countries</span>
         </div>
         <div className="flex items-center space-x-2">
@@ -202,7 +202,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
       {/* Coverage Stats Card with Mini Preview - Click anywhere to expand */}
       <div 
         onClick={() => setIsExpanded(true)}
-        className="bg-gradient-to-br from-blue-50 to-indigo-100 p-4 rounded-lg shadow-sm border border-blue-200 transition-all duration-300 hover:shadow-lg cursor-pointer"
+        className="bg-gradient-to-br from-orange-50 to-amber-100 p-4 rounded-lg shadow-sm border border-orange-200 transition-all duration-300 hover:shadow-lg cursor-pointer"
       >
         <div className="text-center mb-3">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -226,7 +226,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
                 cx="40"
                 cy="40"
                 r="32"
-                stroke="#3b82f6"
+                stroke="#FFA97B"
                 strokeWidth="6"
                 fill="none"
                 strokeLinecap="round"
@@ -235,7 +235,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-lg font-bold text-blue-600">
+              <span className="text-lg font-bold text-orange-600">
                 {actualCoveragePercentage}%
               </span>
             </div>
@@ -250,17 +250,17 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
         </div>
 
         {/* Mini Map Preview */}
-        <div className="relative bg-gradient-to-br from-blue-100 to-indigo-50 rounded-lg p-3 mb-3 pointer-events-none">
-          <div className="relative" style={{ width: '100%', height: '140px' }}>
+        <div className="relative bg-gradient-to-br from-orange-100 to-amber-50 rounded-lg p-3 mb-3 pointer-events-none">
+          <div className="relative w-full h-[100px] sm:h-[130px] md:h-[150px]">
             {loading ? (
               <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
               </div>
             ) : (
               <ComposableMap
                 projection="geoMercator"
                 projectionConfig={{
-                  scale: 70,
+                  scale: 140,
                   center: [0, 20]
                 }}
                 className="w-full h-full"
@@ -275,7 +275,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
                         <Geography
                           key={geo.rsmKey}
                           geography={geo}
-                          fill={isVisited ? '#10b981' : '#d1d5db'}
+                          fill={isVisited ? '#FFA97B' : '#d1d5db'}
                           stroke="#ffffff"
                           strokeWidth={0.5}
                           style={{
@@ -295,7 +295,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
 
         {/* Click to Expand Hint */}
         <div className="text-center">
-          <div className="inline-flex items-center space-x-2 text-blue-600 text-sm font-medium">
+          <div className="inline-flex items-center space-x-2 text-orange-600 text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -316,8 +316,8 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
                   {username}'s World Coverage
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                  <span className="font-semibold text-blue-600">{userPins.length}</span> pins across{' '}
-                  <span className="font-semibold text-green-600">{countryData.totalVisited}</span> countries
+                  <span className="font-semibold text-orange-600">{userPins.length}</span> pins across{' '}
+                  <span className="font-semibold text-orange-600">{countryData.totalVisited}</span> countries
                   {' '}({actualCoveragePercentage}%)
                 </p>
               </div>
@@ -336,7 +336,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
               {/* Visual World Map */}
               {loading ? (
                 <div className="flex items-center justify-center py-8 sm:py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-blue-500"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-orange-500"></div>
                 </div>
               ) : (
                 <WorldMapVisualization 
@@ -360,16 +360,16 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
                     {countryData.countryList.map((country, index) => (
                       <div 
                         key={index} 
-                        className="flex items-center justify-between text-xs sm:text-sm p-2.5 sm:p-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 hover:border-green-300 transition-all"
+                        className="flex items-center justify-between text-xs sm:text-sm p-2.5 sm:p-3 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 hover:border-orange-300 transition-all"
                       >
                         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                          <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-500 text-white text-xs font-bold flex-shrink-0">
+                          <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-orange-500 text-white text-xs font-bold flex-shrink-0">
                             {index + 1}
                           </div>
                           <span className="font-medium text-gray-900 truncate">{country.name}</span>
                         </div>
                         <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
-                          <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap">
+                          <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap">
                             {country.pinCount}
                           </span>
                         </div>

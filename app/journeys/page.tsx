@@ -42,9 +42,9 @@ export default function JourneysPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading journeys...</p>
         </div>
       </div>
@@ -52,28 +52,28 @@ export default function JourneysPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
       {/* Hero Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 px-4">
+      <div className="bg-[linear-gradient(119.72deg,_#FFA97B_31.83%,_#FFC464_89.02%)] text-white py-12 px-4 border-b-[2px] border-[#5E210040]">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">🗺️ Travel Journeys</h1>
-          <p className="text-xl text-blue-100 mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[#592102]">🗺️ Travel Journeys</h1>
+          <p className="text-xl text-[#592102] mb-6 opacity-90">
             Explore amazing travel stories from around the world
           </p>
           
           {/* Stats */}
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+          <div className="flex flex-wrap gap-6 text-sm text-[#592102]">
+            <div className="bg-white/30 backdrop-blur-sm rounded-lg px-4 py-2 border border-[#5E210040]">
               <span className="font-bold text-2xl">{allJourneys.length}</span>
               <span className="ml-2">Journeys</span>
             </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+            <div className="bg-white/30 backdrop-blur-sm rounded-lg px-4 py-2 border border-[#5E210040]">
               <span className="font-bold text-2xl">
                 {allJourneys.reduce((sum, j) => sum + j.pins.length, 0)}
               </span>
               <span className="ml-2">Places</span>
             </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+            <div className="bg-white/30 backdrop-blur-sm rounded-lg px-4 py-2 border border-[#5E210040]">
               <span className="font-bold text-2xl">
                 {new Set(allJourneys.map(j => j.createdBy)).size}
               </span>
@@ -85,7 +85,7 @@ export default function JourneysPage() {
 
       {/* Search and Filter Bar */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-col md:flex-row gap-4">
+        <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-col md:flex-row gap-4 border border-orange-200">
           {/* Search */}
           <div className="flex-1">
             <input
@@ -93,7 +93,7 @@ export default function JourneysPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="🔍 Search journeys or travelers..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-orange-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
           
@@ -102,7 +102,7 @@ export default function JourneysPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-orange-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="newest">📅 Newest First</option>
               <option value="oldest">📅 Oldest First</option>
@@ -132,9 +132,9 @@ export default function JourneysPage() {
                 href={`/journey/${journey.createdBy}/${journey.id}`}
                 className="group"
               >
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-orange-100">
                   {/* Journey Preview Image (using first pin's image) */}
-                  <div className="relative h-48 bg-gradient-to-br from-blue-400 to-purple-500">
+                  <div className="relative h-48 bg-gradient-to-br from-orange-400 to-amber-500">
                     {journey.pins[0]?.imageUrl ? (
                       <img
                         src={journey.pins[0].imageUrl}
@@ -164,7 +164,7 @@ export default function JourneysPage() {
 
                   {/* Journey Info */}
                   <div className="p-5">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
                       {journey.name}
                     </h3>
                     
@@ -182,12 +182,12 @@ export default function JourneysPage() {
 
                     {/* Preview of pins */}
                     {journey.pins.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="mt-4 pt-4 border-t border-orange-200">
                         <div className="text-xs text-gray-600 mb-2 font-medium">Route:</div>
                         <div className="space-y-1">
                           {journey.pins.slice(0, 3).map((pin, index) => (
                             <div key={pin.id} className="text-xs text-gray-700 flex items-start">
-                              <span className="mr-1 font-bold text-blue-500">{index + 1}.</span>
+                              <span className="mr-1 font-bold text-orange-500">{index + 1}.</span>
                               <span className="line-clamp-1">{pin.title}</span>
                             </div>
                           ))}

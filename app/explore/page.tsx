@@ -5,7 +5,7 @@ import { ProcessedPost, CuratedPost } from '@/types/post';
 import { loadCuratedPosts, fetchPosts } from '@/utils/hivePosts';
 import ExploreCard from '@/components/explore/ExploreCard';
 
-const POSTS_PER_PAGE = 30;
+const POSTS_PER_PAGE = 12;
 
 export default function ExplorePage() {
   const [posts, setPosts] = useState<ProcessedPost[]>([]);

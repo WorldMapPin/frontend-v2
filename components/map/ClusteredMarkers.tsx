@@ -16,7 +16,7 @@ import { Community } from '../../types';
 import { groupPinsByCoordinates } from '../../utils/coordinateGrouping';
 
 // Determine minimum zoom level based on screen size
-let minZoom = 2;
+let minZoom = 2; // Allow zoom level 2
 if (typeof window !== 'undefined' && window.innerWidth < 800) {  
   minZoom = 2;
 }
@@ -42,9 +42,9 @@ const superclusterOptions: Supercluster.Options<
   ClusterProperties
 > = {
   extent: 256,
-  radius: 60,
-  maxZoom: 20, // Increased to ensure individual markers are visible at very high zoom levels
-  minZoom: minZoom
+  radius: 80, // Increased - clusters are stickier and group more markers together
+  maxZoom: 18, // Increased - clusters stay together longer until higher zoom levels
+  minZoom: 2 // Start at zoom 2 (skip zoom 3)
 };
 
 /**

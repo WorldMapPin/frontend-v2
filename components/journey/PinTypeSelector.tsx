@@ -116,7 +116,9 @@ export default function PinTypeSelector({ position, username, onConfirm, onCance
         pinType: 'post',
         postId: selectedPost.id,
         postPermlink: selectedPost.permlink,
-        postAuthor: selectedPost.author
+        postAuthor: selectedPost.author,
+        imageUrl: selectedPost.image || selectedPost.imageUrl, // Add image from post
+        imageCaption: selectedPost.body ? selectedPost.body.substring(0, 200) : '' // Optional: add excerpt
       });
     } else if (selectedType === 'snap') {
       if (!imagePreview) {
