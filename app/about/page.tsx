@@ -7,18 +7,18 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen p-4 md:p-6 lg:p-8 max-w-[1850px] mx-auto">
+    <div className="min-h-screen p-4 md:p-6 lg:p-8 max-w-[1850px] mx-auto" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Hero Section */}
-      <div className="bg-[linear-gradient(119.72deg,_#FFA97B_31.83%,_#FFC464_89.02%)] rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 text-center mb-4 sm:mb-6 md:mb-8 min-h-[400px] sm:min-h-[500px] md:min-h-[610px] flex flex-col justify-center border-[2px] border-[#5E210040]">
-      <p className="font-lexend text-[#592102] text-xl md:text-lg mb-4">
+      <div className="bg-[linear-gradient(92.88deg,_#ED6D28_1.84%,_#FFA600_100%)] rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 text-center mb-4 sm:mb-6 md:mb-8 min-h-[400px] sm:min-h-[500px] md:min-h-[610px] flex flex-col justify-center border-[2px] border-[#5E210040]">
+      <p className="font-lexend text-[#FFFFFF] text-xl md:text-lg mb-4">
   About
 </p>
 
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#FFFFFF] mb-4 sm:mb-6">
           Revolutionizing Travel<br />
-          Through <span className="text-[#8B4513]">Blockchain</span>
+          Through <span className="text-[#FFE8BE]">Blockchain</span>
         </h1>
-        <p className="font-lexend text-xl sm:text-2xl md:text-[30px] leading-[110%] tracking-[-0.03em] text-center text-[#592102] max-w-xs sm:max-w-xl md:max-w-2xl mx-auto font-normal">
+        <p className="font-lexend text-xl sm:text-2xl md:text-[30px] leading-[110%] tracking-[-0.03em] text-center text-[#FFFFFF] max-w-xs sm:max-w-xl md:max-w-2xl mx-auto font-normal">
           Join a vibrant community of travelers sharing authentic stories, photos, and experiences while owning your content on the decentralized web.
         </p>
       </div>
