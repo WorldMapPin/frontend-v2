@@ -57,9 +57,9 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   ]
 
   return (
-    <footer className={`bg-gray-50 border-t border-gray-100 ${className}`} role="contentinfo">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
-        <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0 gap-4">
+    <footer className={`bg-gray-50 border-t border-gray-100 ${className}`} role="contentinfo" suppressHydrationWarning={true}>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8" suppressHydrationWarning={true}>
+        <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0 gap-4" suppressHydrationWarning={true}>
           {/* Left section: Copyright */}
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 order-2 lg:order-1">
             {/* Copyright text */}
@@ -70,15 +70,16 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
           </div>
 
           {/* Right section: Navigation Links */}
-          <div className="order-1 lg:order-2 flex flex-col lg:flex-row items-center gap-10" >
-            <nav role="navigation" aria-label="Footer navigation">
-              <div className="flex space-x-6 sm:space-x-8">
+          <div className="order-1 lg:order-2 flex flex-col lg:flex-row items-center gap-10" suppressHydrationWarning={true}>
+            <nav role="navigation" aria-label="Footer navigation" suppressHydrationWarning={true}>
+              <div className="flex space-x-6 sm:space-x-8" suppressHydrationWarning={true}>
                 {navigationLinks.map((link) => (
                   <Link
                     key={link.name}
                     href={link.href}
                     className="text-sm font-medium text-gray-600 hover:text-amber-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded-sm px-1 py-1"
                     aria-label={link.ariaLabel}
+                    suppressHydrationWarning={true}
                   >
                     {link.name}
                   </Link>
@@ -87,7 +88,7 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
             </nav>
 
             {/* Social media links */}
-            <div className="flex space-x-4 sm:space-x-6" role="group" aria-label="Social media links">
+            <div className="flex space-x-4 sm:space-x-6" role="group" aria-label="Social media links" suppressHydrationWarning={true}>
               {socialLinks.map((link) => (
                 <SocialIcon
                   key={link.name}

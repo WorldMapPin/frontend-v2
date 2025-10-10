@@ -1,0 +1,107 @@
+/* Food marker styles for Foodies Bee Hive locations */
+
+.foodMarker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.foodMarker:hover {
+  transform: scale(1.15);
+}
+
+.foodIcon {
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(135deg, #FF6B35, #FF8C42);
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0; /* Pin/teardrop shape */
+  transform: rotate(-45deg); /* Rotate to create pin point downward */
+  padding: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 107, 53, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.foodSvg {
+  color: white;
+  width: 32px;
+  height: 32px;
+}
+
+/* Count badge styling for food markers */
+.countBadge {
+  position: absolute;
+  top: -15px;
+  right: -5px;
+  z-index: 4;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 3px solid white;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background: #ed6d28; /* Default WorldMapPin orange color */
+}
+
+.countText {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.pulseRing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 55px;
+  height: 55px;
+  border: 2px solid #FFA726;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: pulse 2s infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .foodIcon {
+    border-color: #1f2937;
+  }
+  
+  .countBadge {
+    border-color: #1f2937;
+  }
+}

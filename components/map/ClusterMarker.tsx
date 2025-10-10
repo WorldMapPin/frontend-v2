@@ -45,17 +45,33 @@ export const ClusterMarker = ({
   
   const handleClick = useCallback(
     () => {
-      console.log('Cluster clicked:', { size, mapZoom, maxClickableCluster, position }); // Debug log
-      // For large clusters at low zoom levels, zoom in instead of showing details (exact copy from OLDMAPCODE)
+      // For large clusters at low zoom levels, zoom in instead of showing details
       if (size > maxClickableCluster && (mapZoom < 14)) {        
-        console.log('Zooming to cluster center:', position, 'from zoom:', mapZoom, 'to zoom:', mapZoom + 3); // Debug log
         (window as any).setGlobalLocation?.({ location: position });
-        (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels like OLDMAPCODE
+        (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels
       } else {
-        console.log('Showing cluster details'); // Debug log
         // Show cluster details for smaller clusters or at higher zoom levels
         onMarkerClick && onMarkerClick(marker!, clusterId);
       }
+    },
+    [onMarkerClick, marker, clusterId, position, size]
+  );
+
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Add a small delay to prevent double-tap issues
+      setTimeout(() => {
+        // For large clusters at low zoom levels, zoom in instead of showing details
+        if (size > maxClickableCluster && (mapZoom < 14)) {        
+          (window as any).setGlobalLocation?.({ location: position });
+          (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels
+        } else {
+          // Show cluster details for smaller clusters or at higher zoom levels
+          onMarkerClick && onMarkerClick(marker!, clusterId);
+        }
+      }, 100);
     },
     [onMarkerClick, marker, clusterId, position, size]
   );
@@ -101,10 +117,24 @@ export const ClusterMarker = ({
         fontWeight: 'bold',
         fontSize: '12px',
         border: '1px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+        cursor: 'pointer',
+        touchAction: 'manipulation' // Improve touch responsiveness
       }}
     >  
-      <span>{sizeAsText}</span>
+      <span 
+        onTouchStart={handleTouchStart} // Add touch support for mobile
+        onClick={handleClick} // Handle click events
+        style={{ 
+          touchAction: 'manipulation',
+          cursor: 'pointer',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTouchCallout: 'none'
+        }}
+      >
+        {sizeAsText}
+      </span>
     </AdvancedMarker>
   );
 };

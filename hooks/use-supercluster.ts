@@ -31,8 +31,10 @@ export function useSupercluster<T extends GeoJsonProperties>(
 
   // Load data into clusterer when geojson changes
   useEffect(() => {
-    clusterer.load(geojson.features);
-    dataWasUpdated();
+    if (geojson && geojson.features && Array.isArray(geojson.features)) {
+      clusterer.load(geojson.features);
+      dataWasUpdated();
+    }
   }, [clusterer, geojson]);
 
   // Get current viewport bounds and zoom level

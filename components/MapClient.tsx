@@ -7,21 +7,31 @@ import axios from 'axios';
 // Import components
 import { ClusteredMarkers } from './map/ClusteredMarkers';
 import { InfoWindowContent } from './map/InfoWindowContent';
+import { SpendHBDInfoWindow } from './map/community/SpendHBDInfoWindow';
+import { SpendHBDClusterInfo } from './map/community/SpendHBDClusterInfo';
 import { OldLoadingSpinner } from './map/OldLoadingSpinner';
 import { GetCodeButton } from './map/GetCodeButton';
 import { CodeModeInterface } from './map/CodeModeInterface';
 import { FloatingContextMenu } from './map/FloatingContextMenu';
 import FilterComponent from './map/FilterComponent';
+import CommunitySelector from './map/community/CommunitySelector';
+
+// Import journey components
+import SimpleJourneyEditor from './journey/SimpleJourneyEditor';
+import SimpleJourneyMap from './journey/SimpleJourneyMap';
+import UserPostsOnMap from './journey/UserPostsOnMap';
 
 // Import utilities and types
 import { convertDatafromApitoGeojson } from '../utils/dataConversion';
-import { InfoWindowData, SearchParams } from '../types';
+import { InfoWindowData, SearchParams, Community, Journey, JourneyState } from '../types';
+import { Feature, Point } from 'geojson';
 import { initPerformanceCheck, getNetworkSpeed, isExtremelySlowConnection, isSlowConnection } from '../utils/performanceCheck';
+import { fetchCommunityPins, COMMUNITIES, getDefaultCommunity } from '../utils/communityApi';
 
 // Global variables for location and zoom
 export let setGlobalLocation: (location: google.maps.places.Place | undefined) => void;
 export let setGlobalZoom: (zoom: number | undefined) => void;
-export let mapZoom = 3;
+export let mapZoom = 2; // Start at zoom 2, skip 3
 
 // Simple map configuration
 const MAP_CONFIG = {
@@ -35,16 +45,18 @@ interface MapClientProps {
   initialUsername?: string;
   initialPermlink?: string;
   initialTag?: string;
+  initialCommunity?: Community;
 }
 
-export default function MapClient({ initialUsername, initialPermlink, initialTag }: MapClientProps = {}) {
+export default function MapClient({ initialUsername, initialPermlink, initialTag, initialCommunity }: MapClientProps = {}) {
   // Basic states
   const [geojson, setGeojson] = useState<any>(null);
   const [numClusters, setNumClusters] = useState(0);
   const [loading, setLoading] = useState(true);
   const [clustersReady, setClustersReady] = useState(false);
   const [infowindowData, setInfowindowData] = useState<InfoWindowData>(null);
-  const [currentZoom, setCurrentZoom] = useState(3);
+  const [currentZoom, setCurrentZoom] = useState(2); // Start at 2, skip 3
+  const previousZoomRef = React.useRef(2); // Track previous zoom for direction detection
   
   // Code mode states
   const [codeMode, setCodeMode] = useState(false);
@@ -62,6 +74,16 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   // Set global functions
   setGlobalLocation = setLocation;
   setGlobalZoom = setMyLocationZoom;
+
+  // Function to zoom to specific coordinates
+  const handleViewOnMap = (coordinates: [number, number]) => {
+    const [lng, lat] = coordinates;
+    setLocation({
+      location: { lat, lng },
+      name: 'Store Location'
+    } as unknown as google.maps.places.Place);
+    setMyLocationZoom(18); // Higher zoom level for better store highlighting
+  };
   
   // Performance states
   const [performanceResult, setPerformanceResult] = useState<{
@@ -84,6 +106,28 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     return { curated_only: false };
   });
 
+  // Community states
+  const [selectedCommunity, setSelectedCommunity] = useState<Community>(initialCommunity || getDefaultCommunity());
+  const [showCommunitySelector, setShowCommunitySelector] = useState(false);
+  const [originalClusterFeatures, setOriginalClusterFeatures] = useState<Feature<Point>[] | null>(null);
+  const [loadedCommunity, setLoadedCommunity] = useState<Community>(initialCommunity || getDefaultCommunity());
+  const [showCommunityHeader, setShowCommunityHeader] = useState(false);
+
+  // Journey states
+  const [journeyState, setJourneyState] = useState<JourneyState>({ 
+    journeys: [], 
+    currentJourney: null, 
+    editableUsers: [], 
+    activeUser: '',
+    isEditMode: false
+  });
+  const [showJourneyControls, setShowJourneyControls] = useState(false);
+  const [authStateKey, setAuthStateKey] = useState(0); // Track auth changes to force remount
+  const [showUserPostsOnMap, setShowUserPostsOnMap] = useState(false);
+  const [userPostsUsername, setUserPostsUsername] = useState<string>('');
+  const [onUserPostClick, setOnUserPostClick] = useState<((post: any) => void) | null>(null);
+  const [selectedStartingPostId, setSelectedStartingPostId] = useState<number | null>(null);
+
   // API key
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
   
@@ -94,6 +138,16 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       console.error('Google Maps API key is missing! Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local');
     }
   }, [API_KEY]);
+
+  // Listen for auth changes to force SimpleJourneyEditor remount
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setAuthStateKey(prev => prev + 1);
+    };
+
+    window.addEventListener('hive-auth-state-change', handleAuthChange);
+    return () => window.removeEventListener('hive-auth-state-change', handleAuthChange);
+  }, []);
 
   // Map bounds
   const bounds = {
@@ -137,31 +191,79 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     runPerformanceCheck();
   }, []);
 
-  // Load markers on component mount
+  // Auto-load community pins if initialCommunity is provided
   useEffect(() => {
-    loadMarkers(false, searchParams);
+    if (initialCommunity) {
+      console.log('Auto-loading community pins for:', initialCommunity.name);
+      // Set loading state and load markers for the initial community
+      setLoading(true);
+      setClustersReady(false);
+      loadMarkers(false, searchParams, initialCommunity);
+      
+      // Fallback timeout in case clusters never load (10 seconds)
+      setTimeout(() => {
+        if (loading) {
+          setLoading(false);
+        }
+      }, 10000);
+    }
+  }, [initialCommunity]);
+
+  // Load markers on component mount - only for default community
+  useEffect(() => {
+    if (selectedCommunity.isDefault && !initialCommunity) {
+      loadMarkers(false, searchParams);
+    }
+  }, []);
+
+  // Listen for center-map-on-pin events from journey editor
+  useEffect(() => {
+    const handleCenterMapOnPin = (event: CustomEvent) => {
+      const { lat, lng, zoom } = event.detail;
+      setLocation({
+        location: { lat, lng },
+        name: 'Pin Location'
+      } as unknown as google.maps.places.Place);
+      setMyLocationZoom(zoom || 15);
+    };
+
+    window.addEventListener('center-map-on-pin' as any, handleCenterMapOnPin);
+
+    return () => {
+      window.removeEventListener('center-map-on-pin' as any, handleCenterMapOnPin);
+    };
   }, []);
 
   // Load markers function
-  async function loadMarkers(reloadExisting = false, filterParams?: SearchParams) {
+  async function loadMarkers(reloadExisting = false, filterParams?: SearchParams, community?: Community) {
     try {
-      console.log('Loading markers...', reloadExisting ? '(reloading existing)' : '(initial load)');
-      setLoading(true);
+      const targetCommunity = community || selectedCommunity;
+      
+      // Only set loading state if not already set (to avoid overriding handleLoadPins)
+      if (!loading) {
+        setLoading(true);
+      }
       setClustersReady(false);
       
       if (reloadExisting && geojson) {
         // Just reload the existing geojson data without fetching from API
-        console.log('Reloading existing geolocations:', geojson.features?.length || 0, 'features');
         setGeojson(geojson);
       } else {
-        // Fetch new data from API with current search parameters
+        // Fetch new data from community API
         const params = filterParams || searchParams;
-        console.log('Fetching with search params:', params);
-        const response = await axios.post(`https://worldmappin.com/api/marker/0/150000/`, params);
-        console.log('API response received:', response.data?.length || 0, 'markers');
-        const geoJsonData = await convertDatafromApitoGeojson(response.data);
-        console.log('GeoJSON data converted:', geoJsonData.features?.length || 0, 'features');
+        
+        let geoJsonData;
+        if (targetCommunity.isDefault) {
+          // Use the original WorldMapPin API for default community
+          const response = await axios.post(`https://worldmappin.com/api/marker/0/150000/`, params);
+          geoJsonData = await convertDatafromApitoGeojson(response.data);
+        } else {
+          // Use community-specific API
+          geoJsonData = await fetchCommunityPins(targetCommunity);
+        }
+        
         setGeojson(geoJsonData);
+        setLoadedCommunity(targetCommunity); // Set the community that actually has loaded pins
       }
     } catch (err) {
       console.error('Error fetching feature data:', err);
@@ -172,13 +274,15 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
   // Callback to track when clusters are ready (called from ClusteredMarkers)
   const handleClustersReady = (clusterCount: number) => {
-    // console.log('Clusters ready:', clusterCount);
-    setClustersReady(true);
-    
-    // Add delay like in OLDMAPCODE (100ms delay)
-    setTimeout(() => {
-      setLoading(false);
-    }, 100);
+    // Only stop loading if we have actual clusters (not empty data)
+    if (clusterCount > 0) {
+      setClustersReady(true);
+      
+      // Add delay like in OLDMAPCODE (100ms delay)
+      setTimeout(() => {
+        setLoading(false);
+      }, 100);
+    }
   };
 
   // Code mode functions
@@ -230,7 +334,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   // Handle map click for code mode
   const handleMapClick = (e: any) => {
     // Allow map clicking when in code mode OR when code interface is visible
-    if (codeMode || codeModeMarker) {
+    // But not when journey edit mode is active
+    if ((codeMode || codeModeMarker) && !journeyState.isEditMode) {
       const latLng = e.detail?.latLng;
       if (latLng) {
         setCodeModeMarker({ 
@@ -245,6 +350,63 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   // Close tab
   const closeTab = () => {
     setInfowindowData(null);
+    setOriginalClusterFeatures(null);
+  };
+
+  // Community handling functions
+  const handleCommunityChange = (community: Community) => {
+    setSelectedCommunity(community);
+    // Hide community header when switching communities
+    setShowCommunityHeader(false);
+    // Don't auto-load markers - user needs to click "Load Pins" button
+  };
+
+  const handleLoadPins = (community: Community) => {
+    setSelectedCommunity(community);
+    setClustersReady(false);
+    setLoading(true);
+    
+    // Show community header image for specific communities
+    if (community.id === 'spendhbd' || community.id === 'foodie') {
+      setShowCommunityHeader(true);
+    }
+    
+    // Clear existing data and load new markers
+    setGeojson({ type: "FeatureCollection", features: [] });
+    loadMarkers(false, searchParams, community);
+    
+    // Fallback timeout in case clusters never load (10 seconds)
+    setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+      }
+    }, 10000);
+  };
+
+  // Handle store selection from cluster
+  const handleStoreSelect = (store: any) => {
+    // Store the original cluster features for back navigation
+    if (infowindowData?.features) {
+      setOriginalClusterFeatures(infowindowData.features);
+    }
+    
+    // Show the selected store's posts
+    setInfowindowData({
+      anchor: infowindowData?.anchor || null as any,
+      features: store.features,
+      isCluster: false
+    });
+  };
+
+  // Handle back to cluster view
+  const handleBackToCluster = () => {
+    if (infowindowData && originalClusterFeatures) {
+      setInfowindowData({
+        ...infowindowData,
+        features: originalClusterFeatures,
+        isCluster: true
+      });
+    }
   };
 
   // Filter handling functions
@@ -261,12 +423,12 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       };
       
       setSearchParams(newSearchParams);
-      loadMarkers(false, newSearchParams);
+      loadMarkers(false, newSearchParams, selectedCommunity);
     } else {
       // Clear filter
       const clearedParams: SearchParams = { curated_only: false };
       setSearchParams(clearedParams);
-      loadMarkers(false, clearedParams);
+      loadMarkers(false, clearedParams, selectedCommunity);
     }
     setShowFilter(false);
   };
@@ -275,6 +437,41 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     // Handle any special tag change logic if needed
     console.log('Tags changed:', tags);
   };
+
+  // Journey handling functions
+  const handleJourneyChange = useCallback((journey: Journey | null) => {
+    setJourneyState(prev => ({ ...prev, currentJourney: journey }));
+  }, []);
+
+  const handleJourneyStateChange = useCallback((newState: JourneyState) => {
+    setJourneyState(newState);
+  }, []);
+
+  const handleShowUserPosts = useCallback((username: string, postClickHandler: (post: any) => void) => {
+    setShowUserPostsOnMap(true);
+    setUserPostsUsername(username);
+    setSelectedStartingPostId(null); // Reset selection
+    // Wrap the post click handler to also track the selected post ID
+    setOnUserPostClick(() => (post: any) => {
+      setSelectedStartingPostId(post.id);
+      postClickHandler(post);
+    });
+  }, []);
+
+  // Listen for hide user posts event
+  useEffect(() => {
+    const handleHideUserPosts = () => {
+      setShowUserPostsOnMap(false);
+      setUserPostsUsername('');
+      setOnUserPostClick(null);
+      setSelectedStartingPostId(null);
+    };
+
+    window.addEventListener('hide-user-posts-on-map', handleHideUserPosts);
+    return () => window.removeEventListener('hide-user-posts-on-map', handleHideUserPosts);
+  }, []);
+
+  // Simplified journey handling - no complex callbacks needed
 
   // Expose close function globally for smooth animations
   useEffect(() => {
@@ -363,8 +560,31 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const handleMapIdle = (e: any) => {
     setLocation(undefined); 
     setMyLocationZoom(undefined); 
-    mapZoom = e.map.getZoom();
-    setCurrentZoom(e.map.getZoom());
+    
+    const newZoom = e.map.getZoom();
+    
+    // Skip zoom level 3 - jump to 2 or 4 depending on direction
+    if (newZoom === 3) {
+      const previousZoom = previousZoomRef.current;
+      if (previousZoom < 3) {
+        // Zooming in from 2 → skip to 4
+        e.map.setZoom(4);
+        mapZoom = 4;
+        setCurrentZoom(4);
+        previousZoomRef.current = 4;
+      } else {
+        // Zooming out from 4+ → skip to 2
+        e.map.setZoom(2);
+        mapZoom = 2;
+        setCurrentZoom(2);
+        previousZoomRef.current = 2;
+      }
+    } else {
+      mapZoom = newZoom;
+      setCurrentZoom(newZoom);
+      previousZoomRef.current = newZoom;
+    }
+    
     // Store map instance for coordinate conversion
     mapInstanceRef.current = e.map;
   };
@@ -471,7 +691,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     <APIProvider apiKey={API_KEY} version={'beta'}>
       <div className="h-screen w-full relative overflow-hidden">
         {/* Old Loading Spinner */}
-        {loading && <OldLoadingSpinner message="Getting pins..." />}
+        {loading && <OldLoadingSpinner message={`Loading ${selectedCommunity.name} pins...`} />}
 
         {/* Get Code Button */}
         <GetCodeButton 
@@ -569,6 +789,63 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           </div>
         )}
 
+        {/* Community Selector Button */}
+          <button
+            onClick={() => setShowCommunitySelector(true)}
+            className={`absolute z-30 bg-orange-500/90 backdrop-blur-md hover:bg-orange-600 text-white rounded-2xl px-4 py-3 shadow-lg border border-orange-200/20 transition-all duration-200 flex items-center space-x-2 ${
+              searchParams.author || searchParams.permlink || (searchParams.tags && searchParams.tags.length > 0) ? 'top-20 right-4' : 'top-4 right-4'
+            }`}
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-sm font-medium text-white">{selectedCommunity.name}</span>
+          </button>
+
+        {/* Journey Toggle Button */}
+        <button
+          onClick={() => setShowJourneyControls(!showJourneyControls)}
+          className={`absolute z-30 bg-purple-500/90 backdrop-blur-md hover:bg-purple-600 text-white rounded-2xl px-4 py-3 shadow-lg border border-purple-200/20 transition-all duration-200 flex items-center space-x-2 ${
+            searchParams.author || searchParams.permlink || (searchParams.tags && searchParams.tags.length > 0) ? 'top-36 right-4' : 'top-20 right-4'
+          }`}
+        >
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+          <span className="text-sm font-medium text-white">Journeys</span>
+        </button>
+
+        {/* Community Header Image */}
+        {showCommunityHeader && loadedCommunity && (
+          <div className="absolute z-25 top-4 left-1/2 transform -translate-x-1/2 pointer-events-auto">
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 max-w-sm relative">
+              {/* Close button */}
+              <button
+                onClick={() => setShowCommunityHeader(false)}
+                className="absolute -top-2 -right-2 w-6 h-6 bg-gray-600 hover:bg-gray-700 text-white rounded-full flex items-center justify-center text-xs font-bold transition-colors duration-200 z-10"
+              >
+                ×
+              </button>
+              
+              {loadedCommunity.id === 'spendhbd' && (
+                <img 
+                  src="/images/WMP-x-Distriator.jpg" 
+                  alt="SpendHBD Community Header" 
+                  className="w-full h-auto max-h-32 object-contain rounded-xl"
+                />
+              )}
+              {loadedCommunity.id === 'foodie' && (
+                <img 
+                  src="/images/wmp-x-foodie-bee-hive.png" 
+                  alt="Foodies Bee Hive Community Header" 
+                  className="w-full h-auto max-h-32 object-contain rounded-xl"
+                />
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Filter Button */}
         <button
           onClick={() => setShowFilter(true)}
@@ -608,6 +885,26 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           onClose={() => setShowFilter(false)}
         />
 
+        {/* Community Selector Component */}
+        <CommunitySelector
+          communities={COMMUNITIES}
+          selectedCommunity={selectedCommunity}
+          onCommunityChange={handleCommunityChange}
+          onLoadPins={handleLoadPins}
+          isVisible={showCommunitySelector}
+          onClose={() => setShowCommunitySelector(false)}
+        />
+
+        {/* Journey Editor */}
+        {showJourneyControls && (
+          <SimpleJourneyEditor
+            key={`journey-editor-${authStateKey}`}
+            onJourneyChange={handleJourneyChange}
+            onStateChange={handleJourneyStateChange}
+            onShowUserPosts={handleShowUserPosts}
+          />
+        )}
+
 
         {/* Mobile Map Container */}
         <div ref={mapRef} className="map-wrapper">
@@ -615,8 +912,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
               mapId={MAP_CONFIG.mapId}
               mapTypeId={MAP_CONFIG.mapTypeId}
               defaultCenter={{ lat: 50, lng: 20 }}
-              defaultZoom={1}
-              minZoom={1}
+              defaultZoom={2}
+              minZoom={2}
               maxZoom={20}
               zoomControl={true}
               gestureHandling={'greedy'}
@@ -634,14 +931,33 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
               onClick={handleMapClick}
               className={`mobile-map-container ${(codeMode || codeModeMarker) ? 'code-mode-active' : ''}`}
             >
-          {/* Clustered Markers - Show when not in full code mode */}
-          {!codeMode && geojson && (
+          {/* Clustered Markers - Show when not in full code mode and journey controls are hidden */}
+          {!codeMode && !showJourneyControls && geojson && (
             <ClusteredMarkers
+              key={`${loadedCommunity?.id}-${geojson.features?.length || 0}`}
               geojson={geojson}
               setNumClusters={setNumClusters}
               setInfowindowData={setInfowindowData}
               currentZoom={currentZoom}
               onClustersReady={handleClustersReady}
+              community={loadedCommunity}
+            />
+          )}
+
+          {/* Simple Journey Map - Show when journey controls are visible */}
+          {showJourneyControls && !showUserPostsOnMap && (
+            <SimpleJourneyMap 
+              journey={journeyState.currentJourney}
+              journeyState={journeyState}
+            />
+          )}
+
+          {/* User Posts on Map - Show when selecting starting post */}
+          {showUserPostsOnMap && userPostsUsername && onUserPostClick && (
+            <UserPostsOnMap
+              username={userPostsUsername}
+              onPostClick={onUserPostClick}
+              selectedPostId={selectedStartingPostId}
             />
           )}
 
@@ -708,7 +1024,25 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                   
                   {/* Content */}
                   <div className="px-6 pb-6 max-h-[70vh] overflow-y-auto">
-                    <InfoWindowContent features={infowindowData.features} />
+                    {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
+                      <SpendHBDClusterInfo 
+                        features={infowindowData.features}
+                        onStoreSelect={handleStoreSelect}
+                        onClose={closeTab}
+                        onViewOnMap={handleViewOnMap}
+                      />
+                    ) : loadedCommunity?.id === 'spendhbd' && infowindowData.features[0]?.properties?.name ? (
+                      <SpendHBDInfoWindow 
+                        features={infowindowData.features}
+                        onBack={handleBackToCluster}
+                        onClose={closeTab}
+                        showBackButton={true}
+                        onViewOnMap={handleViewOnMap}
+                        isCluster={infowindowData.isCluster || false}
+                      />
+                    ) : (
+                      <InfoWindowContent features={infowindowData.features} />
+                    )}
                   </div>
                 </div>
               </div>

@@ -20,11 +20,12 @@ export default function Navbar({ className = '' }: NavbarProps) {
       className={`fixed top-0 w-full bg-white shadow-sm z-50 ${className}`}
       role="navigation"
       aria-label="Main navigation"
+      suppressHydrationWarning={true}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-12 sm:h-14 md:h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8" suppressHydrationWarning={true}>
+        <div className="flex justify-between items-center h-12 sm:h-14 md:h-16" suppressHydrationWarning={true}>
           <div className="flex-shrink-0">
-            <Link href="/" className="block">
+            <Link href="/" className="block" suppressHydrationWarning={true}>
               <Image
                 src="/images/logo_light.png"
                 alt="WorldMappin Logo"
@@ -36,19 +37,28 @@ export default function Navbar({ className = '' }: NavbarProps) {
             </Link>
           </div>
 
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+          <div className="hidden md:block" suppressHydrationWarning={true}>
+            <div className="ml-10 flex items-baseline space-x-4" suppressHydrationWarning={true}>
               <Link
                 href="/map"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                suppressHydrationWarning={true}
               >
                 Map
               </Link>
               <Link
                 href="/explore"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                suppressHydrationWarning={true}
               >
                 Explore
+              </Link>
+              <Link
+                href="/journeys"
+                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                suppressHydrationWarning={true}
+              >
+                Journeys
               </Link>
             </div>
           </div>
@@ -105,12 +115,14 @@ export default function Navbar({ className = '' }: NavbarProps) {
             isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible h-0'
           }`} 
           id="mobile-menu"
+          suppressHydrationWarning={true}
         >
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t" suppressHydrationWarning={true}>
             <Link
               href="/"
               className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
               onClick={() => setIsMenuOpen(false)}
+              suppressHydrationWarning={true}
             >
               Home
             </Link>
@@ -118,6 +130,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               href="/map"
               className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
               onClick={() => setIsMenuOpen(false)}
+              suppressHydrationWarning={true}
             >
               Map
             </Link>
@@ -125,12 +138,22 @@ export default function Navbar({ className = '' }: NavbarProps) {
               href="/explore"
               className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
               onClick={() => setIsMenuOpen(false)}
+              suppressHydrationWarning={true}
             >
               Explore
             </Link>
             <Link
+              href="/journeys"
+              className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              onClick={() => setIsMenuOpen(false)}
+              suppressHydrationWarning={true}
+            >
+              Journeys
+            </Link>
+            <Link
               href="/roadmap"
               className="text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+              suppressHydrationWarning={true}
             >
               Roadmap
             </Link>

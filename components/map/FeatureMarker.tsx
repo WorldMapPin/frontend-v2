@@ -31,7 +31,21 @@ export const FeatureMarker = ({
   const [markerRef, marker] = useAdvancedMarkerRef();
   
   const handleClick = useCallback(
-    () => onMarkerClick && onMarkerClick(marker!, featureId),
+    () => {
+      onMarkerClick && onMarkerClick(marker!, featureId);
+    },
+    [onMarkerClick, marker, featureId]
+  );
+
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Add a small delay to prevent double-tap issues
+      setTimeout(() => {
+        onMarkerClick && onMarkerClick(marker!, featureId);
+      }, 100);
+    },
     [onMarkerClick, marker, featureId]
   );
 
@@ -42,7 +56,37 @@ export const FeatureMarker = ({
       onClick={handleClick}
       className={''}
     >
-      {/* Original simple marker - no custom content */}
+      {/* Simple red marker pin */}
+      <div 
+        onTouchStart={handleTouchStart}
+        onClick={handleClick}
+        style={{ 
+          width: '20px', 
+          height: '20px', 
+          touchAction: 'manipulation',
+          cursor: 'pointer',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTouchCallout: 'none',
+          background: '#ed6d28',
+          borderRadius: '50% 50% 50% 0',
+          transform: 'rotate(-45deg)',
+          border: '2px solid white',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        {/* White dot in center */}
+        <div style={{
+          width: '6px',
+          height: '6px',
+          background: 'white',
+          borderRadius: '50%',
+          transform: 'rotate(45deg)'
+        }}></div>
+      </div>
     </AdvancedMarker>
   );
 };
