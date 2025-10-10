@@ -1,122 +1,90 @@
-import type { Metadata } from "next";
-import Image from "next/image";
+'use client';
 
-export const metadata: Metadata = {
-  title: "Team - WorldMapPin",
-  description: "Meet the passionate team behind WorldMapPin. Learn about the developers, designers, and travel enthusiasts building the future of decentralized travel communities.",
-};
-
-// TypeScript interface for team member data structure
-interface TeamMember {
-  id: string;
-  username: string;
-  description: string;
-  profileImage: string;
-  profileImageAlt: string;
-}
-
-// Sample team member data (6 members with profile info)
-const teamMembers: TeamMember[] = [
-  {
-    id: "1",
-    username: "Alex Chen",
-    description: "Full-stack developer and blockchain enthusiast. Passionate about creating decentralized solutions for travel communities.",
-    profileImage: "/images/team/alex-chen.jpg",
-    profileImageAlt: "Alex Chen - Full-stack Developer"
-  },
-  {
-    id: "2",
-    username: "Sarah Martinez",
-    description: "UX/UI Designer with a love for travel. Focuses on creating intuitive experiences that connect travelers worldwide.",
-    profileImage: "/images/team/sarah-martinez.jpg",
-    profileImageAlt: "Sarah Martinez - UX/UI Designer"
-  },
-  {
-    id: "3",
-    username: "David Kim",
-    description: "Blockchain architect and travel blogger. Specializes in Hive blockchain integration and smart contract development.",
-    profileImage: "/images/team/david-kim.jpg",
-    profileImageAlt: "David Kim - Blockchain Architect"
-  },
-  {
-    id: "4",
-    username: "Emma Thompson",
-    description: "Community manager and digital nomad. Builds bridges between travelers and helps grow our global community.",
-    profileImage: "/images/team/emma-thompson.jpg",
-    profileImageAlt: "Emma Thompson - Community Manager"
-  },
-  {
-    id: "5",
-    username: "Marco Rodriguez",
-    description: "Backend engineer and adventure photographer. Develops scalable systems for handling travel content and media.",
-    profileImage: "/images/team/marco-rodriguez.jpg",
-    profileImageAlt: "Marco Rodriguez - Backend Engineer"
-  },
-  {
-    id: "6",
-    username: "Lisa Wang",
-    description: "Product manager and sustainable travel advocate. Guides product strategy to promote responsible tourism practices.",
-    profileImage: "/images/team/lisa-wang.jpg",
-    profileImageAlt: "Lisa Wang - Product Manager"
-  }
-];
-
-// Team Member Card Component
-interface TeamMemberCardProps {
-  member: TeamMember;
-}
-
-function TeamMemberCard({ member }: TeamMemberCardProps) {
-  // Generate placeholder image URL using UI Avatars service
-  const placeholderImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.username)}&size=120&background=f59e0b&color=ffffff&bold=true&format=png`;
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 px-6 py-16 text-center group">
-      <div className="relative w-30 h-30 mx-auto mb-4">
-        <Image
-          src={placeholderImage}
-          alt={member.profileImageAlt}
-          width={120}
-          height={120}
-          className="rounded-full object-cover group-hover:scale-105 transition-transform duration-200"
-          priority={false}
-        />
-      </div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-amber-600 transition-colors duration-200">
-        {member.username}
-      </h3>
-      <p className="text-gray-600 text-sm leading-relaxed">
-        {member.description}
-      </p>
-    </div>
-  );
-}
+import React, { useState } from 'react';
+import { CategoryFilter } from '@/components/team/CategoryFilter';
+import { TeamMemberCard } from '@/components/team/TeamMemberCard';
+import { teamMembers, categories } from '@/data/team';
 
 export default function TeamPage() {
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const filteredMembers = selectedCategory === 'All' 
+    ? teamMembers 
+    : teamMembers.filter(member => member.category.includes(selectedCategory));
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-amber-50 to-orange-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-              Meet Our Team
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
-              Get to know the passionate individuals behind WorldMapPin who are dedicated to building the future of decentralized travel communities.
-            </p>
+      <section className="bg-[linear-gradient(92.88deg,_#ED6D28_1.84%,_#FFA600_100%)] py-8 sm:py-12 lg:py-16 relative overflow-hidden border-[2px] border-[#5E210040] rounded-2xl sm:rounded-3xl mx-2 sm:mx-4 min-h-[300px] sm:min-h-[400px] lg:min-h-[488px] flex items-center">
+        <div className="absolute inset-0">
+          <div className="absolute left-4 sm:left-6 lg:left-8 top-4 sm:top-6 lg:top-8">
+            <img src="/globe.svg" alt="Globe" className="w-24 sm:w-32 lg:w-44 h-24 sm:h-32 lg:h-44 opacity-20" />
           </div>
+          <div className="absolute right-4 sm:right-6 lg:right-8 bottom-4 sm:bottom-6 lg:bottom-8">
+            <img src="/location_pin.svg" alt="Location Pin" className="w-24 sm:w-32 lg:w-44 h-24 sm:h-32 lg:h-44 opacity-20" />
+          </div>
+        </div>
+        <div className="max-w-4xl mx-auto text-center px-3 sm:px-4 lg:px-6 relative z-10">
+          <p className="text-white text-sm sm:text-base font-bold mb-2 sm:mb-3 lg:mb-4">Our Team</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-5 lg:mb-6 leading-tight">
+            The People Behind<br />WorldMapPin
+          </h1>
+          <p className="text-white text-lg sm:text-2xl lg:text-3xl max-w-xl sm:max-w-2xl mx-auto leading-snug sm:leading-normal">
+            A diverse community of innovators, creators, and problem-solvers working together to build amazing experiences
+          </p>
         </div>
       </section>
 
-      {/* Team Grid Section */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Responsive grid layout (1/2/3/4 columns based on screen size) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 sm:gap-8">
-            {teamMembers.map((member) => (
-              <TeamMemberCard key={member.id} member={member} />
-            ))}
+      {/* Team Section */}
+      <section className="py-16 bg-[linear-gradient(180deg,_#FFFFFF_0%,_#FFF3DC_20.67%,_#FFF3DC_94.23%,_#FFFFFF_100%)]">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12">
+            Meet the <span className="text-[#F47521]">Team</span>
+          </h2>
+
+          {/* Category Filter */}
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
+
+          {/* Team Grid */}
+          <div className="flex flex-col gap-12 sm:gap-16">
+            {/* Row 1 - 3 members (Management & Leadership) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
+              {filteredMembers.slice(0, 3).map((member) => (
+                <TeamMemberCard key={member.id} {...member} />
+              ))}
+            </div>
+
+            {/* Row 2 - 3 members (Core Development) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
+              {filteredMembers.slice(3, 6).map((member) => (
+                <TeamMemberCard key={member.id} {...member} />
+              ))}
+            </div>
+
+            {/* Row 3 - 3 members (Design & Testing) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
+              {filteredMembers.slice(6, 9).map((member) => (
+                <TeamMemberCard key={member.id} {...member} />
+              ))}
+            </div>
+
+            {/* Row 4 - 3 members (Communication & Community) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
+              {filteredMembers.slice(9, 12).map((member) => (
+                <TeamMemberCard key={member.id} {...member} />
+              ))}
+            </div>
+
+            {/* Row 5 - 3 members (Curation Team) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
+              {filteredMembers.slice(12, 15).map((member) => (
+                <TeamMemberCard key={member.id} {...member} />
+              ))}
+            </div>
           </div>
         </div>
       </section>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Lexend } from "next/font/google";
+import { Lexend, Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar, Footer } from "../components";
 
@@ -19,6 +19,13 @@ const lexend = Lexend({
   subsets: ["latin"],
 });
 
+const poppins = Poppins({
+  variable: "--font-poppins",
+  weight: ["400"],
+  style: ["italic", "normal"],
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "WorldMapPin",
   description: "Join WorldMapPin to explore and share unique travel experiences. Discover new destinations through the eyes of fellow travelers and post your own journey on our interactive map.",
@@ -32,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${lexend.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${lexend.variable} ${poppins.variable} antialiased`}
         suppressHydrationWarning={true}
       >
         <Navbar />
