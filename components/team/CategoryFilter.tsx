@@ -52,7 +52,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 key={category}
                 data-category={category}
                 onClick={() => handleCategoryClick(category)}
-                className={`h-[44px] sm:h-[48px] rounded-lg font-medium transition-all flex-shrink-0 flex items-center justify-center text-base sm:text-lg px-6 sm:px-4 ${
+                className={`h-[44px] sm:h-[48px] rounded-lg font-lexend font-medium transition-all flex-shrink-0 flex items-center justify-center text-base sm:text-lg px-6 sm:px-4 ${
                   selectedCategory === category
                     ? 'bg-[#B85518] text-white'
                     : 'text-white hover:bg-[#B85518]/50'

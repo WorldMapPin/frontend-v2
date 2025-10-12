@@ -14,7 +14,7 @@ export default function AboutPage() {
   About
 </p>
 
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#FFFFFF] mb-4 sm:mb-6">
+        <h1 className="font-lexend text-3xl sm:text-4xl md:text-5xl font-semibold text-[#FFFFFF] mb-4 sm:mb-6">
           Revolutionizing Travel<br />
           Through <span className="text-[#FFE8BE]">Blockchain</span>
         </h1>
