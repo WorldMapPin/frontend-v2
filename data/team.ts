@@ -7,6 +7,9 @@ export interface TeamMember {
   image?: string;
 }
 
+// Base URL for Hive avatars
+const HIVE_AVATAR_BASE_URL = 'https://images.hive.blog/u/';
+
 // --- Row 1: Management & Leadership ---
 export const row1Members: TeamMember[] = [
   {
@@ -15,7 +18,7 @@ export const row1Members: TeamMember[] = [
     username: '@detlev',
     role: 'Project Owner, Management, Finance and Development',
     category: ['Management', 'Development'],
-    image: '/images/team/detlev.png'
+    image: `${HIVE_AVATAR_BASE_URL}detlev/avatar`
   },
   {
     id: '2',
@@ -23,7 +26,7 @@ export const row1Members: TeamMember[] = [
     username: '@lizanomadsoul',
     role: 'Founder, Management, Curation and Communication',
     category: ['Management', 'Curation', 'Community'],
-    image: '/images/team/liz.png'
+    image: `${HIVE_AVATAR_BASE_URL}lizanomadsoul/avatar`
   },
   {
     id: '3',
@@ -31,7 +34,7 @@ export const row1Members: TeamMember[] = [
     username: '@asgarth',
     role: 'Development Manager',
     category: ['Management', 'Development'],
-    image: '/images/team/asgarth.png'
+    image: `${HIVE_AVATAR_BASE_URL}asgarth/avatar`
   }
 ];
 
@@ -43,7 +46,7 @@ export const row2Members: TeamMember[] = [
     username: '@arcange',
     role: 'DevOps',
     category: ['Development'],
-    image: '/images/team/arcange.png'
+    image: `${HIVE_AVATAR_BASE_URL}arcange/avatar`
   },
   {
     id: '5',
@@ -51,7 +54,7 @@ export const row2Members: TeamMember[] = [
     username: '@masterswatch',
     role: 'Frontend Developer',
     category: ['Development'],
-    image: '/images/team/masterswatch.png'
+    image: `${HIVE_AVATAR_BASE_URL}masterswatch/avatar`
   },
   {
     id: '6',
@@ -59,7 +62,7 @@ export const row2Members: TeamMember[] = [
     username: '@abinsaji4',
     role: 'Frontend Developer',
     category: ['Development'],
-    image: '/images/team/abin.png'
+    image: `${HIVE_AVATAR_BASE_URL}abinsaji4/avatar`
   }
 ];
 
@@ -68,10 +71,10 @@ export const row3Members: TeamMember[] = [
   {
     id: '7',
     name: 'Hari Prasad',
-    username: '@purelyeerie',
+    username: '@hariprasadd',
     role: 'UI Designer',
     category: ['Design', 'Development'],
-    image: '/images/team/hari.png'
+    image: `${HIVE_AVATAR_BASE_URL}hariprasadd/avatar`
   },
   {
     id: '8',
@@ -79,7 +82,7 @@ export const row3Members: TeamMember[] = [
     username: '@louis88',
     role: 'Graphic Design, Testing & Communication',
     category: ['Design', 'Testing', 'Community'],
-    image: '/images/team/louis.png'
+    image: `${HIVE_AVATAR_BASE_URL}louis88/avatar`
   },
   {
     id: '9',
@@ -87,7 +90,7 @@ export const row3Members: TeamMember[] = [
     username: '@sunsea',
     role: 'Enduser Testing',
     category: ['Testing'],
-    image: '/images/team/sunsea.jpeg'
+    image: `${HIVE_AVATAR_BASE_URL}sunsea/avatar`
   }
 ];
 
@@ -99,7 +102,7 @@ export const row4Members: TeamMember[] = [
     username: '@rivalzzz',
     role: 'Communication',
     category: ['Community'],
-    image: '/images/team/rivalzzz.png'
+    image: `${HIVE_AVATAR_BASE_URL}rivalzzz/avatar`
   },
   {
     id: '11',
@@ -107,7 +110,7 @@ export const row4Members: TeamMember[] = [
     username: '@godfish',
     role: 'Community',
     category: ['Community'],
-    image: '/images/team/godfish.png'
+    image: `${HIVE_AVATAR_BASE_URL}godfish/avatar`
   },
   {
     id: '12',
@@ -115,7 +118,7 @@ export const row4Members: TeamMember[] = [
     username: '@ninaeatshere',
     role: 'Communication & Curation',
     category: ['Community', 'Curation'],
-    image: '/images/team/nina.png'
+    image: `${HIVE_AVATAR_BASE_URL}ninaeatshere/avatar`
   }
 ];
 
@@ -127,7 +130,7 @@ export const row5Members: TeamMember[] = [
     username: '@lauramica',
     role: 'Curation',
     category: ['Curation'],
-    image: '/images/team/laura.jpeg'
+    image: `${HIVE_AVATAR_BASE_URL}lauramica/avatar`
   },
   {
     id: '14',
@@ -135,7 +138,7 @@ export const row5Members: TeamMember[] = [
     username: '@ybanezkim26',
     role: 'Curation',
     category: ['Curation'],
-    image: '/images/team/kim.jpeg'
+    image: `${HIVE_AVATAR_BASE_URL}ybanezkim26/avatar`
   },
   {
     id: '15',
@@ -143,7 +146,7 @@ export const row5Members: TeamMember[] = [
     username: '@glecerioberto',
     role: 'Curation',
     category: ['Curation'],
-    image: '/images/team/gb.jpeg'
+    image: `${HIVE_AVATAR_BASE_URL}glecerioberto/avatar`
   }
 ];
 
