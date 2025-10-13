@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { PEAKD_PROFILE_BASE_URL } from '@/data/team';
 import { ChevronRight } from 'lucide-react';
 
 interface TeamMemberProps {
@@ -22,11 +24,14 @@ export const TeamMemberCard: React.FC<TeamMemberProps> = ({
   image
 }) => {
   const [imageError, setImageError] = useState(false);
-  const isLeadershipTeam = id === '1' || id === '2' || id === '3';
+  const isLeadershipTeam = id === '1' || id === '2' || id === '3' || id === '4';
+  const profileUrl = `${PEAKD_PROFILE_BASE_URL}${username.replace('@', '')}`;
+
   return (
     <div className="space-y-3 w-full max-w-[360px] mx-auto">
       <div className="relative bg-white rounded-2xl overflow-hidden">
         {/* Image */}
+        <Link href={profileUrl} target="_blank" rel="noopener noreferrer" className="block">
         <div className="aspect-[4/3] overflow-hidden relative">
           {image && !imageError ? (
             <Image
@@ -46,9 +51,11 @@ export const TeamMemberCard: React.FC<TeamMemberProps> = ({
             />
           )}
         </div>
+        </Link>
       </div>
 
       {/* Member Info */}
+      <Link href={profileUrl} target="_blank" rel="noopener noreferrer" className="block">
       <div className={`${isLeadershipTeam ? 'bg-[#ED6D2847]' : 'bg-[rgba(237,168,40,0.28)]'} p-4 rounded-b-2xl relative`}>
         {/* Top Right Arrow */}
         <div className="absolute top-3 right-3">
@@ -58,6 +65,7 @@ export const TeamMemberCard: React.FC<TeamMemberProps> = ({
         <p className="font-lexend text-sm font-normal leading-[100%] tracking-[-0.02em] text-[#592102] mb-2">{username}</p>
         <p className="var(--font-poppins) text-sm italic font-normal leading-[100%] tracking-[-0.01em] text-[#592102]">{role}</p>
       </div>
+      </Link>
     </div>
   );
 };

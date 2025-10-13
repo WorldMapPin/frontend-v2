@@ -50,41 +50,10 @@ export default function TeamPage() {
           />
 
           {/* Team Grid */}
-          <div className="flex flex-col gap-12 sm:gap-16">
-            {/* Row 1 - 3 members (Management & Leadership) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
-              {filteredMembers.slice(0, 3).map((member) => (
-                <TeamMemberCard key={member.id} {...member} />
-              ))}
-            </div>
-
-            {/* Row 2 - 3 members (Core Development) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
-              {filteredMembers.slice(3, 6).map((member) => (
-                <TeamMemberCard key={member.id} {...member} />
-              ))}
-            </div>
-
-            {/* Row 3 - 3 members (Design & Testing) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
-              {filteredMembers.slice(6, 9).map((member) => (
-                <TeamMemberCard key={member.id} {...member} />
-              ))}
-            </div>
-
-            {/* Row 4 - 3 members (Communication & Community) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
-              {filteredMembers.slice(9, 12).map((member) => (
-                <TeamMemberCard key={member.id} {...member} />
-              ))}
-            </div>
-
-            {/* Row 5 - 3 members (Curation Team) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 w-full">
-              {filteredMembers.slice(12, 15).map((member) => (
-                <TeamMemberCard key={member.id} {...member} />
-              ))}
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 w-full">
+            {filteredMembers.map((member) => (
+              <TeamMemberCard key={member.id} {...member} />
+            ))}
           </div>
         </div>
       </section>

@@ -9,8 +9,9 @@ export interface TeamMember {
 
 // Base URL for Hive avatars
 const HIVE_AVATAR_BASE_URL = 'https://images.hive.blog/u/';
+export const PEAKD_PROFILE_BASE_URL = 'https://peakd.com/@';
 
-// --- Row 1: Management & Leadership ---
+// --- Row 1: Management & Leadership (4 members) ---
 export const row1Members: TeamMember[] = [
   {
     id: '1',
@@ -35,11 +36,7 @@ export const row1Members: TeamMember[] = [
     role: 'Development Manager',
     category: ['Management', 'Development'],
     image: `${HIVE_AVATAR_BASE_URL}asgarth/avatar`
-  }
-];
-
-// --- Row 2: Core Development ---
-export const row2Members: TeamMember[] = [
+  },
   {
     id: '4',
     name: 'Arcange',
@@ -47,7 +44,11 @@ export const row2Members: TeamMember[] = [
     role: 'DevOps',
     category: ['Development'],
     image: `${HIVE_AVATAR_BASE_URL}arcange/avatar`
-  },
+  }
+];
+
+// --- Row 2: Core Development (4 members) ---
+export const row2Members: TeamMember[] = [
   {
     id: '5',
     name: 'MasterSwatch',
@@ -63,11 +64,7 @@ export const row2Members: TeamMember[] = [
     role: 'Frontend Developer',
     category: ['Development'],
     image: `${HIVE_AVATAR_BASE_URL}abinsaji4/avatar`
-  }
-];
-
-// --- Row 3: Design & Testing ---
-export const row3Members: TeamMember[] = [
+  },
   {
     id: '7',
     name: 'Hari Prasad',
@@ -83,7 +80,11 @@ export const row3Members: TeamMember[] = [
     role: 'Graphic Design, Testing & Communication',
     category: ['Design', 'Testing', 'Community'],
     image: `${HIVE_AVATAR_BASE_URL}louis88/avatar`
-  },
+  }
+];
+
+// --- Row 3: Design, Testing & Community (4 members) ---
+export const row3Members: TeamMember[] = [
   {
     id: '9',
     name: 'Sunsea',
@@ -91,11 +92,7 @@ export const row3Members: TeamMember[] = [
     role: 'Enduser Testing',
     category: ['Testing'],
     image: `${HIVE_AVATAR_BASE_URL}sunsea/avatar`
-  }
-];
-
-// --- Row 4: Communication & Community ---
-export const row4Members: TeamMember[] = [
+  },
   {
     id: '10',
     name: 'Rivalzzz',
@@ -122,8 +119,8 @@ export const row4Members: TeamMember[] = [
   }
 ];
 
-// --- Row 5: Curation Team ---
-export const row5Members: TeamMember[] = [
+// --- Row 4: Curation Team (3 members) ---
+export const row4Members: TeamMember[] = [
   {
     id: '13',
     name: 'Lauramica',
@@ -154,8 +151,7 @@ export const teamMembers: TeamMember[] = [
   ...row1Members,
   ...row2Members,
   ...row3Members,
-  ...row4Members,
-  ...row5Members
+  ...row4Members
 ];
 
 export const categories = [
