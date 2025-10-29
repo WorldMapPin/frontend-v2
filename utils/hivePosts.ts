@@ -18,6 +18,48 @@ const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
 const STORAGE_KEY = 'hive_posts_cache';
 
 /**
+ * Optimize image URL using Ecency's image proxy with smaller sizes for faster loading
+ * Ecency automatically serves optimized WebP when supported
+ * @param imageUrl - Original image URL
+ * @param size - Size preset: 'thumb' (150x0), 'small' (256x512), 'medium' (400x0), 'large' (600x0)
+ * @returns Optimized Ecency proxy URL or original URL if already optimized
+ */
+function optimizeImageUrl(imageUrl: string, size: 'thumb' | 'small' | 'medium' | 'large' = 'thumb'): string {
+  if (!imageUrl || typeof imageUrl !== 'string') return imageUrl;
+  
+  // Size mapping for Ecency proxy
+  const sizeMap = {
+    thumb: '150x0',    // Fast loading thumbnails
+    small: '256x512',  // Small previews
+    medium: '400x0',   // Medium quality
+    large: '600x0'     // High quality
+  };
+  
+  const ecencySize = sizeMap[size];
+  
+  // If already using Ecency proxy, update the size
+  if (imageUrl.includes('images.ecency.com')) {
+    return imageUrl.replace(/\/\d+x\d+\//, `/${ecencySize}/`);
+  }
+  
+  // CDN sources that are already optimized - use as is
+  const trustedCDNs = [
+    'files.peakd.com',
+    'cdn.steemitimages.com',
+    'images.hive.blog',
+    'img.leopedia.io'
+  ];
+  
+  // Check if image is from trusted CDN - return original URL
+  if (trustedCDNs.some(cdn => imageUrl.includes(cdn))) {
+    return imageUrl;
+  }
+  
+  // For other sources, proxy through Ecency for optimization
+  return `https://images.ecency.com/${ecencySize}/${imageUrl}`;
+}
+
+/**
  * Save cache to localStorage
  */
 function saveCacheToStorage() {
@@ -88,9 +130,12 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
     
     if (metadata.image && Array.isArray(metadata.image) && metadata.image.length > 0) {
       // Find first valid HTTP/HTTPS URL in the images array
-      coverImage = metadata.image.find((img: any) => 
+      const originalImage = metadata.image.find((img: any) => 
         typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))
-      ) || null;
+      );
+      
+      // Optimize image URL using Ecency proxy for faster loading
+      coverImage = originalImage ? optimizeImageUrl(originalImage, 'thumb') : null;
     }
     
     // Process the post

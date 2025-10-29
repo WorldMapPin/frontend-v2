@@ -239,6 +239,56 @@ body {
   background: #a8a8a8;
 }
 
+/* Custom scrollbar for desktop info window */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f9fafb;
+  border-radius: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #fb923c 0%, #f97316 100%);
+  border-radius: 5px;
+  border: 2px solid #f9fafb;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+}
+
+/* Fade-in animation for desktop modal */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Shimmer animation for image loading skeleton */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
 /* Old Loading Spinner Styles from OLDMAPCODE */
 .loader-container {
   position: fixed;

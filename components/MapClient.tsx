@@ -995,7 +995,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
             </AdvancedMarker>
           )}
 
-          {/* Mobile Post Popup - Bottom Sheet Style */}
+          {/* Post Popup - Responsive: Bottom Sheet (Mobile) / Centered Modal (Desktop) */}
           {infowindowData && (
             <div className="absolute inset-0 z-40 pointer-events-none">
               {/* Backdrop */}
@@ -1004,8 +1004,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                 onClick={closeTab}
               ></div>
               
-              {/* Bottom Sheet */}
-              <div className="absolute bottom-0 left-0 right-0 pointer-events-auto">
+              {/* Mobile: Bottom Sheet */}
+              <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden">
                 <div className="mobile-post-popup bg-white/95 backdrop-blur-md rounded-t-3xl shadow-2xl transform transition-all duration-300 ease-out animate-slide-up border border-white/20">
                   {/* Handle Bar */}
                   <div className="flex justify-center pt-3 pb-2">
@@ -1024,6 +1024,61 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                   
                   {/* Content */}
                   <div className="px-6 pb-6 max-h-[70vh] overflow-y-auto">
+                    {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
+                      <SpendHBDClusterInfo 
+                        features={infowindowData.features}
+                        onStoreSelect={handleStoreSelect}
+                        onClose={closeTab}
+                        onViewOnMap={handleViewOnMap}
+                      />
+                    ) : loadedCommunity?.id === 'spendhbd' && infowindowData.features[0]?.properties?.name ? (
+                      <SpendHBDInfoWindow 
+                        features={infowindowData.features}
+                        onBack={handleBackToCluster}
+                        onClose={closeTab}
+                        showBackButton={true}
+                        onViewOnMap={handleViewOnMap}
+                        isCluster={infowindowData.isCluster || false}
+                      />
+                    ) : (
+                      <InfoWindowContent features={infowindowData.features} />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop: Centered Modal - Matching Explore Page Width */}
+              <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-4">
+                <div className="w-full max-w-7xl bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl transform transition-all duration-300 ease-out animate-fade-in border border-orange-100/50 overflow-hidden">
+                  {/* Header with Orange Accent */}
+                  <div className="relative bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100">
+                    <div className="px-8 py-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-2xl font-bold text-gray-900">Discover Posts</h2>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} at this location
+                          </p>
+                        </div>
+                        
+                        {/* Close Button */}
+                        <button 
+                          className="w-10 h-10 bg-white hover:bg-orange-50 rounded-full flex items-center justify-center transition-all duration-200 shadow-md border border-orange-100 group"
+                          onClick={closeTab}
+                        >
+                          <svg className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Decorative Line */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-amber-400 to-orange-400"></div>
+                  </div>
+                  
+                  {/* Content - Scrollable with matching explore page padding */}
+                  <div className="px-8 py-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
                     {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
                       <SpendHBDClusterInfo 
                         features={infowindowData.features}
