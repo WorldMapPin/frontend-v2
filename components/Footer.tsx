@@ -1,103 +1,132 @@
 import React from 'react'
 import Link from 'next/link'
-import { DiscordIcon, TelegramIcon, InstagramIcon, SocialIcon } from './icons'
+import Image from 'next/image'
+import { Lexend } from 'next/font/google'
 
 interface FooterProps {
   className?: string
 }
 
-interface SocialLink {
-  name: string
-  href: string
-  ariaLabel: string
-  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>
-}
-
-interface NavigationLink {
-  name: string
-  href: string
-  ariaLabel: string
-}
+const lexend = Lexend({ subsets: ['latin'] })
 
 const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   const currentYear = new Date().getFullYear()
 
-  const socialLinks: SocialLink[] = [
-    {
-      name: 'Discord',
-      href: 'https://discord.com',
-      ariaLabel: 'Visit our Discord server',
-      icon: DiscordIcon,
-    },
-    {
-      name: 'Telegram',
-      href: 'https://telegram.org',
-      ariaLabel: 'Visit our Telegram channel',
-      icon: TelegramIcon,
-    },
-    {
-      name: 'Instagram',
-      href: 'https://instagram.com',
-      ariaLabel: 'Visit our Instagram profile',
-      icon: InstagramIcon,
-    },
-  ]
-
-  const navigationLinks: NavigationLink[] = [
-    {
-      name: 'About',
-      href: '/about',
-      ariaLabel: 'Learn more about WorldMappin',
-    },
-    {
-      name: 'Team',
-      href: '/team',
-      ariaLabel: 'Meet the WorldMappin team',
-    },
-  ]
-
   return (
-    <footer className={`bg-gray-50 border-t border-gray-100 ${className}`} role="contentinfo" suppressHydrationWarning={true}>
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8" suppressHydrationWarning={true}>
-        <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0 gap-4" suppressHydrationWarning={true}>
-          {/* Left section: Copyright */}
-          <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 order-2 lg:order-1">
-            {/* Copyright text */}
-            <div className="text-gray-600 text-xs sm:text-sm text-center sm:text-left">
-              © {currentYear} WorldMappin. All rights reserved.
+    <footer className={`bg-white/90 ${lexend.className} ${className}`} role="contentinfo">
+      <div className="max-w-none mx-auto px-2 sm:px-4 pt-12 sm:pt-20 pb-2 sm:pb-3">
+        <div className="w-full rounded-2xl border-2 border-[#ED6D2899] bg-white">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-8 px-8 sm:px-10 pt-12 sm:pt-16 pb-12 sm:pb-16">
+            {/* Left: Logo/Brand block */}
+            <div className="flex-1">
+              <div className="flex items-center">
+                <Image
+                  src="/images/logo_light.png"
+                  alt="WorldMapPin"
+                  width={180}
+                  height={40}
+                  priority
+                />
+              </div>
+              <div className="mt-2 text-sm text-[#4b2e05]/80">
+                {currentYear} WorldMapPin ©
+              </div>
             </div>
 
-          </div>
-
-          {/* Right section: Navigation Links */}
-          <div className="order-1 lg:order-2 flex flex-col lg:flex-row items-center gap-10" suppressHydrationWarning={true}>
-            <nav role="navigation" aria-label="Footer navigation" suppressHydrationWarning={true}>
-              <div className="flex space-x-6 sm:space-x-8" suppressHydrationWarning={true}>
-                {navigationLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="text-sm font-medium text-gray-600 hover:text-amber-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded-sm px-1 py-1"
-                    aria-label={link.ariaLabel}
-                    suppressHydrationWarning={true}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+            {/* Right: Link columns */}
+            <div className="flex-1 w-full sm:w-auto grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/about"
+                  className="block font-semibold text-[#45220B] hover:text-orange-500"
+                >
+                  <span className="relative inline-flex items-start gap-1">
+                    <span>About</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5 mt-0.5"
+                      aria-hidden="true"
+                    >
+                      <path d="M7 17L17 7" />
+                      <path d="M9 7h8v8" />
+                    </svg>
+                  </span>
+                </Link>
+                <Link
+                  href="/team"
+                  className="block font-semibold text-[#45220B] hover:text-orange-500"
+                >
+                  <span className="relative inline-flex items-start gap-1">
+                    <span>Team</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5 mt-0.5"
+                      aria-hidden="true"
+                    >
+                      <path d="M7 17L17 7" />
+                      <path d="M9 7h8v8" />
+                    </svg>
+                  </span>
+                </Link>
               </div>
-            </nav>
-
-            {/* Social media links */}
-            <div className="flex space-x-4 sm:space-x-6" role="group" aria-label="Social media links" suppressHydrationWarning={true}>
-              {socialLinks.map((link) => (
-                <SocialIcon
-                  key={link.name}
-                  icon={link.icon}
-                  href={link.href}
-                  name={link.name}
-                  ariaLabel={link.ariaLabel}
-                />
-              ))}
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/explore"
+                  className="block font-semibold text-[#45220B] hover:text-orange-500"
+                >
+                  <span className="relative inline-flex items-start gap-1">
+                    <span>Explore</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5 mt-0.5"
+                      aria-hidden="true"
+                    >
+                      <path d="M7 17L17 7" />
+                      <path d="M9 7h8v8" />
+                    </svg>
+                  </span>
+                </Link>
+                <Link
+                  href="/signup"
+                  className="block font-semibold text-[#45220B] hover:text-orange-500"
+                >
+                  <span className="relative inline-flex items-start gap-1">
+                    <span>Community</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5 mt-0.5"
+                      aria-hidden="true"
+                    >
+                      <path d="M7 17L17 7" />
+                      <path d="M9 7h8v8" />
+                    </svg>
+                  </span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>

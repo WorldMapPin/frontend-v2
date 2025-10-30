@@ -39,12 +39,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${lexend.variable} ${poppins.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${lexend.variable} ${poppins.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
         <Navbar />
 
-        <main className="pt-12 sm:pt-14 md:pt-16 min-h-screen">
+        <main className="pt-12 sm:pt-14 md:pt-16 flex-1">
           {children}
         </main>
 
