@@ -73,14 +73,6 @@ export default function Home() {
         className="w-full min-h-[520px] sm:min-h-[560px] md:min-h-[600px] lg:min-h-[690px] relative overflow-hidden flex items-center justify-center" 
         style={{ background: 'linear-gradient(150.44deg, #ED6D28 20.69%, #FFA600 81.91%)' }}
       >
-        {/* Decorative globe */}
-        <img
-          src="/globe.svg"
-          alt=""
-          aria-hidden="true"
-          className="absolute top-0 left-0 w-[14%] -translate-x-[40%] opacity-20 pointer-events-none select-none animate-pulse"
-          loading="lazy"
-        />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 font-lexend" style={{ lineHeight: 1.15 }}>
@@ -117,9 +109,9 @@ export default function Home() {
         </div>
         {/* Fade-away gradient */}
         <div 
-          className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+          className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none"
           style={{ 
-            background: 'linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 1) 100%)'
+            background: 'linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.6) 65%, rgba(255, 255, 255, 0.85) 85%, rgba(255, 255, 255, 1) 100%)'
           }}
         />
       </section>
@@ -228,7 +220,7 @@ export default function Home() {
         </div>
 
         {/* Background decoration */}
-        <div className="absolute inset-0 flex items-center justify-end pr-8 lg:pr-16 opacity-5 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-end pr-8 lg:pr-16 opacity-20 pointer-events-none">
           <span className="text-[300px] lg:text-[500px] font-bold text-orange-600">3</span>
         </div>
       </section>
