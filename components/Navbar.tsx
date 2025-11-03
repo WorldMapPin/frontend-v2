@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 interface NavbarProps {
@@ -10,6 +11,13 @@ interface NavbarProps {
 
 export default function Navbar({ className = '' }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const isMapPage = pathname?.startsWith('/map') ?? false
+  const containerClasses = ['w-full', 'px-4', 'sm:px-6', 'lg:px-8']
+
+  if (!isMapPage) {
+    containerClasses.push('max-w-7xl', 'mx-auto')
+  }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -23,7 +31,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
       aria-label="Main navigation"
       suppressHydrationWarning={true}
     >
-      <div className="w-full px-4 md:px-8" suppressHydrationWarning={true}>
+      <div className={containerClasses.join(' ')} suppressHydrationWarning={true}>
         <div className="flex justify-between items-center h-12 sm:h-14 md:h-16" suppressHydrationWarning={true}>
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-4" suppressHydrationWarning={true}>
@@ -35,7 +43,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 priority
                 className="h-6 w-auto sm:h-8 md:h-10 transition-all duration-200"
               />
-              <span 
+              <span
                 className="text-gray-900 text-lg sm:text-xl md:text-2xl"
                 style={{
                   fontFamily: 'Lexend',
@@ -173,10 +181,10 @@ export default function Navbar({ className = '' }: NavbarProps) {
         </div>
 
         {/* Mobile menu */}
-        <div 
+        <div
           className={`md:hidden transition-all duration-200 ease-in-out ${
             isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible h-0'
-          }`} 
+          }`}
           id="mobile-menu"
           suppressHydrationWarning={true}
         >
