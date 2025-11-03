@@ -22,7 +22,7 @@ const markerImageCache = new Map<string, string | null>();
  * Individual feature marker component
  * Renders a single marker on the map for individual data points
  * Handles click events to show info windows or trigger other actions
- * 
+ *
  * @param position - Geographic coordinates for the marker
  * @param featureId - Unique identifier for the feature
  * @param onMarkerClick - Callback function when marker is clicked
@@ -35,7 +35,7 @@ export const FeatureMarker = ({
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [imageError, setImageError] = useState(false);
   const [coverImage, setCoverImage] = useState<string | null>(null);
-  
+
   // Fetch cover image on mount
   useEffect(() => {
     // Check cache first
@@ -43,20 +43,20 @@ export const FeatureMarker = ({
       setCoverImage(markerImageCache.get(featureId) || null);
       return;
     }
-    
+
     // Fetch post data to get image
     const fetchImage = async () => {
       try {
         const response = await axios.post("https://worldmappin.com/api/marker/ids", {
           marker_ids: [featureId],
         });
-        
+
         if (response.data && response.data.length > 0) {
           const postData = response.data[0];
           const imageUrl = postData.postImageLink && postData.postImageLink !== "No image"
             ? `https://images.ecency.com/150x0/${postData.postImageLink}`
             : null;
-          
+
           // Cache the result
           markerImageCache.set(featureId, imageUrl);
           setCoverImage(imageUrl);
@@ -68,10 +68,10 @@ export const FeatureMarker = ({
         markerImageCache.set(featureId, null);
       }
     };
-    
+
     fetchImage();
   }, [featureId]);
-  
+
   const handleClick = useCallback(
     () => {
       onMarkerClick && onMarkerClick(marker!, featureId);
@@ -99,12 +99,12 @@ export const FeatureMarker = ({
       className={''}
     >
       {/* Enhanced marker pin with cover image */}
-      <div 
+      <div
         onTouchStart={handleTouchStart}
         onClick={handleClick}
-        style={{ 
-          width: '35px', 
-          height: '35px', 
+        style={{
+          width: '35px',
+          height: '35px',
           touchAction: 'manipulation',
           cursor: 'pointer',
           userSelect: 'none',
@@ -113,7 +113,7 @@ export const FeatureMarker = ({
           background: '#ed6d28',
           borderRadius: '50% 50% 50% 0',
           transform: 'rotate(-45deg)',
-          border: '3px solid white',
+          border: '2px solid white',
           boxShadow: '0 3px 6px rgba(0,0,0,0.4)',
           display: 'flex',
           alignItems: 'center',
@@ -126,7 +126,7 @@ export const FeatureMarker = ({
         {coverImage && !imageError ? (
           <div style={{
             position: 'absolute',
-            inset: '3px',
+            inset: '2px',
             transform: 'rotate(45deg)',
             transformOrigin: 'center',
             overflow: 'hidden',
