@@ -2,55 +2,214 @@
 
 import React, { useEffect, useState } from 'react';
 import { fetchUserPostsWithCoords } from '../../../lib/worldmappinApi';
+import { fetchPosts, fetchPostsProgressive } from '@/utils/hivePosts';
+import { ProcessedPost, CuratedPost } from '@/types/post';
+import PostCard from '@/components/shared/PostCard';
+import Link from 'next/link';
 
 interface UserPostsProps {
   username: string;
 }
 
-interface Post {
-  id: number;
-  title: string;
-  author: string;
-  permlink: string;
-  image?: string;
-  created: string;
-  description?: string;
-  link?: string;
-  longitude: number;
-  lattitude: number;
-}
+const POSTS_PER_PAGE = 12;
 
 export function UserPosts({ username }: UserPostsProps) {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<ProcessedPost[]>([]);
+  const [allBasicPosts, setAllBasicPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // Load initial posts with progressive rendering for faster perceived performance
   useEffect(() => {
-    const loadPosts = async () => {
+    async function loadInitialPosts() {
       try {
         setLoading(true);
         setError(null);
-        const fetchedPosts = await fetchUserPostsWithCoords(username);
-        setPosts(fetchedPosts);
+        
+        // First, get basic post data (fast - just coordinates and basic info)
+        const basicPosts = await fetchUserPostsWithCoords(username);
+        setAllBasicPosts(basicPosts);
+        
+        if (basicPosts.length === 0) {
+          setLoading(false);
+          return;
+        }
+        
+        // Convert to CuratedPost format for fetchPosts
+        const curatedPosts: CuratedPost[] = basicPosts
+          .filter((post: any) => post.author && post.permlink)
+          .map((post: any) => ({
+            url: post.link || `https://peakd.com/@${post.author}/${post.permlink}`,
+            source: 'peakd',
+            author: post.author,
+            permlink: post.permlink
+          }));
+        
+        if (curatedPosts.length === 0) {
+          setError('No posts with valid author/permlink found');
+          setLoading(false);
+          return;
+        }
+        
+        const firstBatch = curatedPosts.slice(0, POSTS_PER_PAGE);
+        
+        // Prioritize first 6 posts for immediate display
+        const priorityPosts = firstBatch.slice(0, 6);
+        const remainingPosts = firstBatch.slice(6);
+        
+        // Fetch priority posts first with higher concurrency
+        const initialPosts = await fetchPosts(priorityPosts, 10);
+        // Deduplicate posts by slug to prevent duplicate keys
+        const uniqueInitialPosts = Array.from(
+          new Map(initialPosts.map(post => [post.slug, post])).values()
+        );
+        setPosts(uniqueInitialPosts);
+        setLoading(false);
+        
+        // Progressive loading for remaining posts
+        if (remainingPosts.length > 0) {
+          await fetchPostsProgressive(
+            remainingPosts,
+            (newPosts) => {
+              setPosts(prev => {
+                // Deduplicate posts by slug to prevent duplicate keys
+                const existingSlugs = new Set(prev.map(p => p.slug));
+                const uniqueNewPosts = newPosts.filter(p => !existingSlugs.has(p.slug));
+                return [...prev, ...uniqueNewPosts];
+              });
+            },
+            10
+          );
+        }
       } catch (err) {
         console.error('Error loading posts:', err);
-        setError('Failed to load posts');
-      } finally {
+        setError('Failed to load posts. Please try again later.');
         setLoading(false);
       }
-    };
+    }
 
     if (username) {
-      loadPosts();
+      loadInitialPosts();
     }
   }, [username]);
+  
+  // Load more posts with progressive rendering
+  const loadMorePosts = async () => {
+    if (loadingMore) return;
+    
+    try {
+      setLoadingMore(true);
+      const nextPage = currentPage + 1;
+      const startIndex = currentPage * POSTS_PER_PAGE;
+      const endIndex = startIndex + POSTS_PER_PAGE;
+      
+      // Convert remaining basic posts to CuratedPost format
+      const remainingBasicPosts = allBasicPosts.slice(startIndex);
+      const curatedPosts: CuratedPost[] = remainingBasicPosts
+        .filter((post: any) => post.author && post.permlink)
+        .map((post: any) => ({
+          url: post.link || `https://peakd.com/@${post.author}/${post.permlink}`,
+          source: 'peakd',
+          author: post.author,
+          permlink: post.permlink
+        }));
+      
+      const nextBatch = curatedPosts.slice(0, POSTS_PER_PAGE);
+      
+      if (nextBatch.length === 0) {
+        setLoadingMore(false);
+        return;
+      }
+      
+      // Progressive loading for "Load More"
+      await fetchPostsProgressive(
+        nextBatch,
+        (newPosts) => {
+          setPosts(prevPosts => {
+            // Deduplicate posts by slug to prevent duplicate keys
+            const existingSlugs = new Set(prevPosts.map(p => p.slug));
+            const uniqueNewPosts = newPosts.filter(p => !existingSlugs.has(p.slug));
+            return [...prevPosts, ...uniqueNewPosts];
+          });
+        },
+        10
+      );
+      
+      setCurrentPage(nextPage);
+      setLoadingMore(false);
+    } catch (err) {
+      console.error('Error loading more posts:', err);
+      setLoadingMore(false);
+    }
+  };
+  
+  // Cache warming - Prefetch next batch in background
+  useEffect(() => {
+    if (!loading && posts.length > 0 && posts.length >= POSTS_PER_PAGE) {
+      // Wait 2 seconds after initial load, then prefetch next batch
+      const timer = setTimeout(() => {
+        const nextStartIndex = currentPage * POSTS_PER_PAGE;
+        const nextEndIndex = nextStartIndex + POSTS_PER_PAGE;
+        const remainingBasicPosts = allBasicPosts.slice(nextStartIndex, nextEndIndex);
+        
+        const curatedPosts: CuratedPost[] = remainingBasicPosts
+          .filter((post: any) => post.author && post.permlink)
+          .map((post: any) => ({
+            url: post.link || `https://peakd.com/@${post.author}/${post.permlink}`,
+            source: 'peakd',
+            author: post.author,
+            permlink: post.permlink
+          }));
+        
+        if (curatedPosts.length > 0) {
+          // Silently prefetch in background (lower priority - 3 concurrent)
+          fetchPosts(curatedPosts, 3).catch(() => {
+            // Fail silently - this is just cache warming
+          });
+        }
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [loading, posts.length, currentPage, allBasicPosts]);
+  
+  const hasMorePosts = posts.length < allBasicPosts.length;
 
   if (loading) {
     return (
-      <section className="py-12 bg-white">
+      <section className="py-8 sm:py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              Travel Posts
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Discover all the amazing places @{username} has shared
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+          </div>
+          
+          {/* Loading Skeletons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-8">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                <div className="h-48 bg-gray-300"></div>
+                <div className="p-4">
+                  <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
+                  <div className="flex gap-2 mb-4">
+                    <div className="h-6 bg-gray-300 rounded w-16"></div>
+                    <div className="h-6 bg-gray-300 rounded w-16"></div>
+                  </div>
+                  <div className="h-8 bg-gray-300 rounded"></div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -59,9 +218,14 @@ export function UserPosts({ username }: UserPostsProps) {
 
   if (error) {
     return (
-      <section className="py-12 bg-white">
+      <section className="py-8 sm:py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-red-600">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              Travel Posts
+            </h2>
+          </div>
+          <div className="text-center text-red-600 bg-red-50 p-6 rounded-lg">
             <p>{error}</p>
           </div>
         </div>
@@ -69,14 +233,22 @@ export function UserPosts({ username }: UserPostsProps) {
     );
   }
 
-  if (posts.length === 0) {
+  if (posts.length === 0 && !loading) {
     return (
-      <section className="py-12 bg-white">
+      <section className="py-8 sm:py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Travel Posts
             </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Discover all the amazing places @{username} has shared
+            </p>
+          </div>
+          <div className="text-center py-12">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              No Posts Found
+            </h3>
             <p className="text-gray-600">
               @{username} hasn't shared any travel posts yet.
             </p>
@@ -85,23 +257,6 @@ export function UserPosts({ username }: UserPostsProps) {
       </section>
     );
   }
-
-  // Helper function to format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  // Helper function to truncate description
-  const truncateDescription = (text: string, maxLength: number = 200) => {
-    if (!text) return '';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
 
   return (
     <section className="py-8 sm:py-12 bg-gray-50">
@@ -114,156 +269,64 @@ export function UserPosts({ username }: UserPostsProps) {
           <p className="text-sm sm:text-base text-gray-600">
             Discover all the amazing places @{username} has shared
           </p>
+          <p className="text-xs text-gray-500 mt-1">
+            Showing {posts.length} of {allBasicPosts.length} {allBasicPosts.length === 1 ? 'post' : 'posts'}
+          </p>
         </div>
 
         {/* Posts Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {posts.map((post) => (
-            <article
-              key={post.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
-            >
-              {/* Post Image */}
-              <div className="relative h-48 sm:h-56 bg-gray-200">
-                {post.image ? (
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/images/worldmappin-logo.png';
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-100">
-                    <svg
-                      className="w-16 h-16 text-amber-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  </div>
-                )}
-                
-                {/* Pin Icon Overlay */}
-                <div className="absolute top-3 right-3 bg-amber-500 text-white p-2 rounded-full shadow-lg">
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Post Content */}
-              <div className="p-4 sm:p-5">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-amber-600 transition-colors">
-                  <a
-                    href={post.link || `https://peakd.com/@${post.author}/${post.permlink}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {post.title}
-                  </a>
-                </h3>
-                
-                {post.description && (
-                  <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2 sm:line-clamp-3">
-                    {truncateDescription(post.description)}
-                  </p>
-                )}
-
-                {/* Post Meta */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100 gap-2">
-                  <div className="flex items-center space-x-1 text-xs sm:text-sm text-gray-500">
-                    <svg
-                      className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <span className="truncate">{formatDate(post.created)}</span>
-                  </div>
-                  
-                  <a
-                    href={post.link || `https://peakd.com/@${post.author}/${post.permlink}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-amber-600 hover:text-amber-700 font-medium text-xs sm:text-sm flex items-center space-x-1 flex-shrink-0"
-                  >
-                    <span>Read</span>
-                    <svg
-                      className="w-3 h-3 sm:w-4 sm:h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* View All Posts Link */}
-        {posts.length > 9 && (
-          <div className="mt-6 sm:mt-8 text-center">
-            <a
-              href={`https://peakd.com/@${username}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-5 sm:px-6 py-2.5 sm:py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium text-sm sm:text-base"
-            >
-              View All Posts on Hive
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5 ml-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-            </a>
+        {posts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No posts available</p>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {posts.map((post) => (
+                <Link key={post.slug} href={`/read/${post.slug}`}>
+                  <PostCard
+                    coverImage={post.coverImage}
+                    title={post.title}
+                    username={post.author}
+                    reputation={post.reputation}
+                    tags={post.tags}
+                    votes={post.votes}
+                    comments={post.comments}
+                    payout={post.payout}
+                    date={post.created}
+                  />
+                </Link>
+              ))}
+            </div>
+            
+            {/* Load More Button */}
+            {hasMorePosts && (
+              <div className="mt-8 sm:mt-12 text-center">
+                <button
+                  onClick={loadMorePosts}
+                  disabled={loadingMore}
+                  className="inline-flex items-center gap-3 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-amber-500/50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {loadingMore ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Loading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Load More Posts</span>
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+                <p className="text-sm text-gray-500 mt-3">
+                  {allBasicPosts.length - posts.length} more {allBasicPosts.length - posts.length === 1 ? 'post' : 'posts'} to explore
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

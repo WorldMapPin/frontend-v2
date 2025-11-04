@@ -138,6 +138,12 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
       coverImage = originalImage ? optimizeImageUrl(originalImage, 'thumb') : null;
     }
     
+    // Calculate payout: use pending_payout_value first, fallback to total_payout_value if pending is 0
+    const pendingPayout = parseFloat(post.pending_payout_value || '0');
+    const payoutValue = pendingPayout > 0 
+      ? post.pending_payout_value 
+      : (post.total_payout_value || post.pending_payout_value || '0');
+    
     // Process the post
     const processedPost: ProcessedPost = {
       title: post.title || 'Untitled',
@@ -147,7 +153,7 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
       createdRelative: formatRelativeTime(post.created),
       coverImage: coverImage,
       tags: metadata.tags || [],
-      payout: formatPayout(post.pending_payout_value),
+      payout: formatPayout(payoutValue),
       votes: post.net_votes,
       comments: post.children,
       reputation: formatReputation(post.author_reputation),
@@ -200,6 +206,40 @@ export async function fetchPosts(
       if (result) {
         results.push(result);
       }
+    }
+  }
+  
+  return results;
+}
+
+/**
+ * Fetch multiple posts with progressive rendering (shows posts as they arrive)
+ * This provides much faster perceived performance by streaming results
+ */
+export async function fetchPostsProgressive(
+  curatedPosts: CuratedPost[],
+  onBatchComplete: (newPosts: ProcessedPost[]) => void,
+  concurrency: number = 10
+): Promise<ProcessedPost[]> {
+  const results: ProcessedPost[] = [];
+  const queue = [...curatedPosts];
+  
+  // Process posts in batches with concurrency limit
+  while (queue.length > 0) {
+    const batch = queue.splice(0, concurrency);
+    const batchPromises = batch.map(curatedPost => 
+      fetchSinglePost(curatedPost.author, curatedPost.permlink)
+    );
+    
+    const batchResults = await Promise.all(batchPromises);
+    
+    // Filter out null results (failed fetches)
+    const validResults = batchResults.filter(r => r !== null) as ProcessedPost[];
+    
+    if (validResults.length > 0) {
+      results.push(...validResults);
+      // Immediately notify caller so UI can update
+      onBatchComplete(validResults);
     }
   }
   

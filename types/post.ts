@@ -23,6 +23,7 @@ export interface HivePostRaw {
     body: string;
     json_metadata: string;
     pending_payout_value: string;
+    total_payout_value?: string;
     net_votes: number;
     children: number;
     author_reputation: number;

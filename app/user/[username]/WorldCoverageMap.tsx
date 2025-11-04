@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
 import { fetchUserPins, ApiPinData } from '../../../lib/worldmappinApi';
 
-// Country reverse geocoding import
-const countryReverseGeocoding = require('country-reverse-geocoding').country_reverse_geocoding();
+// Country reverse geocoding import - using @rapideditor/country-coder
+const countryCoder = require('@rapideditor/country-coder');
 
 interface WorldCoverageMapProps {
   coveragePercentage: number;
@@ -18,18 +18,164 @@ const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
 // Total number of countries in the world (UN recognized)
 const TOTAL_COUNTRIES = 195;
 
-// Helper function to get country from coordinates using reverse geocoding
-function getCountryFromCoordinates(lat: number, lng: number): string | null {
+// Normalize country names to match GeoJSON map data
+// Removes common suffixes and variations
+function normalizeCountryName(name: string): string {
+  if (!name) return name;
+  
+  // Common name variations to normalize
+  const normalizations: { [key: string]: string } = {
+    'United States of America': 'United States',
+    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    'Russian Federation': 'Russia',
+    'Republic of Korea': 'South Korea',
+    "Democratic People's Republic of Korea": 'North Korea',
+    'Islamic Republic of Iran': 'Iran',
+    'Syrian Arab Republic': 'Syria',
+    'Lao People\'s Democratic Republic': 'Laos',
+    'Myanmar': 'Myanmar',
+    'The Bahamas': 'Bahamas',
+    'The Gambia': 'Gambia',
+    'Republic of the Congo': 'Congo',
+    'Democratic Republic of the Congo': 'Congo, Democratic Republic of the',
+    'Republic of Moldova': 'Moldova',
+    'Republic of the Philippines': 'Philippines',
+    'United Republic of Tanzania': 'Tanzania',
+    'Bolivarian Republic of Venezuela': 'Venezuela',
+  };
+  
+  // Check if we have a direct mapping
+  if (normalizations[name]) {
+    return normalizations[name];
+  }
+  
+  // Remove common prefixes/suffixes
+  let normalized = name
+    .replace(/^Republic of /i, '')
+    .replace(/^Kingdom of /i, '')
+    .replace(/^State of /i, '')
+    .replace(/^The /i, '')
+    .replace(/ of America$/, '')
+    .replace(/ of Great Britain and Northern Ireland$/, '')
+    .trim();
+  
+  return normalized;
+}
+
+// Helper function to get country name and ISO code from coordinates using country-coder
+function getCountryFromCoordinates(lat: number, lng: number): { name: string; isoCode: string | null } | null {
   try {
-    const result = countryReverseGeocoding.get_country(lat, lng);
-    if (result && result.name) {
-      return result.name;
+    // Validate coordinates
+    if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+      return null;
     }
+    
+    // country-coder expects [longitude, latitude] format
+    const coordinates: [number, number] = [lng, lat];
+    
+    // Get country feature (includes country name and properties)
+    const feature = countryCoder.feature(coordinates);
+    
+    if (feature && feature.properties) {
+      const nameEn = feature.properties.nameEn;
+      if (nameEn) {
+        return {
+          name: normalizeCountryName(nameEn), // Normalized name for map matching
+          isoCode: feature.properties.iso1A2 || null // ISO code as backup
+        };
+      }
+    }
+    
     return null;
   } catch (error) {
     console.error('Error reverse geocoding:', error);
     return null;
   }
+}
+
+// Helper function to check if a country name matches any visited country
+// Uses flexible matching to handle name variations
+function isCountryVisited(
+  mapCountryName: string, 
+  visitedCountries: Set<string>
+): boolean {
+  if (!mapCountryName) return false;
+  
+  // Direct match
+  if (visitedCountries.has(mapCountryName)) {
+    return true;
+  }
+  
+  // Normalize the map country name and check again
+  const normalized = normalizeCountryName(mapCountryName);
+  if (visitedCountries.has(normalized)) {
+    return true;
+  }
+  
+  // Case-insensitive match
+  const lowerMapName = mapCountryName.toLowerCase().trim();
+  for (const visited of visitedCountries) {
+    if (visited.toLowerCase().trim() === lowerMapName) {
+      return true;
+    }
+    if (normalizeCountryName(visited).toLowerCase().trim() === lowerMapName) {
+      return true;
+    }
+  }
+  
+  // Partial match for cases like "United States" vs "United States of America"
+  const mapWords = lowerMapName.split(/\s+/);
+  for (const visited of visitedCountries) {
+    const visitedLower = visited.toLowerCase().trim();
+    const visitedWords = visitedLower.split(/\s+/);
+    
+    // Check if all significant words match
+    if (mapWords.length >= 2 && visitedWords.length >= 2) {
+      const significantWords = mapWords.filter(w => w.length > 2 && !['the', 'of', 'and', 'republic'].includes(w));
+      const visitedSignificant = visitedWords.filter(w => w.length > 2 && !['the', 'of', 'and', 'republic'].includes(w));
+      
+      if (significantWords.length > 0 && visitedSignificant.length > 0) {
+        const matchCount = significantWords.filter(word => 
+          visitedSignificant.some(vw => vw.includes(word) || word.includes(vw))
+        ).length;
+        
+        if (matchCount >= Math.min(significantWords.length, visitedSignificant.length) * 0.7) {
+          return true;
+        }
+      }
+    }
+  }
+  
+  return false;
+}
+
+// Helper function to get pin count for a country name (with flexible matching)
+function getCountryPinCount(
+  mapCountryName: string,
+  countryCounts: { [key: string]: number },
+  visitedCountries: Set<string>
+): number {
+  if (!mapCountryName) return 0;
+  
+  // Direct match
+  if (countryCounts[mapCountryName] !== undefined) {
+    return countryCounts[mapCountryName];
+  }
+  
+  // Try normalized name
+  const normalized = normalizeCountryName(mapCountryName);
+  if (countryCounts[normalized] !== undefined) {
+    return countryCounts[normalized];
+  }
+  
+  // Find matching visited country
+  for (const [country, count] of Object.entries(countryCounts)) {
+    if (isCountryVisited(country, new Set([mapCountryName]))) {
+      return count;
+    }
+  }
+  
+  return 0;
 }
 
 // World Map Visualization Component
@@ -63,8 +209,8 @@ function WorldMapVisualization({
               {({ geographies }: { geographies: any[] }) =>
                 geographies.map((geo: any) => {
                   const countryName = geo.properties.name;
-                  const isVisited = visitedCountries.has(countryName);
-                  const pinCount = countryPinCounts[countryName] || 0;
+                  const isVisited = isCountryVisited(countryName, visitedCountries);
+                  const pinCount = getCountryPinCount(countryName, countryPinCounts, visitedCountries);
                   
                   return (
                     <Geography
@@ -162,15 +308,27 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
     const visitedSet = new Set<string>();
     const countryCounts: { [key: string]: number } = {};
     const countryList: Array<{ name: string; pinCount: number }> = [];
+    // Store all possible name variations for better matching
+    const nameVariations = new Map<string, Set<string>>(); // original name -> all variations
 
     userPins.forEach(pin => {
       const lat = pin.json_metadata?.location?.latitude || pin.lattitude;
       const lng = pin.json_metadata?.location?.longitude || pin.longitude;
       
-      const country = getCountryFromCoordinates(lat, lng);
-      if (country) {
-        visitedSet.add(country);
-        countryCounts[country] = (countryCounts[country] || 0) + 1;
+      const countryData = getCountryFromCoordinates(lat, lng);
+      if (countryData && countryData.name) {
+        const normalizedName = countryData.name;
+        visitedSet.add(normalizedName);
+        countryCounts[normalizedName] = (countryCounts[normalizedName] || 0) + 1;
+        
+        // Store variations for flexible matching
+        if (!nameVariations.has(normalizedName)) {
+          nameVariations.set(normalizedName, new Set());
+        }
+        nameVariations.get(normalizedName)!.add(normalizedName);
+        if (countryData.isoCode) {
+          nameVariations.get(normalizedName)!.add(countryData.isoCode);
+        }
       }
     });
 
@@ -189,7 +347,8 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
       visitedCountries: visitedSet, 
       countryCounts, 
       countryList,
-      totalVisited: visitedSet.size 
+      totalVisited: visitedSet.size,
+      nameVariations // For flexible matching with map
     };
   }, [userPins]);
 
@@ -269,7 +428,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
                   {({ geographies }: { geographies: any[] }) =>
                     geographies.map((geo: any) => {
                       const countryName = geo.properties.name;
-                      const isVisited = countryData.visitedCountries.has(countryName);
+                      const isVisited = isCountryVisited(countryName, countryData.visitedCountries);
                       
                       return (
                         <Geography

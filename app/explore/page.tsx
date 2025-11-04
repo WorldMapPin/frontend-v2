@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ProcessedPost, CuratedPost } from '@/types/post';
-import { loadCuratedPosts, fetchPosts } from '@/utils/hivePosts';
+import { loadCuratedPosts, fetchPosts, fetchPostsProgressive } from '@/utils/hivePosts';
 import ExploreCard from '@/components/explore/ExploreCard';
 
 const POSTS_PER_PAGE = 12;
@@ -15,14 +15,14 @@ export default function ExplorePage() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Load initial posts
+  // Load initial posts with progressive rendering for faster perceived performance
   useEffect(() => {
     async function loadInitialPosts() {
       try {
         setLoading(true);
         setError(null);
         
-        // Load curated posts list
+        // Load curated posts list (fast - just JSON)
         const curatedPosts = await loadCuratedPosts();
         setAllCuratedPosts(curatedPosts);
         
@@ -32,11 +32,27 @@ export default function ExplorePage() {
           return;
         }
         
-        // Fetch first 30 posts from Hive with batching
         const firstBatch = curatedPosts.slice(0, POSTS_PER_PAGE);
-        const fetchedPosts = await fetchPosts(firstBatch, 6);
-        setPosts(fetchedPosts);
+        
+        // Prioritize first 6 posts for immediate display
+        const priorityPosts = firstBatch.slice(0, 6);
+        const remainingPosts = firstBatch.slice(6);
+        
+        // Fetch priority posts first with higher concurrency
+        const initialPosts = await fetchPosts(priorityPosts, 10);
+        setPosts(initialPosts);
         setLoading(false);
+        
+        // Progressive loading for remaining posts
+        if (remainingPosts.length > 0) {
+          await fetchPostsProgressive(
+            remainingPosts,
+            (newPosts) => {
+              setPosts(prev => [...prev, ...newPosts]);
+            },
+            10
+          );
+        }
       } catch (err) {
         console.error('Error loading posts:', err);
         setError('Failed to load posts. Please try again later.');
@@ -47,7 +63,7 @@ export default function ExplorePage() {
     loadInitialPosts();
   }, []);
 
-  // Load more posts
+  // Load more posts with progressive rendering
   const loadMorePosts = async () => {
     if (loadingMore) return;
     
@@ -64,8 +80,15 @@ export default function ExplorePage() {
         return;
       }
       
-      const fetchedPosts = await fetchPosts(nextBatch, 6);
-      setPosts(prevPosts => [...prevPosts, ...fetchedPosts]);
+      // Progressive loading for "Load More"
+      await fetchPostsProgressive(
+        nextBatch,
+        (newPosts) => {
+          setPosts(prevPosts => [...prevPosts, ...newPosts]);
+        },
+        10
+      );
+      
       setCurrentPage(nextPage);
       setLoadingMore(false);
     } catch (err) {
@@ -73,6 +96,27 @@ export default function ExplorePage() {
       setLoadingMore(false);
     }
   };
+  
+  // Cache warming - Prefetch next batch in background
+  useEffect(() => {
+    if (!loading && posts.length > 0 && posts.length >= POSTS_PER_PAGE) {
+      // Wait 2 seconds after initial load, then prefetch next batch
+      const timer = setTimeout(() => {
+        const nextStartIndex = currentPage * POSTS_PER_PAGE;
+        const nextEndIndex = nextStartIndex + POSTS_PER_PAGE;
+        const nextBatch = allCuratedPosts.slice(nextStartIndex, nextEndIndex);
+        
+        if (nextBatch.length > 0) {
+          // Silently prefetch in background (lower priority - 3 concurrent)
+          fetchPosts(nextBatch, 3).catch(() => {
+            // Fail silently - this is just cache warming
+          });
+        }
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [loading, posts.length, currentPage, allCuratedPosts]);
 
   const hasMorePosts = posts.length < allCuratedPosts.length;
 
