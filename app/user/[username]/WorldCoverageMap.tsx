@@ -30,6 +30,7 @@ function normalizeCountryName(name: string): string {
     'Russian Federation': 'Russia',
     'Republic of Korea': 'South Korea',
     "Democratic People's Republic of Korea": 'North Korea',
+    "People's Republic of China": 'China',
     'Islamic Republic of Iran': 'Iran',
     'Syrian Arab Republic': 'Syria',
     'Lao People\'s Democratic Republic': 'Laos',

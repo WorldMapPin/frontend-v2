@@ -7,6 +7,8 @@ import axios from 'axios';
 // Global functions will be available on window object
 import { Feature, Point } from 'geojson';
 import PostCardShared from '@/components/shared/PostCard';
+import { fetchPosts, fetchPostsProgressive } from '@/utils/hivePosts';
+import { CuratedPost, ProcessedPost } from '@/types/post';
 
 // Post data structure from API
 interface PostData {
@@ -100,12 +102,18 @@ const handleViewOnMap = (post: PostData) => {
  * @param features - Array of GeoJSON features representing selected markers
  * @param showRank - Whether to show the count of loaded pins
  */
+// Extended ProcessedPost with coordinates
+interface ProcessedPostWithCoords extends ProcessedPost {
+  position: { lat: number; lng: number };
+}
+
 export const InfoWindowContent = memo(({ features, showRank = true }: InfoWindowContentProps) => {
-  const [selectedFeatures, setSelectedFeatures] = useState<PostData[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<ProcessedPostWithCoords[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // OPTIMIZED: Batch fetch all posts in a single API call
+  // Fetch posts with full Hive data (like UserPosts.tsx)
   const fetchFeatures = async () => {
     if (features.length === 0) {
       setLoading(false);
@@ -114,9 +122,9 @@ export const InfoWindowContent = memo(({ features, showRank = true }: InfoWindow
 
     try {
       setLoading(true);
+      setLoadingProgress(0);
       
-      // FIXED: API pre-sorts results, so we can't use batch requests
-      // Reverting to individual requests to ensure correct coordinate matching
+      // Step 1: Fetch basic post data from WorldMappin API to get author/permlink
       const postsWithCoordinates = await Promise.all(
         features.map(async (feature) => {
           try {
@@ -143,10 +151,70 @@ export const InfoWindowContent = memo(({ features, showRank = true }: InfoWindow
         })
       );
 
-      // Filter out null results and sort by date
       const validPosts = postsWithCoordinates.filter(post => post !== null);
-      const sortedPosts = validPosts.sort((a: any, b: any) => {
-        return new Date(b.postDate).getTime() - new Date(a.postDate).getTime();
+      
+      if (validPosts.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Convert to CuratedPost format for Hive fetching
+      const curatedPosts: CuratedPost[] = validPosts
+        .filter((post: any) => post.username && post.postLink)
+        .map((post: any) => {
+          // Extract author and permlink from postLink (e.g., https://peakd.com/@author/permlink)
+          const urlParts = post.postLink.split('/');
+          const author = post.username;
+          const permlink = urlParts[urlParts.length - 1] || '';
+          
+          return {
+            url: post.postLink,
+            source: 'peakd',
+            author: author.replace('@', ''),
+            permlink: permlink
+          };
+        });
+
+      if (curatedPosts.length === 0) {
+        setError('No valid posts found');
+        setLoading(false);
+        return;
+      }
+
+      // Step 3: Create a map of author/permlink to coordinates
+      const coordsMap = new Map<string, { lat: number; lng: number }>();
+      validPosts.forEach((post: any, index: number) => {
+        const author = curatedPosts[index]?.author;
+        const permlink = curatedPosts[index]?.permlink;
+        if (author && permlink) {
+          coordsMap.set(`${author}/${permlink}`, post.position);
+        }
+      });
+
+      // Step 4: Fetch full post data from Hive progressively (like UserPosts.tsx)
+      const allPosts: ProcessedPostWithCoords[] = [];
+      
+      await fetchPostsProgressive(
+        curatedPosts,
+        (newPosts) => {
+          // Add coordinates to each post
+          const postsWithCoords = newPosts.map(post => {
+            const coords = coordsMap.get(`${post.author}/${post.permlink}`) || { lat: 0, lng: 0 };
+            return {
+              ...post,
+              position: coords
+            };
+          });
+          allPosts.push(...postsWithCoords);
+          setSelectedFeatures([...allPosts]);
+          setLoadingProgress(Math.round((allPosts.length / curatedPosts.length) * 100));
+        },
+        10 // Concurrency
+      );
+
+      // Sort by date (newest first)
+      const sortedPosts = allPosts.sort((a, b) => {
+        return new Date(b.created).getTime() - new Date(a.created).getTime();
       });
 
       setSelectedFeatures(sortedPosts);
@@ -173,7 +241,18 @@ export const InfoWindowContent = memo(({ features, showRank = true }: InfoWindow
       <div className="flex items-center justify-center py-8">
         <div className="text-center space-y-3">
           <div className="w-8 h-8 border-3 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-600 text-sm">Loading posts...</p>
+          <p className="text-gray-600 text-sm">Loading posts from Hive...</p>
+          {loadingProgress > 0 && (
+            <div className="w-full max-w-xs mx-auto">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 transition-all duration-300"
+                  style={{ width: `${loadingProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{loadingProgress}%</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -212,33 +291,38 @@ export const InfoWindowContent = memo(({ features, showRank = true }: InfoWindow
         {/* Posts List - Grid layout exactly like explore page */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {selectedFeatures.map((post) => {
-            // Get cover image URL - handle API image link format
-            // Using smaller thumbnail size (150x0) for faster loading - Ecency auto-optimizes
-            const getImageUrl = () => {
-              if (!post.postImageLink || post.postImageLink === "No image") {
-                return null;
-              }
-              // Use webp format with smaller size for faster loading
-              return `https://images.ecency.com/150x0/${post.postImageLink}`;
+            // Create position object for handleViewOnMap
+            const postData: PostData = {
+              id: 0, // Not available from Hive data
+              postLink: post.canonicalUrl || `https://peakd.com/${post.slug}`,
+              postImageLink: post.coverImage || '',
+              postTitle: post.title,
+              postDescription: '', // Not available in ProcessedPost
+              username: post.author,
+              postDate: post.created,
+              position: post.position,
+              votes: post.votes,
+              comments: post.comments,
+              payout: post.payout,
+              tags: post.tags
             };
-
-            const imageUrl = getImageUrl();
             
             return (
               <PostCardShared
-                key={post.postLink}
-                coverImage={imageUrl}
-                title={post.postTitle}
-                username={post.username}
+                key={post.slug}
+                coverImage={post.coverImage}
+                title={post.title}
+                username={post.author}
+                reputation={post.reputation}
                 tags={post.tags}
                 votes={post.votes}
                 comments={post.comments}
                 payout={post.payout}
-                date={post.postDate}
-                onClick={() => window.open(post.postLink, '_blank')}
+                date={post.created}
+                onClick={() => window.location.href = `/read/${post.slug}`}
                 showViewOnMap={true}
-                onViewOnMap={() => handleViewOnMap(post)}
-                postLink={post.postLink}
+                onViewOnMap={() => handleViewOnMap(postData)}
+                postLink={`/read/${post.slug}`}
                 position={post.position}
               />
             );
