@@ -39,10 +39,16 @@ function normalizeCountryName(name: string): string {
     'The Gambia': 'Gambia',
     'Republic of the Congo': 'Congo',
     'Democratic Republic of the Congo': 'Congo, Democratic Republic of the',
+    'Dem. Rep. Congo': 'Congo, Democratic Republic of the',
+    'Dem Rep Congo': 'Congo, Democratic Republic of the',
+    'DR Congo': 'Congo, Democratic Republic of the',
+    'D.R. Congo': 'Congo, Democratic Republic of the',
     'Republic of Moldova': 'Moldova',
     'Republic of the Philippines': 'Philippines',
     'United Republic of Tanzania': 'Tanzania',
     'Bolivarian Republic of Venezuela': 'Venezuela',
+    'Kalaallit Nunaat': 'Greenland',
+    'Grønland': 'Greenland',
   };
   
   // Check if we have a direct mapping
@@ -71,22 +77,149 @@ function getCountryFromCoordinates(lat: number, lng: number): { name: string; is
       return null;
     }
     
+    // Direct check for Greenland coordinates (approximate bounds)
+    // Greenland is roughly between 59.5°N to 83.5°N and 73°W to 12°W
+    // But we need to exclude Iceland which is at 63-66°N and 13-24°W
+    const isInGreenlandBounds = lat >= 59.5 && lat <= 83.5 && lng >= -73 && lng <= 12;
+    const isInIcelandBounds = lat >= 63 && lat <= 66.5 && lng >= -24 && lng <= -13;
+    
+    if (isInGreenlandBounds && !isInIcelandBounds) {
+      console.log('🟢 Greenland coordinates detected directly:', { lat, lng });
+      return {
+        name: 'Greenland',
+        isoCode: 'GL'
+      };
+    }
+    
     // country-coder expects [longitude, latitude] format
     const coordinates: [number, number] = [lng, lat];
     
     // Get country feature (includes country name and properties)
     const feature = countryCoder.feature(coordinates);
     
+    // Log ALL properties for debugging
     if (feature && feature.properties) {
-      const nameEn = feature.properties.nameEn;
-      if (nameEn) {
-        return {
-          name: normalizeCountryName(nameEn), // Normalized name for map matching
-          isoCode: feature.properties.iso1A2 || null // ISO code as backup
-        };
-      }
+      console.log('🔍 Country-coder returned:', {
+        lat,
+        lng,
+        allProperties: feature.properties,
+        keys: Object.keys(feature.properties)
+      });
     }
     
+    // Debug: Log what country-coder returns
+    if (!feature) {
+      console.warn('⚠️ No feature found for coordinates:', { lat, lng });
+      return null;
+    }
+    
+    if (!feature.properties) {
+      console.warn('⚠️ Feature has no properties for coordinates:', { lat, lng, feature });
+      return null;
+    }
+    
+    // Check all possible property names
+    const nameEn = feature.properties.nameEn || feature.properties.name_en || feature.properties.NAME_EN;
+    const iso1A2 = feature.properties.iso1A2 || feature.properties.iso_1A2 || feature.properties.ISO1_A2 || feature.properties.iso1a2;
+    const name = feature.properties.name || feature.properties.NAME;
+    const iso31661 = feature.properties['ISO3166-1'] || feature.properties['iso3166-1'];
+    
+    // Check if any property contains Greenland-related terms
+    const allValues = Object.values(feature.properties).map(v => String(v).toLowerCase()).join(' ');
+    const isGreenland = iso1A2 === 'GL' || 
+                        allValues.includes('greenland') || 
+                        allValues.includes('kalaallit') || 
+                        allValues.includes('grønland') ||
+                        iso31661 === 'GL' ||
+                        iso31661 === 'GL';
+    
+    if (isGreenland) {
+      console.log('🟢 Greenland detected in properties:', { 
+        nameEn, 
+        name, 
+        iso1A2, 
+        iso31661,
+        lat, 
+        lng, 
+        allProps: feature.properties,
+        allValues
+      });
+    }
+    
+    // Special handling for Greenland (ISO code GL)
+    // Check all possible ISO code formats
+    if (iso1A2 === 'GL' || iso31661 === 'GL') {
+      console.log('✅ Greenland found by ISO code GL');
+      return {
+        name: 'Greenland',
+        isoCode: 'GL'
+      };
+    }
+    
+    // Check if any property value contains Greenland
+    if (isGreenland) {
+      console.log('✅ Greenland found by property value check');
+      return {
+        name: 'Greenland',
+        isoCode: 'GL'
+      };
+    }
+    
+    // Check nameEn first
+    if (nameEn) {
+      // Check if it's Greenland by name variations
+      const lowerName = nameEn.toLowerCase();
+      if (lowerName.includes('greenland') || lowerName.includes('kalaallit') || lowerName.includes('grønland')) {
+        console.log('✅ Greenland found by nameEn variation:', nameEn);
+        return {
+          name: 'Greenland',
+          isoCode: iso1A2 || 'GL'
+        };
+      }
+      
+      const normalized = normalizeCountryName(nameEn);
+      // Double-check if normalized name is Greenland
+      if (normalized.toLowerCase().includes('greenland')) {
+        console.log('✅ Greenland found after normalization:', nameEn, '->', normalized);
+        return {
+          name: 'Greenland',
+          isoCode: iso1A2 || 'GL'
+        };
+      }
+      
+      return {
+        name: normalized, // Normalized name for map matching
+        isoCode: iso1A2 || null // ISO code as backup
+      };
+    }
+    
+    // Fallback to 'name' property if nameEn doesn't exist
+    if (name) {
+      const lowerName = name.toLowerCase();
+      if (lowerName.includes('greenland') || lowerName.includes('kalaallit') || lowerName.includes('grønland')) {
+        console.log('✅ Greenland found by name property:', name);
+        return {
+          name: 'Greenland',
+          isoCode: iso1A2 || 'GL'
+        };
+      }
+      
+      const normalized = normalizeCountryName(name);
+      if (normalized.toLowerCase().includes('greenland')) {
+        console.log('✅ Greenland found after normalizing name property:', name, '->', normalized);
+        return {
+          name: 'Greenland',
+          isoCode: iso1A2 || 'GL'
+        };
+      }
+      
+      return {
+        name: normalized,
+        isoCode: iso1A2 || null
+      };
+    }
+    
+    console.warn('⚠️ No name found in feature properties:', { lat, lng, properties: feature.properties });
     return null;
   } catch (error) {
     console.error('Error reverse geocoding:', error);
@@ -121,6 +254,29 @@ function isCountryVisited(
     }
     if (normalizeCountryName(visited).toLowerCase().trim() === lowerMapName) {
       return true;
+    }
+  }
+  
+  // Special handling for Greenland
+  if (lowerMapName.includes('greenland') || lowerMapName.includes('kalaallit') || lowerMapName.includes('grønland')) {
+    for (const visited of visitedCountries) {
+      const visitedLower = visited.toLowerCase();
+      if (visitedLower.includes('greenland') || visitedLower.includes('kalaallit') || visitedLower.includes('grønland')) {
+        return true;
+      }
+    }
+  }
+  
+  // Special handling for Democratic Republic of the Congo
+  const drcVariations = ['dem. rep. congo', 'dem rep congo', 'dr congo', 'd.r. congo', 'democratic republic of the congo', 'congo, democratic republic of the'];
+  const isDRC = drcVariations.some(v => lowerMapName.includes(v) || lowerMapName === v);
+  if (isDRC) {
+    for (const visited of visitedCountries) {
+      const visitedLower = visited.toLowerCase();
+      if (drcVariations.some(v => visitedLower.includes(v) || visitedLower === v) || 
+          visitedLower.includes('congo') && (visitedLower.includes('democratic') || visitedLower.includes('dem'))) {
+        return true;
+      }
     }
   }
   
@@ -169,6 +325,30 @@ function getCountryPinCount(
     return countryCounts[normalized];
   }
   
+  // Special handling for Greenland
+  const lowerMapName = mapCountryName.toLowerCase();
+  if (lowerMapName.includes('greenland') || lowerMapName.includes('kalaallit') || lowerMapName.includes('grønland')) {
+    for (const [country, count] of Object.entries(countryCounts)) {
+      const countryLower = country.toLowerCase();
+      if (countryLower.includes('greenland') || countryLower.includes('kalaallit') || countryLower.includes('grønland')) {
+        return count;
+      }
+    }
+  }
+  
+  // Special handling for Democratic Republic of the Congo
+  const drcVariations = ['dem. rep. congo', 'dem rep congo', 'dr congo', 'd.r. congo', 'democratic republic of the congo', 'congo, democratic republic of the'];
+  const isDRC = drcVariations.some(v => lowerMapName.includes(v) || lowerMapName === v);
+  if (isDRC) {
+    for (const [country, count] of Object.entries(countryCounts)) {
+      const countryLower = country.toLowerCase();
+      if (drcVariations.some(v => countryLower.includes(v) || countryLower === v) || 
+          countryLower.includes('congo') && (countryLower.includes('democratic') || countryLower.includes('dem'))) {
+        return count;
+      }
+    }
+  }
+  
   // Find matching visited country
   for (const [country, count] of Object.entries(countryCounts)) {
     if (isCountryVisited(country, new Set([mapCountryName]))) {
@@ -210,6 +390,12 @@ function WorldMapVisualization({
               {({ geographies }: { geographies: any[] }) =>
                 geographies.map((geo: any) => {
                   const countryName = geo.properties.name;
+                  
+                  // Debug: Log Greenland in map data
+                  if (countryName && (countryName.toLowerCase().includes('greenland') || countryName.toLowerCase().includes('kalaallit') || countryName.toLowerCase().includes('grønland'))) {
+                    console.log('🗺️ Map has Greenland as:', countryName);
+                  }
+                  
                   const isVisited = isCountryVisited(countryName, visitedCountries);
                   const pinCount = getCountryPinCount(countryName, countryPinCounts, visitedCountries);
                   
@@ -319,6 +505,12 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
       const countryData = getCountryFromCoordinates(lat, lng);
       if (countryData && countryData.name) {
         const normalizedName = countryData.name;
+        
+        // Debug: Log when Greenland is found
+        if (normalizedName.toLowerCase().includes('greenland')) {
+          console.log('✅ Greenland added to visited countries:', normalizedName, 'from pin at', lat, lng);
+        }
+        
         visitedSet.add(normalizedName);
         countryCounts[normalizedName] = (countryCounts[normalizedName] || 0) + 1;
         
@@ -332,6 +524,10 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
         }
       }
     });
+    
+    // Debug: Log all visited countries to see if Greenland is there
+    console.log('📊 Visited countries:', Array.from(visitedSet));
+    console.log('📊 Country counts:', countryCounts);
 
     // Create sorted list of visited countries
     Array.from(visitedSet).forEach(country => {
