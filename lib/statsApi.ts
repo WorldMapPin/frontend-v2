@@ -10,6 +10,150 @@ const countryCoder = require('@rapideditor/country-coder');
 // Base API URL
 const BASE_API_URL = 'https://worldmappin.com/api';
 
+function parsePostDate(rawDate?: string): Date | null {
+  if (!rawDate) {
+    return null;
+  }
+
+  const trimmed = rawDate.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  let normalized = trimmed;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    normalized = `${trimmed}T00:00:00Z`;
+  } else if (!trimmed.includes('T') && trimmed.includes(' ')) {
+    normalized = trimmed.replace(' ', 'T');
+  }
+
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) {
+    console.warn('Unable to parse post date from marker/ids payload:', rawDate);
+    return null;
+  }
+
+  return date;
+}
+
+const HIVE_PROGRESS_STORAGE_KEY = 'worldmappin:hive-progress:v1';
+const HIVE_PROGRESS_VERSION = 1;
+
+interface SerializedUserAgg {
+  pinCount: number;
+  totalPayout: number;
+  totalVotes: number;
+  totalComments: number;
+  countries: string[];
+}
+
+interface SerializedHiveProgress {
+  version: number;
+  totalPins: number;
+  processedCount: number;
+  lastIndex: number;
+  totals: {
+    payout: number;
+    votes: number;
+    comments: number;
+  };
+  countryEntries: Array<[string, { count: number; totalPayout: number; totalVotes: number; totalComments: number }]>;
+  userEntries: Array<[string, SerializedUserAgg]>;
+  tagEntries: Array<[string, { count: number; totalPayout: number }]>;
+  dailyEntries: Array<[string, number]>;
+  monthlyEntries: Array<[string, number]>;
+  curatedDailyEntries: Array<[string, number]>;
+  curatedMonthlyEntries: Array<[string, number]>;
+  topPostsByPayout: TopPost[];
+  topPostsByVotes: TopPost[];
+  topPostsByComments: TopPost[];
+  lastPost?: { id: number; author: string; permlink: string };
+}
+
+function isBrowserEnvironment(): boolean {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+}
+
+function loadHiveProgress(totalPins: number): SerializedHiveProgress | null {
+  if (!isBrowserEnvironment()) {
+    return null;
+  }
+
+  try {
+    const stored = window.localStorage.getItem(HIVE_PROGRESS_STORAGE_KEY);
+    if (!stored) {
+      return null;
+    }
+
+    const parsed: SerializedHiveProgress = JSON.parse(stored);
+    if (parsed.version !== HIVE_PROGRESS_VERSION) {
+      window.localStorage.removeItem(HIVE_PROGRESS_STORAGE_KEY);
+      return null;
+    }
+
+    if (parsed.totalPins !== totalPins) {
+      window.localStorage.removeItem(HIVE_PROGRESS_STORAGE_KEY);
+      return null;
+    }
+
+    return parsed;
+  } catch (error) {
+    console.warn('Failed to load Hive progress state:', error);
+    return null;
+  }
+}
+
+function saveHiveProgress(progress: SerializedHiveProgress): void {
+  if (!isBrowserEnvironment()) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(HIVE_PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+  } catch (error) {
+    console.warn('Failed to persist Hive progress state:', error);
+  }
+}
+
+function clearHiveProgress(): void {
+  if (!isBrowserEnvironment()) {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(HIVE_PROGRESS_STORAGE_KEY);
+  } catch (error) {
+    console.warn('Failed to clear Hive progress state:', error);
+  }
+}
+
+function updateTopPosts(list: TopPost[], candidate: TopPost, key: 'payout' | 'votes' | 'comments', limit = 10) {
+  const existingIndex = list.findIndex(
+    item => item.author === candidate.author && item.permlink === candidate.permlink
+  );
+
+  if (existingIndex >= 0) {
+    list[existingIndex] = candidate;
+  } else {
+    list.push(candidate);
+  }
+
+  list.sort((a, b) => {
+    if (key === 'payout') {
+      return b.payout - a.payout;
+    }
+    if (key === 'votes') {
+      return b.votes - a.votes;
+    }
+    return b.comments - a.comments;
+  });
+
+  if (list.length > limit) {
+    list.length = limit;
+  }
+}
+
 // Interfaces for stats data
 export interface TimeSeriesStats {
   date: string;
@@ -70,6 +214,129 @@ export interface PinStats {
   topPostsByPayout: TopPost[];
   topPostsByVotes: TopPost[];
   topPostsByComments: TopPost[];
+}
+
+function buildPinStatsSnapshot(params: {
+  totalPins: number;
+  totalPayout: number;
+  totalVotes: number;
+  totalComments: number;
+  countryMap: Map<string, { count: number; totalPayout: number; totalVotes: number; totalComments: number }>;
+  userMap: Map<string, { pinCount: number; totalPayout: number; countries: Set<string>; totalVotes: number; totalComments: number }>;
+  tagMap: Map<string, { count: number; totalPayout: number }>;
+  dailyMap: Map<string, number>;
+  monthlyMap: Map<string, number>;
+  curatedDailyMap: Map<string, number>;
+  curatedMonthlyMap: Map<string, number>;
+  topPostsByPayout: TopPost[];
+  topPostsByVotes: TopPost[];
+  topPostsByComments: TopPost[];
+}): PinStats {
+  const {
+    totalPins,
+    totalPayout,
+    totalVotes,
+    totalComments,
+    countryMap,
+    userMap,
+    tagMap,
+    dailyMap,
+    monthlyMap,
+    curatedDailyMap,
+    curatedMonthlyMap,
+    topPostsByPayout,
+    topPostsByVotes,
+    topPostsByComments
+  } = params;
+
+  const countries: CountryStats[] = Array.from(countryMap.entries())
+    .map(([country, stats]) => ({
+      country,
+      count: stats.count,
+      totalPayout: stats.totalPayout,
+      totalVotes: stats.totalVotes,
+      totalComments: stats.totalComments
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  const users: UserStats[] = Array.from(userMap.entries())
+    .map(([username, stats]) => ({
+      username,
+      pinCount: stats.pinCount,
+      totalPayout: stats.totalPayout,
+      countries: stats.countries.size,
+      totalVotes: stats.totalVotes,
+      totalComments: stats.totalComments,
+      avgPayout: stats.pinCount > 0 ? stats.totalPayout / stats.pinCount : 0
+    }))
+    .sort((a, b) => b.pinCount - a.pinCount);
+
+  const tags: TagStats[] = Array.from(tagMap.entries())
+    .map(([tag, stats]) => ({
+      tag,
+      count: stats.count,
+      totalPayout: stats.totalPayout
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 20);
+
+  const dailyStats: TimeSeriesStats[] = Array.from(dailyMap.entries())
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const monthlyStats: TimeSeriesStats[] = Array.from(monthlyMap.entries())
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const curatedDailyStats: TimeSeriesStats[] = dailyStats.map(({ date }) => ({
+    date,
+    count: curatedDailyMap.get(date) || 0
+  }));
+
+  const curatedMonthlyStats: TimeSeriesStats[] = monthlyStats.map(({ date }) => ({
+    date,
+    count: curatedMonthlyMap.get(date) || 0
+  }));
+
+  return {
+    totalPins,
+    totalCountries: countryMap.size,
+    totalUsers: userMap.size,
+    totalPayout,
+    totalVotes,
+    totalComments,
+    avgPayoutPerPost: totalPins > 0 ? totalPayout / totalPins : 0,
+    avgVotesPerPost: totalPins > 0 ? totalVotes / totalPins : 0,
+    avgCommentsPerPost: totalPins > 0 ? totalComments / totalPins : 0,
+    dailyStats,
+    monthlyStats,
+    curatedDailyStats,
+    curatedMonthlyStats,
+    countries,
+    users,
+    tags,
+    topPostsByPayout: topPostsByPayout.slice(0, 10),
+    topPostsByVotes: topPostsByVotes.slice(0, 10),
+    topPostsByComments: topPostsByComments.slice(0, 10)
+  };
+}
+
+async function persistStatsCheckpoint(
+  stats: PinStats,
+  dataType: 'full' | 'full-progress',
+  metadata?: Record<string, unknown>
+): Promise<void> {
+  try {
+    await fetch('/api/stats-cache', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ stats, dataType, metadata })
+    });
+  } catch (error) {
+    console.error('Error saving stats checkpoint:', error);
+  }
 }
 
 // Progress callback type
@@ -253,7 +520,7 @@ function getCountryFromCoordinates(lat: number, lng: number): string | null {
 }
 
 // Fetch all pins with their full details
-async function fetchAllPinsWithDetails(): Promise<Array<BasicPinData & FullPinData & { author: string }>> {
+async function fetchAllPinsWithDetails(): Promise<Array<BasicPinData & FullPinData & { author: string; isCurated?: boolean }>> {
   try {
     console.log('Fetching all pins from API...');
     
@@ -277,7 +544,7 @@ async function fetchAllPinsWithDetails(): Promise<Array<BasicPinData & FullPinDa
     
     // Fetch full details for all pins in batches to avoid overwhelming the API
     const batchSize = 1000;
-    const fullPins: Array<FullPinData & BasicPinData & { author: string }> = [];
+    const fullPins: Array<FullPinData & BasicPinData & { author: string; isCurated?: boolean }> = [];
     
     for (let i = 0; i < basicPins.length; i += batchSize) {
       const batch = basicPins.slice(i, i + batchSize);
@@ -296,7 +563,7 @@ async function fetchAllPinsWithDetails(): Promise<Array<BasicPinData & FullPinDa
       );
       
       // Merge basic data with full details
-      const mergedBatch = detailsResponse.data.map((fullPin: FullPinData, index: number) => {
+      const mergedBatch = detailsResponse.data.map((fullPin: any, index: number) => {
         const basicPin = batch[index];
         const match = fullPin.postLink?.match(/@([^/]+)\/(.+)$/);
         const author = match ? match[1] : '';
@@ -424,29 +691,29 @@ async function fetchCuratedPinsOnly(): Promise<BasicPinData[]> {
 export async function fetchBasicPinStats(onProgress?: ProgressCallback): Promise<PinStats> {
   try {
     onProgress?.(10, 'Fetching pins from WorldMapPin API...');
-    console.log('⚡ Starting fast basic stats fetch...');
+    console.log('⚡ Starting fast basic stats fetch (WorldMapPin API only)...');
     
-    // Fetch only basic pin data (coordinates and IDs) - much faster
+    // Fetch basic pin data (coordinates and IDs)
     const [allBasicPins, curatedBasicPins] = await Promise.all([
       fetchBasicPinsOnly(),
       fetchCuratedPinsOnly()
     ]);
-    
-    onProgress?.(30, `Loaded ${allBasicPins.length} pins. Fetching post dates...`);
+    const curatedIdSet = new Set(curatedBasicPins.map(pin => pin.id));
+
+    onProgress?.(20, `Loaded ${allBasicPins.length} pins. Fetching details by ID...`);
     console.log('✅ Loaded basic pin data:', allBasicPins.length, 'pins');
     
-    // Fetch only post dates for time series (much faster than full details)
-    // We'll fetch in batches but only get the dates we need
+    // Fetch details by ID to get dates and post info (WorldMapPin API only)
     const batchSize = 2000;
-    const allPinsWithDates: Array<BasicPinData & { postDate?: string; author?: string }> = [];
+    const allPinsWithDates: Array<BasicPinData & { postDate?: string; author?: string; isCurated?: boolean }> = [];
     const totalBatches = Math.ceil(allBasicPins.length / batchSize);
     
     for (let i = 0; i < allBasicPins.length; i += batchSize) {
       const batch = allBasicPins.slice(i, i + batchSize);
       const batchNumber = Math.floor(i / batchSize) + 1;
-      const progressPercent = 30 + Math.floor((batchNumber / totalBatches) * 40);
+      const progressPercent = 20 + Math.floor((batchNumber / totalBatches) * 60);
       
-      onProgress?.(progressPercent, `Fetching post dates: ${batchNumber}/${totalBatches} batches (${i + batch.length}/${allBasicPins.length} pins)`);
+      onProgress?.(progressPercent, `Fetching details by ID: ${batchNumber}/${totalBatches} batches (${i + batch.length}/${allBasicPins.length} pins)`);
       
       const markerIds = batch.map(p => p.id);
       const detailsResponse = await axios.post(
@@ -459,8 +726,8 @@ export async function fetchBasicPinStats(onProgress?: ProgressCallback): Promise
         }
       );
       
-      // Extract only what we need: postDate and author
-      const batchWithDates = detailsResponse.data.map((fullPin: FullPinData, index: number) => {
+      // Extract date and author from ID fetch and mark curated pins using curated ID set
+      const batchWithDates = detailsResponse.data.map((fullPin: any, index: number) => {
         const basicPin = batch[index];
         const match = fullPin.postLink?.match(/@([^/]+)\/(.+)$/);
         const author = match ? match[1] : '';
@@ -468,15 +735,16 @@ export async function fetchBasicPinStats(onProgress?: ProgressCallback): Promise
         return {
           ...basicPin,
           postDate: fullPin.postDate,
-          author
+          author,
+          isCurated: curatedIdSet.has(basicPin.id)
         };
       });
       
       allPinsWithDates.push(...batchWithDates);
     }
     
-    onProgress?.(75, `Processing ${allPinsWithDates.length} pins...`);
-    console.log('✅ Loaded post dates, processing statistics...');
+    onProgress?.(80, `Processing ${allPinsWithDates.length} pins...`);
+    console.log('✅ Loaded post dates from ID fetch, processing statistics...');
     
     // Maps for tracking various stats
     const countryMap = new Map<string, { count: number; totalPayout: number; totalVotes: number; totalComments: number }>();
@@ -486,7 +754,7 @@ export async function fetchBasicPinStats(onProgress?: ProgressCallback): Promise
     const curatedDailyMap = new Map<string, number>();
     const curatedMonthlyMap = new Map<string, number>();
     
-    // Process pins in chunks with progress updates
+    // Process all pins (including curated flag from ID fetch)
     const processChunkSize = 1000;
     let processed = 0;
     
@@ -517,74 +785,30 @@ export async function fetchBasicPinStats(onProgress?: ProgressCallback): Promise
           userMap.set(pin.author, userStats);
         }
         
-        if (pin.postDate) {
-          // Parse date string carefully to avoid timezone issues
-          // If postDate is "YYYY-MM-DD", parse it as local date
-          let date: Date;
-          if (pin.postDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            // Date string is in YYYY-MM-DD format, parse as local date
-            const [year, month, day] = pin.postDate.split('-').map(Number);
-            date = new Date(year, month - 1, day); // month is 0-indexed
-          } else {
-            // Try parsing as-is, but add time to avoid UTC interpretation
-            date = new Date(pin.postDate + 'T12:00:00'); // Use noon to avoid timezone edge cases
-          }
+        const parsedDate = parsePostDate(pin.postDate);
+        if (parsedDate) {
+          const dailyKey = `${parsedDate.getUTCFullYear()}-${String(parsedDate.getUTCMonth() + 1).padStart(2, '0')}-${String(parsedDate.getUTCDate()).padStart(2, '0')}`;
+          const monthlyKey = `${parsedDate.getUTCFullYear()}-${String(parsedDate.getUTCMonth() + 1).padStart(2, '0')}`;
           
-          const dailyKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-          const monthlyKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-          
+          // Add to all posts time series
           dailyMap.set(dailyKey, (dailyMap.get(dailyKey) || 0) + 1);
           monthlyMap.set(monthlyKey, (monthlyMap.get(monthlyKey) || 0) + 1);
+          
+          // If curated, also add to curated time series
+          if (pin.isCurated) {
+            curatedDailyMap.set(dailyKey, (curatedDailyMap.get(dailyKey) || 0) + 1);
+            curatedMonthlyMap.set(monthlyKey, (curatedMonthlyMap.get(monthlyKey) || 0) + 1);
+          }
         }
       });
       
       processed += chunk.length;
-      const processProgress = 75 + Math.floor((processed / allPinsWithDates.length) * 15);
+      const processProgress = 80 + Math.floor((processed / allPinsWithDates.length) * 20);
       onProgress?.(processProgress, `Processing: ${processed}/${allPinsWithDates.length} pins`);
     }
     
-    // Process curated pins for time series (fetch dates only)
-    onProgress?.(90, 'Processing curated posts...');
-    const curatedBatchSize = 2000;
-    for (let i = 0; i < curatedBasicPins.length; i += curatedBatchSize) {
-      const batch = curatedBasicPins.slice(i, i + curatedBatchSize);
-      const markerIds = batch.map(p => p.id);
-      
-      const detailsResponse = await axios.post(
-        `${BASE_API_URL}/marker/ids`,
-        { marker_ids: markerIds },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      detailsResponse.data.forEach((fullPin: FullPinData) => {
-        if (fullPin.postDate) {
-          // Parse date string carefully to avoid timezone issues
-          // If postDate is "YYYY-MM-DD", parse it as local date
-          let date: Date;
-          if (fullPin.postDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            // Date string is in YYYY-MM-DD format, parse as local date
-            const [year, month, day] = fullPin.postDate.split('-').map(Number);
-            date = new Date(year, month - 1, day); // month is 0-indexed
-          } else {
-            // Try parsing as-is, but add time to avoid UTC interpretation
-            date = new Date(fullPin.postDate + 'T12:00:00'); // Use noon to avoid timezone edge cases
-          }
-          
-          const dailyKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-          const monthlyKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-          
-          curatedDailyMap.set(dailyKey, (curatedDailyMap.get(dailyKey) || 0) + 1);
-          curatedMonthlyMap.set(monthlyKey, (curatedMonthlyMap.get(monthlyKey) || 0) + 1);
-        }
-      });
-    }
-    
     onProgress?.(100, 'Basic statistics ready!');
-    console.log('✅ Basic stats processed');
+    console.log('✅ Basic stats processed (WorldMapPin API only)');
     
     // Convert maps to arrays
     const countries: CountryStats[] = Array.from(countryMap.entries())
@@ -611,19 +835,22 @@ export async function fetchBasicPinStats(onProgress?: ProgressCallback): Promise
     
     const dailyStats: TimeSeriesStats[] = Array.from(dailyMap.entries())
       .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date)); // Full history
+      .sort((a, b) => a.date.localeCompare(b.date));
     
     const monthlyStats: TimeSeriesStats[] = Array.from(monthlyMap.entries())
       .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date)); // Full history
+      .sort((a, b) => a.date.localeCompare(b.date));
     
-    const curatedDailyStats: TimeSeriesStats[] = Array.from(curatedDailyMap.entries())
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date)); // Full history
+    // Ensure curated stats include all dates from regular stats (with 0 count if no curated posts)
+    const curatedDailyStats: TimeSeriesStats[] = dailyStats.map(({ date }) => ({
+      date,
+      count: curatedDailyMap.get(date) || 0
+    }));
     
-    const curatedMonthlyStats: TimeSeriesStats[] = Array.from(curatedMonthlyMap.entries())
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date)); // Full history
+    const curatedMonthlyStats: TimeSeriesStats[] = monthlyStats.map(({ date }) => ({
+      date,
+      count: curatedMonthlyMap.get(date) || 0
+    }));
     
     return {
       totalPins: allPinsWithDates.length,
@@ -656,293 +883,304 @@ export async function fetchBasicPinStats(onProgress?: ProgressCallback): Promise
 export async function fetchPinStats(onProgress?: ProgressCallback): Promise<PinStats> {
   try {
     onProgress?.(5, 'Fetching pins from WorldMapPin API...');
-    
-    // Fetch all pins and curated pins
+
     const [allPins, curatedPins] = await Promise.all([
       fetchAllPinsWithDetails(),
       fetchCuratedPinsWithDetails()
     ]);
-    
-    onProgress?.(15, `Found ${allPins.length} pins. Fetching detailed post data from Hive...`);
-    console.log('🔄 Starting Hive data fetch for', allPins.length, 'pins');
-    
-    // Maps for tracking various stats
-    const countryMap = new Map<string, { count: number; totalPayout: number; totalVotes: number; totalComments: number }>();
-    const userMap = new Map<string, { pinCount: number; totalPayout: number; countries: Set<string>; totalVotes: number; totalComments: number }>();
-    const tagMap = new Map<string, { count: number; totalPayout: number }>();
-    const dailyMap = new Map<string, number>();
-    const monthlyMap = new Map<string, number>();
-    const curatedDailyMap = new Map<string, number>();
-    const curatedMonthlyMap = new Map<string, number>();
-    
-    let totalPayout = 0;
-    let totalVotes = 0;
-    let totalComments = 0;
-    const allPostsDetailed: Array<FullPinData & BasicPinData & { author: string; hiveData?: HivePostData }> = [];
-    
-    // Fetch detailed Hive data in batches with progress tracking
-    const batchSize = 10; // Fetch 10 posts at a time
-    const totalBatches = Math.ceil(allPins.length / batchSize);
-    
-    for (let i = 0; i < allPins.length; i += batchSize) {
+    const totalPins = allPins.length;
+    const curatedIdSet = new Set(curatedPins.map(pin => pin.id));
+
+    onProgress?.(15, `Found ${totalPins} pins. Fetching detailed post data from Hive...`);
+    console.log('🔄 Starting Hive data fetch for', totalPins, 'pins');
+
+    // Load any existing aggregation state so we can resume
+    const persisted = loadHiveProgress(totalPins);
+    let lastProcessedPost = persisted?.lastPost;
+
+    const countryMap = new Map<string, { count: number; totalPayout: number; totalVotes: number; totalComments: number }>(
+      persisted?.countryEntries ?? []
+    );
+    const userMap = new Map<string, { pinCount: number; totalPayout: number; countries: Set<string>; totalVotes: number; totalComments: number }>(
+      persisted?.userEntries.map(([username, stats]) => [
+        username,
+        {
+          pinCount: stats.pinCount,
+          totalPayout: stats.totalPayout,
+          countries: new Set(stats.countries),
+          totalVotes: stats.totalVotes,
+          totalComments: stats.totalComments
+        }
+      ]) ?? []
+    );
+    const tagMap = new Map<string, { count: number; totalPayout: number }>(persisted?.tagEntries ?? []);
+    const dailyMap = new Map<string, number>(persisted?.dailyEntries ?? []);
+    const monthlyMap = new Map<string, number>(persisted?.monthlyEntries ?? []);
+    const curatedDailyMap = new Map<string, number>(persisted?.curatedDailyEntries ?? []);
+    const curatedMonthlyMap = new Map<string, number>(persisted?.curatedMonthlyEntries ?? []);
+
+    let topPostsByPayout: TopPost[] = persisted?.topPostsByPayout ?? [];
+    let topPostsByVotes: TopPost[] = persisted?.topPostsByVotes ?? [];
+    let topPostsByComments: TopPost[] = persisted?.topPostsByComments ?? [];
+
+    let totalPayout = persisted?.totals.payout ?? 0;
+    let totalVotes = persisted?.totals.votes ?? 0;
+    let totalComments = persisted?.totals.comments ?? 0;
+    let processedCount = persisted?.processedCount ?? 0;
+
+    let startingIndex = persisted?.lastIndex ?? 0;
+
+    if (persisted && processedCount > 0) {
+      onProgress?.(18, `Resuming from previous progress (${processedCount}/${totalPins}). Locating last processed post...`);
+    }
+
+    if (persisted?.lastPost) {
+      const { id: lastId, author: lastAuthor, permlink: lastPermlink } = persisted.lastPost;
+      const resumeIndex = allPins.findIndex(pin => {
+        if (pin.id === lastId) {
+          return true;
+        }
+        if (!pin.postLink || !lastPermlink) {
+          return false;
+        }
+        const normalizedPostLink = pin.postLink.replace(/^https?:\/\/[^/]+\//i, '');
+        const lastSlug = `@${lastAuthor}/${lastPermlink}`;
+        if (normalizedPostLink.endsWith(lastSlug)) {
+          return true;
+        }
+        const match = normalizedPostLink.match(/@([^/]+)\/(.+)$/);
+        return !!match && match[1] === lastAuthor && match[2] === lastPermlink;
+      });
+
+      if (resumeIndex >= 0) {
+        startingIndex = Math.min(resumeIndex + 1, totalPins);
+        onProgress?.(20, `Resuming from @${lastAuthor}/${lastPermlink} (${processedCount}/${totalPins})`);
+      } else if (persisted?.lastIndex) {
+        startingIndex = Math.min(persisted.lastIndex, totalPins);
+      }
+    }
+
+    startingIndex = Math.max(startingIndex, processedCount);
+
+    const batchSize = 10;
+    const totalBatches = Math.ceil(totalPins / batchSize);
+
+    for (let i = startingIndex; i < totalPins; i += batchSize) {
       const batch = allPins.slice(i, i + batchSize);
       const batchNumber = Math.floor(i / batchSize) + 1;
-      
       const progressPercent = 15 + Math.floor((batchNumber / totalBatches) * 70);
-      onProgress?.(progressPercent, `Fetching post details: ${batchNumber}/${totalBatches} batches (${i + batch.length}/${allPins.length} posts)`);
-      
-      const hiveDataPromises = batch.map(async (pin) => {
-        // Extract author and permlink from postLink
+      onProgress?.(progressPercent, `Fetching post details: ${batchNumber}/${totalBatches} batches (${Math.min(i + batch.length, totalPins)}/${totalPins} posts)`);
+
+      const batchResults = await Promise.all(batch.map(async (pin) => {
         const match = pin.postLink?.match(/@([^/]+)\/(.+)$/);
         const author = match ? match[1] : pin.author;
         const permlink = match ? match[2] : '';
-        
+
         if (!author || !permlink) {
-          return { ...pin, author, hiveData: undefined };
+          return { ...pin, author, permlink, isCurated: curatedIdSet.has(pin.id), hiveData: undefined };
         }
-        
+
         const hiveData = await fetchHivePostData(author, permlink);
-        return { ...pin, author, hiveData: hiveData || undefined };
+        return { ...pin, author, permlink, isCurated: curatedIdSet.has(pin.id), hiveData: hiveData || undefined };
+      }));
+
+      batchResults.forEach(pin => {
+        processedCount += 1;
+
+        const country = getCountryFromCoordinates(pin.lattitude, pin.longitude);
+
+        let payout = pin.payout || 0;
+        let votes = pin.votes || 0;
+        let comments = pin.comments || 0;
+        let tags: string[] = [];
+        let title = pin.postTitle || pin.postDescription || pin.postLink || 'Untitled';
+        let created = pin.postDate || ''; 
+
+        if (pin.hiveData?.post) {
+          const post = pin.hiveData.post;
+          title = post.title || title;
+          created = post.created || created;
+
+          const pendingPayout = parseFloat(post.pending_payout_value || '0');
+          const totalPayoutVal = parseFloat(post.total_payout_value || '0');
+          const curatorPayout = parseFloat(post.curator_payout_value || '0');
+          payout = pendingPayout > 0 ? pendingPayout : (totalPayoutVal + curatorPayout);
+
+          votes = post.net_votes || 0;
+          comments = post.children || 0;
+
+          try {
+            const metadata = JSON.parse(post.json_metadata || '{}');
+            tags = metadata.tags || [];
+          } catch (error) {
+            // Ignore invalid metadata blobs
+          }
+        }
+
+        totalPayout += payout;
+        totalVotes += votes;
+        totalComments += comments;
+
+        if (country) {
+          const countryStats = countryMap.get(country) || { count: 0, totalPayout: 0, totalVotes: 0, totalComments: 0 };
+          countryStats.count += 1;
+          countryStats.totalPayout += payout;
+          countryStats.totalVotes += votes;
+          countryStats.totalComments += comments;
+          countryMap.set(country, countryStats);
+        }
+
+        if (pin.author) {
+          const userStats = userMap.get(pin.author) || {
+            pinCount: 0,
+            totalPayout: 0,
+            countries: new Set<string>(),
+            totalVotes: 0,
+            totalComments: 0
+          };
+          userStats.pinCount += 1;
+          userStats.totalPayout += payout;
+          userStats.totalVotes += votes;
+          userStats.totalComments += comments;
+          if (country) {
+            userStats.countries.add(country);
+          }
+          userMap.set(pin.author, userStats);
+        }
+
+        tags.forEach(tag => {
+          const tagStats = tagMap.get(tag) || { count: 0, totalPayout: 0 };
+          tagStats.count += 1;
+          tagStats.totalPayout += payout;
+          tagMap.set(tag, tagStats);
+        });
+
+        const parsedDate = parsePostDate(pin.postDate || created);
+        if (parsedDate) {
+          const dailyKey = `${parsedDate.getUTCFullYear()}-${String(parsedDate.getUTCMonth() + 1).padStart(2, '0')}-${String(parsedDate.getUTCDate()).padStart(2, '0')}`;
+          const monthlyKey = `${parsedDate.getUTCFullYear()}-${String(parsedDate.getUTCMonth() + 1).padStart(2, '0')}`;
+
+          dailyMap.set(dailyKey, (dailyMap.get(dailyKey) || 0) + 1);
+          monthlyMap.set(monthlyKey, (monthlyMap.get(monthlyKey) || 0) + 1);
+
+          if (pin.isCurated || curatedIdSet.has(pin.id)) {
+            curatedDailyMap.set(dailyKey, (curatedDailyMap.get(dailyKey) || 0) + 1);
+            curatedMonthlyMap.set(monthlyKey, (curatedMonthlyMap.get(monthlyKey) || 0) + 1);
+          }
+        }
+
+        const topPostCandidate: TopPost = {
+          title,
+          author: pin.author,
+          permlink: pin.permlink || '',
+          payout,
+          votes,
+          comments,
+          created
+        };
+
+        updateTopPosts(topPostsByPayout, topPostCandidate, 'payout');
+        updateTopPosts(topPostsByVotes, topPostCandidate, 'votes');
+        updateTopPosts(topPostsByComments, topPostCandidate, 'comments');
+
+        lastProcessedPost = {
+          id: pin.id,
+          author: pin.author,
+          permlink: pin.permlink || ''
+        };
       });
-      
-      const batchResults = await Promise.all(hiveDataPromises);
-      allPostsDetailed.push(...batchResults);
-      
-      // Small delay to avoid overwhelming the API
-      if (i + batchSize < allPins.length) {
+
+      const nextIndex = Math.min(totalPins, i + batch.length);
+      saveHiveProgress({
+        version: HIVE_PROGRESS_VERSION,
+        totalPins,
+        processedCount,
+        lastIndex: nextIndex,
+        totals: {
+          payout: totalPayout,
+          votes: totalVotes,
+          comments: totalComments
+        },
+        countryEntries: Array.from(countryMap.entries()),
+        userEntries: Array.from(userMap.entries()).map(([username, stats]) => ([
+          username,
+          {
+            pinCount: stats.pinCount,
+            totalPayout: stats.totalPayout,
+            totalVotes: stats.totalVotes,
+            totalComments: stats.totalComments,
+            countries: Array.from(stats.countries)
+          }
+        ])),
+        tagEntries: Array.from(tagMap.entries()),
+        dailyEntries: Array.from(dailyMap.entries()),
+        monthlyEntries: Array.from(monthlyMap.entries()),
+        curatedDailyEntries: Array.from(curatedDailyMap.entries()),
+        curatedMonthlyEntries: Array.from(curatedMonthlyMap.entries()),
+        topPostsByPayout,
+        topPostsByVotes,
+        topPostsByComments,
+        lastPost: lastProcessedPost
+      });
+
+      const progressStats = buildPinStatsSnapshot({
+        totalPins: processedCount,
+        totalPayout,
+        totalVotes,
+        totalComments,
+        countryMap,
+        userMap,
+        tagMap,
+        dailyMap,
+        monthlyMap,
+        curatedDailyMap,
+        curatedMonthlyMap,
+        topPostsByPayout,
+        topPostsByVotes,
+        topPostsByComments
+      });
+
+      await persistStatsCheckpoint(progressStats, 'full-progress', {
+        processed: processedCount,
+        total: totalPins,
+        lastPost: lastProcessedPost
+      });
+
+      if (nextIndex < totalPins) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
-    
-    onProgress?.(85, 'Processing statistics...');
-    
-    // Process all pins with detailed data
-    allPostsDetailed.forEach(pin => {
-      // Extract country from coordinates
-      const country = getCountryFromCoordinates(pin.lattitude, pin.longitude);
-      
-      // Get payout and engagement from Hive data if available
-      let payout = pin.payout || 0;
-      let votes = pin.votes || 0;
-      let comments = pin.comments || 0;
-      let tags: string[] = [];
-      
-      if (pin.hiveData?.post) {
-        const post = pin.hiveData.post;
-        
-        // Calculate total payout
-        const pendingPayout = parseFloat(post.pending_payout_value || '0');
-        const totalPayoutVal = parseFloat(post.total_payout_value || '0');
-        const curatorPayout = parseFloat(post.curator_payout_value || '0');
-        payout = pendingPayout > 0 ? pendingPayout : (totalPayoutVal + curatorPayout);
-        
-        votes = post.net_votes || 0;
-        comments = post.children || 0;
-        
-        // Extract tags
-        try {
-          const metadata = JSON.parse(post.json_metadata || '{}');
-          tags = metadata.tags || [];
-        } catch (e) {
-          // Ignore JSON parse errors
-        }
-      }
-      
-      totalPayout += payout;
-      totalVotes += votes;
-      totalComments += comments;
-      
-      // Track country stats
-      if (country) {
-        const countryStats = countryMap.get(country) || { count: 0, totalPayout: 0, totalVotes: 0, totalComments: 0 };
-        countryStats.count++;
-        countryStats.totalPayout += payout;
-        countryStats.totalVotes += votes;
-        countryStats.totalComments += comments;
-        countryMap.set(country, countryStats);
-      }
-      
-      // Track user stats
-      if (pin.author) {
-        const userStats = userMap.get(pin.author) || { 
-          pinCount: 0, 
-          totalPayout: 0, 
-          countries: new Set<string>(),
-          totalVotes: 0,
-          totalComments: 0
-        };
-        userStats.pinCount++;
-        userStats.totalPayout += payout;
-        userStats.totalVotes += votes;
-        userStats.totalComments += comments;
-        if (country) {
-          userStats.countries.add(country);
-        }
-        userMap.set(pin.author, userStats);
-      }
-      
-      // Track tag stats
-      tags.forEach(tag => {
-        const tagStats = tagMap.get(tag) || { count: 0, totalPayout: 0 };
-        tagStats.count++;
-        tagStats.totalPayout += payout;
-        tagMap.set(tag, tagStats);
-      });
-      
-      // Track daily and monthly stats
-      if (pin.postDate) {
-        // Parse date string carefully to avoid timezone issues
-        // If postDate is "YYYY-MM-DD", parse it as local date
-        let date: Date;
-        if (pin.postDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          // Date string is in YYYY-MM-DD format, parse as local date
-          const [year, month, day] = pin.postDate.split('-').map(Number);
-          date = new Date(year, month - 1, day); // month is 0-indexed
-        } else {
-          // Try parsing as-is, but add time to avoid UTC interpretation
-          date = new Date(pin.postDate + 'T12:00:00'); // Use noon to avoid timezone edge cases
-        }
-        
-        const dailyKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        const monthlyKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        
-        dailyMap.set(dailyKey, (dailyMap.get(dailyKey) || 0) + 1);
-        monthlyMap.set(monthlyKey, (monthlyMap.get(monthlyKey) || 0) + 1);
-      }
-    });
-    
-    onProgress?.(90, 'Processing curated posts...');
-    
-    // Process curated pins for time series
-    curatedPins.forEach(pin => {
-      if (pin.postDate) {
-        // Parse date string carefully to avoid timezone issues
-        // If postDate is "YYYY-MM-DD", parse it as local date
-        let date: Date;
-        if (pin.postDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          // Date string is in YYYY-MM-DD format, parse as local date
-          const [year, month, day] = pin.postDate.split('-').map(Number);
-          date = new Date(year, month - 1, day); // month is 0-indexed
-        } else {
-          // Try parsing as-is, but add time to avoid UTC interpretation
-          date = new Date(pin.postDate + 'T12:00:00'); // Use noon to avoid timezone edge cases
-        }
-        
-        const dailyKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        const monthlyKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        
-        curatedDailyMap.set(dailyKey, (curatedDailyMap.get(dailyKey) || 0) + 1);
-        curatedMonthlyMap.set(monthlyKey, (curatedMonthlyMap.get(monthlyKey) || 0) + 1);
-      }
-    });
-    
+
     onProgress?.(95, 'Finalizing statistics...');
-    
-    // Convert maps to sorted arrays
-    const countries: CountryStats[] = Array.from(countryMap.entries())
-      .map(([country, stats]) => ({
-        country,
-        count: stats.count,
-        totalPayout: stats.totalPayout,
-        totalVotes: stats.totalVotes,
-        totalComments: stats.totalComments
-      }))
-      .sort((a, b) => b.count - a.count);
-    
-    const users: UserStats[] = Array.from(userMap.entries())
-      .map(([username, stats]) => ({
-        username,
-        pinCount: stats.pinCount,
-        totalPayout: stats.totalPayout,
-        countries: stats.countries.size,
-        totalVotes: stats.totalVotes,
-        totalComments: stats.totalComments,
-        avgPayout: stats.totalPayout / stats.pinCount
-      }))
-      .sort((a, b) => b.pinCount - a.pinCount);
-    
-    const tags: TagStats[] = Array.from(tagMap.entries())
-      .map(([tag, stats]) => ({
-        tag,
-        count: stats.count,
-        totalPayout: stats.totalPayout
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 20); // Top 20 tags
-    
-    // Sort daily and monthly stats by date
-    const dailyStats: TimeSeriesStats[] = Array.from(dailyMap.entries())
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date)); // Full history
-    
-    const monthlyStats: TimeSeriesStats[] = Array.from(monthlyMap.entries())
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date)); // Full history
-    
-    const curatedDailyStats: TimeSeriesStats[] = Array.from(curatedDailyMap.entries())
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date)); // Full history
-    
-    const curatedMonthlyStats: TimeSeriesStats[] = Array.from(curatedMonthlyMap.entries())
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date)); // Full history
-    
-    // Create top posts lists
-    const postsWithDetails = allPostsDetailed
-      .filter(pin => pin.hiveData?.post)
-      .map(pin => {
-        const post = pin.hiveData!.post;
-        const pendingPayout = parseFloat(post.pending_payout_value || '0');
-        const totalPayoutVal = parseFloat(post.total_payout_value || '0');
-        const curatorPayout = parseFloat(post.curator_payout_value || '0');
-        const payout = pendingPayout > 0 ? pendingPayout : (totalPayoutVal + curatorPayout);
-        
-        return {
-          title: post.title,
-          author: post.author,
-          permlink: post.permlink,
-          payout,
-          votes: post.net_votes,
-          comments: post.children,
-          created: post.created
-        };
-      });
-    
-    const topPostsByPayout = [...postsWithDetails]
-      .sort((a, b) => b.payout - a.payout)
-      .slice(0, 10);
-    
-    const topPostsByVotes = [...postsWithDetails]
-      .sort((a, b) => b.votes - a.votes)
-      .slice(0, 10);
-    
-    const topPostsByComments = [...postsWithDetails]
-      .sort((a, b) => b.comments - a.comments)
-      .slice(0, 10);
-    
-    onProgress?.(100, 'Statistics ready!');
-    
-    return {
-      totalPins: allPins.length,
-      totalCountries: countryMap.size,
-      totalUsers: userMap.size,
+    const finalStats = buildPinStatsSnapshot({
+      totalPins,
       totalPayout,
       totalVotes,
       totalComments,
-      avgPayoutPerPost: totalPayout / allPins.length,
-      avgVotesPerPost: totalVotes / allPins.length,
-      avgCommentsPerPost: totalComments / allPins.length,
-      dailyStats,
-      monthlyStats,
-      curatedDailyStats,
-      curatedMonthlyStats,
-      countries,
-      users,
-      tags,
+      countryMap,
+      userMap,
+      tagMap,
+      dailyMap,
+      monthlyMap,
+      curatedDailyMap,
+      curatedMonthlyMap,
       topPostsByPayout,
       topPostsByVotes,
       topPostsByComments
-    };
+    });
+
+    await persistStatsCheckpoint(finalStats, 'full', {
+      processed: processedCount,
+      total: totalPins,
+      completed: true,
+      lastPost: lastProcessedPost
+    });
+
+    clearHiveProgress();
+
+    onProgress?.(100, 'Statistics ready!');
+
+    return finalStats;
   } catch (error) {
     console.error('Error generating pin stats:', error);
     throw error;

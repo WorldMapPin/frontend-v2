@@ -289,6 +289,7 @@ export default function StatsPage() {
   const [isCachedData, setIsCachedData] = useState(false);
   const [dataType, setDataType] = useState<'basic' | 'full'>('basic');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshingAll, setIsRefreshingAll] = useState(false);
   const loadingHiveRef = useRef(false);
 
   useEffect(() => {
@@ -437,6 +438,27 @@ export default function StatsPage() {
     loadFullStatsInBackground();
   };
 
+  const handleRefreshAllData = async () => {
+    console.log('🧹 Manual refresh of all data triggered');
+    setIsRefreshingAll(true);
+
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('worldmappin:hive-progress:v1');
+      }
+
+      try {
+        await fetch('/api/stats-cache', { method: 'DELETE' });
+      } catch (err) {
+        console.warn('Failed to clear stats cache on server:', err);
+      }
+
+      await loadStatsProgressive(true);
+    } finally {
+      setIsRefreshingAll(false);
+    }
+  };
+
   // Chart configurations
   const getChartOptions = (title: string) => ({
     responsive: true,
@@ -470,25 +492,12 @@ export default function StatsPage() {
     const timeStats = activeTab === 'daily' ? stats.dailyStats : stats.monthlyStats;
     const curatedStats = activeTab === 'daily' ? stats.curatedDailyStats : stats.curatedMonthlyStats;
 
-    // Create a lookup map for curated stats by date
-    const curatedStatsMap = new Map<string, number>();
-    curatedStats.forEach(stat => {
-      curatedStatsMap.set(stat.date, stat.count);
-    });
-
     return {
       labels: timeStats.map(stat => {
-        if (activeTab === 'daily') {
-          // Daily format: "YYYY-MM-DD"
-          const date = new Date(stat.date + 'T00:00:00'); // Add time to avoid timezone issues
-          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        } else {
-          // Monthly format: "YYYY-MM" - need to parse correctly
-          // Parse as first day of month to avoid timezone shifts
-          const [year, month] = stat.date.split('-');
-          const date = new Date(parseInt(year), parseInt(month) - 1, 1); // month is 0-indexed in JS
-          return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-        }
+        const date = new Date(stat.date);
+        return activeTab === 'daily' 
+          ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
       }),
       datasets: [
         {
@@ -500,8 +509,7 @@ export default function StatsPage() {
         },
         {
           label: 'Curated Posts',
-          // Align curated data with timeStats dates - use 0 if no curated posts for that date
-          data: timeStats.map(stat => curatedStatsMap.get(stat.date) || 0),
+          data: curatedStats.map(stat => stat.count),
           borderColor: 'rgb(16, 185, 129)',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
           tension: 0.1,
@@ -679,7 +687,7 @@ export default function StatsPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleRefreshBasicData()}
-                disabled={isRefreshing || loading}
+                disabled={isRefreshing || loading || isRefreshingAll}
                 className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Refresh basic statistics from WorldMapPin API"
               >
@@ -696,7 +704,7 @@ export default function StatsPage() {
               
               <button
                 onClick={() => handleRefreshHiveData()}
-                disabled={isLoadingHiveData || loading}
+                disabled={isLoadingHiveData || loading || isRefreshingAll}
                 className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Refresh Hive blockchain data (payouts, votes, comments)"
               >
@@ -709,6 +717,23 @@ export default function StatsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 {isLoadingHiveData ? 'Loading Hive Data...' : 'Refresh Hive Data'}
+              </button>
+
+              <button
+                onClick={() => handleRefreshAllData()}
+                disabled={isRefreshingAll || loading || isLoadingHiveData}
+                className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh both basic and Hive statistics from scratch"
+              >
+                <svg
+                  className={`w-4 h-4 mr-2 ${isRefreshingAll ? 'animate-spin' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 5H13l2.293 2.293A8 8 0 1111 4.062" />
+                </svg>
+                {isRefreshingAll ? 'Refreshing All...' : 'Refresh All Data'}
               </button>
             </div>
           </div>
@@ -1140,19 +1165,25 @@ export default function StatsPage() {
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-orange-900 mb-4">📊 Data Sources & Methodology</h3>
           <div className="space-y-3 text-sm text-orange-800">
+            <p><strong>Data Loading Strategy:</strong></p>
+            <ul className="list-disc ml-6 space-y-1">
+              <li><strong>Basic Data (Fast):</strong> Loads first using only WorldMapPin API endpoints</li>
+              <li><strong>Enhanced Data (Slower):</strong> Optionally loads Hive blockchain data for payouts, votes, and comments</li>
+            </ul>
             <p><strong>API Endpoints:</strong></p>
             <ul className="list-disc ml-6 space-y-1">
-              <li>WorldMapPin API: https://worldmappin.com/api/marker/0/150000/</li>
-              <li>Hive Blockchain: Via Next.js API route /api/hive-post (proxies to https://hive.blog/hive-163772/@author/permlink.json to avoid CORS)</li>
+              <li>WorldMapPin API: https://worldmappin.com/api/marker/0/200000/ (basic pin data)</li>
+              <li>WorldMapPin ID Fetch: https://worldmappin.com/api/marker/ids (detailed pin info including dates)</li>
+              <li>Hive Blockchain (Enhanced Only): Via Next.js API route /api/hive-post (proxies to https://hive.blog/hive-163772/@author/permlink.json to avoid CORS)</li>
             </ul>
             <p><strong>Countries:</strong> Determined using reverse geocoding from pin coordinates via @rapideditor/country-coder library (same method as WorldCoverageMap)</p>
             <p><strong>Users:</strong> Extracted from postLink field in pin data (@username/permlink format)</p>
-            <p><strong>Curated Posts:</strong> Identified using curated_only: true parameter in WorldMapPin API calls</p>
-            <p><strong>Detailed Post Data:</strong> Fetched from Hive blockchain for each pin to get accurate payout, votes, comments, and tags</p>
+            <p><strong>Curated Posts:</strong> Identified from curated field in WorldMapPin ID fetch response</p>
+            <p><strong>Time Series Graphs:</strong> Built from postDate field retrieved via WorldMapPin ID fetch (available in basic data)</p>
+            <p><strong>Enhanced Post Data:</strong> Payout, votes, comments, and tags are fetched from Hive blockchain when "Refresh Hive Data" is clicked</p>
             <p><strong>Payout Calculation:</strong> Uses pending_payout_value for active posts, or total_payout_value + curator_payout_value for paid out posts</p>
-            <p><strong>Tags:</strong> Extracted from json_metadata field of each Hive post</p>
-            <p><strong>Time Series:</strong> Grouped by postDate field for daily/monthly aggregation</p>
-            <p><strong>Processing:</strong> Data is fetched in batches of 10 posts at a time to avoid overwhelming the API</p>
+            <p><strong>Tags:</strong> Extracted from json_metadata field of each Hive post (enhanced data only)</p>
+            <p><strong>Processing:</strong> WorldMapPin data is fetched in batches of 2000 pins. Hive data is fetched in batches of 10 posts at a time to avoid overwhelming the API</p>
             <p><strong>Last Updated:</strong> {new Date().toLocaleString()}</p>
           </div>
         </div>
