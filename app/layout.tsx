@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Lexend, Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar, Footer } from "../components";
+import AiohaProviderWrapper from "../components/AiohaProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,13 +43,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${lexend.variable} ${poppins.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
-        <Navbar />
+        <AiohaProviderWrapper>
+          <Navbar />
 
-        <main className="pt-12 sm:pt-14 md:pt-16 flex-1">
-          {children}
-        </main>
+          <main className="pt-12 sm:pt-14 md:pt-16 flex-1">
+            {children}
+          </main>
 
-        <Footer />
+          <Footer />
+        </AiohaProviderWrapper>
       </body>
     </html>
   );
