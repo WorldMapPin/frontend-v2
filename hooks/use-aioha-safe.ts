@@ -5,15 +5,11 @@
 
 'use client';
 
-import { useAioha } from '@aioha/react-ui';
+import { useContext } from 'react';
+import { SafeAiohaContext } from '@/components/AiohaProvider';
 
 export const useAiohaSafe = () => {
-  try {
-    const result = useAioha();
-    return result || { user: null, aioha: null };
-  } catch (error) {
-    // Provider not ready yet, return default values
-    return { user: null, aioha: null };
-  }
+  const context = useContext(SafeAiohaContext);
+  return context;
 };
 

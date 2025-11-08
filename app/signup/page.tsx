@@ -10,10 +10,13 @@ import { useAiohaSafe } from '@/hooks/use-aioha-safe';
 export default function SignupPage() {
   const router = useRouter();
   const [modalDisplayed, setModalDisplayed] = useState(false);
-  const { user } = useAiohaSafe();
+  const { user, isReady } = useAiohaSafe();
 
   const handleJoinCommunity = () => {
-    setModalDisplayed(true);
+    // Only open modal if Aioha is ready
+    if (isReady) {
+      setModalDisplayed(true);
+    }
   };
 
   const handleLogin = (result: any) => {
@@ -102,13 +105,23 @@ export default function SignupPage() {
             {/* Main CTA */}
             <button
               onClick={handleJoinCommunity}
-              className="w-full font-lexend font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-2xl text-base sm:text-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 mb-6"
+              disabled={!isReady && !user}
+              className="w-full font-lexend font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-2xl text-base sm:text-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 mb-6"
               style={{ background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)', color: '#FFFFFF' }}
             >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-              <span>{user ? `Connected as @${user}` : 'Connect Wallet'}</span>
+              {!isReady ? (
+                <>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  <span>Loading...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                  </svg>
+                  <span>{user ? `Connected as @${user}` : 'Connect Wallet'}</span>
+                </>
+              )}
             </button>
 
             {/* New to Hive */}
@@ -219,19 +232,21 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* Aioha Wallet Connection Modal */}
-      <AiohaModal
-        displayed={modalDisplayed}
-        loginTitle="Connect to WorldMapPin"
-        loginOptions={{
-          msg: 'Login to WorldMapPin',
-          keyType: KeyTypes.Posting
-        }}
-        onLogin={handleLogin}
-        onClose={() => setModalDisplayed(false)}
-        imageServer="https://images.hive.blog"
-        explorerUrl="https://hivehub.dev"
-      />
+      {/* Aioha Wallet Connection Modal - Only render when provider is ready */}
+      {isReady && (
+        <AiohaModal
+          displayed={modalDisplayed}
+          loginTitle="Connect to WorldMapPin"
+          loginOptions={{
+            msg: 'Login to WorldMapPin',
+            keyType: KeyTypes.Posting
+          }}
+          onLogin={handleLogin}
+          onClose={() => setModalDisplayed(false)}
+          imageServer="https://images.hive.blog"
+          explorerUrl="https://hivehub.dev"
+        />
+      )}
     </div>
   );
 }

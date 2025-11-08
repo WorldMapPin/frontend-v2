@@ -1,12 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, createContext, useContext } from 'react';
 import { AiohaProvider as AiohaReactProvider } from '@aioha/react-ui';
 import { Aioha } from '@aioha/aioha';
 
 interface AiohaProviderWrapperProps {
   children: React.ReactNode;
 }
+
+interface SafeAiohaContextType {
+  user: string | null;
+  aioha: Aioha | null;
+  isReady: boolean;
+}
+
+// Create safe context that's always available
+export const SafeAiohaContext = createContext<SafeAiohaContextType>({
+  user: null,
+  aioha: null,
+  isReady: false
+});
 
 /**
  * Aioha Provider Wrapper for SSR compatibility
@@ -15,6 +28,7 @@ interface AiohaProviderWrapperProps {
 export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperProps) {
   const [aioha, setAioha] = useState<Aioha | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [user, setUser] = useState<string | null>(null);
 
   useEffect(() => {
     // Mark as client-side
@@ -34,22 +48,39 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
         });
         
         setAioha(aiohaInstance);
+        
+        // Update user when it changes
+        const currentUser = aiohaInstance.getCurrentUser();
+        setUser(currentUser ?? null);
       } catch (error) {
         console.error('Failed to initialize Aioha:', error);
       }
     }
   }, []);
 
-  // Render children without provider during SSR or before Aioha is ready
+  // Provide safe context wrapper
+  const contextValue: SafeAiohaContextType = {
+    user,
+    aioha,
+    isReady: isClient && !!aioha
+  };
+
+  // Always render with safe context
   if (!isClient || !aioha) {
-    return <>{children}</>;
+    return (
+      <SafeAiohaContext.Provider value={contextValue}>
+        {children}
+      </SafeAiohaContext.Provider>
+    );
   }
 
-  // Render with provider once Aioha is initialized
+  // Render with both providers once Aioha is initialized
   return (
-    <AiohaReactProvider aioha={aioha}>
-      {children}
-    </AiohaReactProvider>
+    <SafeAiohaContext.Provider value={contextValue}>
+      <AiohaReactProvider aioha={aioha}>
+        {children}
+      </AiohaReactProvider>
+    </SafeAiohaContext.Provider>
   );
 }
 
