@@ -11,19 +11,42 @@ import BenefitItem from '../components/home/BenefitItem';
 export default function Home() {
   const features = [
     {
-      icon: '🗺️',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+          <circle cx="12" cy="9" r="2.5" />
+        </svg>
+      ),
       title: 'Interactive Travel Map',
       description: 'Pin your adventures on an interactive global map and visualize your journey across continents.',
+      iconGradient: 'linear-gradient(135deg, #54F7F4 0%, #73FFBB 100%)',
+      cardGradient: 'linear-gradient(135deg, rgba(84, 247, 244, 0.1) 0%, rgba(115, 255, 187, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
     },
     {
-      icon: '📸',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12">
+          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+          <circle cx="12" cy="13" r="3" />
+        </svg>
+      ),
       title: 'Rich Media Stories',
       description: 'Share stunning photos, videos, and detailed narratives of your travel experiences with the community.',
+      iconGradient: 'linear-gradient(135deg, #ED6D28 0%, #FF8C42 100%)',
+      cardGradient: 'linear-gradient(135deg, rgba(237, 109, 40, 0.1) 0%, rgba(255, 140, 66, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
     },
     {
-      icon: '🔗',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12">
+          <rect width="7" height="7" x="3" y="3" rx="1" />
+          <rect width="7" height="7" x="14" y="3" rx="1" />
+          <rect width="7" height="7" x="14" y="14" rx="1" />
+          <rect width="7" height="7" x="3" y="14" rx="1" />
+        </svg>
+      ),
       title: 'Blockchain Verified',
       description: 'Your content is permanently stored on Hive blockchain, ensuring authenticity and ownership.',
+      iconGradient: 'linear-gradient(135deg, #C654F7 0%, #FF737A 100%)',
+      cardGradient: 'linear-gradient(135deg, rgba(198, 84, 247, 0.1) 0%, rgba(255, 115, 154, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
     },
   ];
 
@@ -34,6 +57,7 @@ export default function Home() {
       borderColor: '#00CF6B1A',
       title: <GradientText gradient="teal">Discover Hidden Gems</GradientText>,
       description: 'Explore off-the-beaten-path destinations shared by fellow travelers',
+      image: 'https://images.hive.blog/p/FUkUE5bzkAZT3HzV5tJDiU2ik81PCd4JCyhWnRcDN8XJsVFY3UNB8DCSkoSHcgh1WxsTjmg2qHxCnu41yPReEMEv9PfY7rjPxTa9K9zF8jRzyvVLtkxLcPdP9j7SR3kuNNzqQzvsXLCJHxwNAVtLTcXPMVK5RpsWHuDG?format=match&mode=fit',
     },
     {
       gradient: 'linear-gradient(104.41deg, rgba(237, 109, 40, 0.6) 7.45%, rgba(255, 115, 154, 0.6) 100%)',
@@ -41,6 +65,7 @@ export default function Home() {
       borderColor: '#FB89401A',
       title: <GradientText>Connect with Travelers</GradientText>,
       description: 'Build meaningful connections with a global community of adventurers',
+      image: 'https://images.ecency.com/DQmdn6qowQPQQGZwhz23JgdcywY2oKub1B7fuPNQe34w71K/dsc09964.jpg',
     },
     {
       gradient: 'linear-gradient(104.41deg, rgba(198, 84, 247, 0.6) 7.45%, rgba(255, 115, 154, 0.6) 100%)',
@@ -48,6 +73,7 @@ export default function Home() {
       borderColor: '#C654F71A',
       title: <GradientText gradient="purple">Earn Crypto Rewards</GradientText>,
       description: 'Get rewarded in cryptocurrency for sharing your travel content',
+      image: 'https://images.hive.blog/p/FUkUE5bzkAZT3HzV5tJDiU2ik81PCd4JCyhWnRcDN8XJsVFY3UNB8DCSkoSHcgh1WxsUt3WT1F5gb3ARPaNoNZNvqPHGtuLtaGmexBQmFV3eKemGRDEFKZgYUnZFin8da8UyPeiVeCJ5aadmZwQBkFJfpH35zZqT42Cn?format=match&mode=fit',
     },
   ];
 
@@ -61,8 +87,8 @@ export default function Home() {
       description: 'Receive cryptocurrency rewards when community members upvote your travel stories.',
     },
     {
-      title: 'Censorship-Resistant',
-      description: 'Your travel stories are stored on blockchain, making them permanent and tamper-proof.',
+      title: 'Decentralized Discovery',
+      description: 'Explore unique travel posts pinned by users worldwide, all verified on the blockchain for authenticity and transparency.',
     },
   ];
 
