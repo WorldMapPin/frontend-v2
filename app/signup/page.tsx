@@ -73,7 +73,7 @@ export default function SignupPage() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12">
               <div className="text-center">
-                <div className="font-lexend text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">12K+</div>
+                <div className="font-lexend text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">7K+</div>
                 <div className="font-lexend text-xs sm:text-sm text-white/80">Travelers</div>
               </div>
               <div className="text-center">
