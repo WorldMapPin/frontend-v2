@@ -247,7 +247,7 @@ export default function Home() {
 
         {/* Background decoration */}
         <div className="absolute inset-0 flex items-center justify-end pr-8 lg:pr-16 opacity-20 pointer-events-none">
-          <span className="text-[300px] lg:text-[500px] font-bold text-orange-600">3</span>
+          <span className="text-[300px] lg:text-[500px] font-bold text-orange-600 font-lexend">3</span>
         </div>
       </section>
     </main>
