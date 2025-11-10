@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { AiohaModal } from '@aioha/react-ui';
-import { KeyTypes } from '@aioha/aioha';
+import { KeyTypes, Providers } from '@aioha/aioha';
 import { useAiohaSafe } from '@/hooks/use-aioha-safe';
 
 export default function SignupPage() {
@@ -245,6 +245,7 @@ export default function SignupPage() {
           onClose={() => setModalDisplayed(false)}
           imageServer="https://images.hive.blog"
           explorerUrl="https://hivehub.dev"
+          forceShowProviders={[Providers.Keychain]}
         />
       )}
     </div>
