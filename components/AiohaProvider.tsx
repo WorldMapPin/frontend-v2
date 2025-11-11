@@ -30,6 +30,9 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState<string | null>(null);
 
+  const hiveSignerApp = 'v2.worldmappin.com';
+  const hiveSignerScopes = ['login'];
+
   useEffect(() => {
     // Mark as client-side
     setIsClient(true);
@@ -44,6 +47,12 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
           hiveauth: {
             name: 'WorldMapPin',
             description: 'Share your travel adventures on the blockchain'
+          },
+          hivesigner: {
+            app: hiveSignerApp,
+            callbackURL: window.location.origin + '/hivesigner',
+            // Enable 'posting' later after creating the app account on-chain.
+            scope: hiveSignerScopes
           }
         });
         

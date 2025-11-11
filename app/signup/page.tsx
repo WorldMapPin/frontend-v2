@@ -245,7 +245,7 @@ export default function SignupPage() {
           onClose={() => setModalDisplayed(false)}
           imageServer="https://images.hive.blog"
           explorerUrl="https://hivehub.dev"
-          forceShowProviders={[Providers.Keychain]}
+          forceShowProviders={[Providers.Keychain, Providers.HiveSigner]}
         />
       )}
     </div>
