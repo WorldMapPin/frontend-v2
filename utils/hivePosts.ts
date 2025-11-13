@@ -138,11 +138,20 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
       coverImage = originalImage ? optimizeImageUrl(originalImage, 'thumb') : null;
     }
     
-    // Calculate payout: use pending_payout_value first, fallback to total_payout_value if pending is 0
+    // Calculate payout: show pending amount while active, otherwise combine author + curator payouts
     const pendingPayout = parseFloat(post.pending_payout_value || '0');
-    const payoutValue = pendingPayout > 0 
-      ? post.pending_payout_value 
-      : (post.total_payout_value || post.pending_payout_value || '0');
+    let payoutValue: string;
+
+    if (pendingPayout > 0) {
+      payoutValue = post.pending_payout_value || '0';
+    } else {
+      const totalPayoutRaw = parseFloat(post.total_payout_value || '0');
+      const curatorPayoutRaw = parseFloat(post.curator_payout_value || '0');
+      const totalPayout = isNaN(totalPayoutRaw) ? 0 : totalPayoutRaw;
+      const curatorPayout = isNaN(curatorPayoutRaw) ? 0 : curatorPayoutRaw;
+      const combinedPayout = totalPayout + curatorPayout;
+      payoutValue = `${combinedPayout.toFixed(3)} HBD`;
+    }
     
     // Process the post
     const processedPost: ProcessedPost = {

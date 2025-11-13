@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ProcessedPost, CuratedPost } from '@/types/post';
 import { loadCuratedPosts, fetchPosts, fetchPostsProgressive } from '@/utils/hivePosts';
 import ExploreCard from '@/components/explore/ExploreCard';
+import ExploreHeader from '@/components/explore/ExploreHeader';
 
 const POSTS_PER_PAGE = 12;
 
@@ -123,18 +124,11 @@ export default function ExplorePage() {
   if (loading) {
     return (
       <div className="relative min-h-screen overflow-hidden">
-        {/* Background - matching home page */}
-        <div className="absolute inset-0 bg-gradient-to-b from-orange-300 to-orange-300" />
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-400/40 via-amber-600/30 to-white" />
+        {/* Background */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%)' }} />
         
         <div className="relative z-10">
-        {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-orange-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-gray-900">Explore</h1>
-            <p className="text-gray-600 mt-2">Discover curated travel stories from the WorldMapPin community</p>
-          </div>
-        </div>
+        <ExploreHeader />
         
         {/* Loading State */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -169,18 +163,11 @@ export default function ExplorePage() {
   if (error) {
     return (
       <div className="relative min-h-screen overflow-hidden">
-        {/* Background - matching home page */}
-        <div className="absolute inset-0 bg-gradient-to-b from-orange-300 to-orange-300" />
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-400/40 via-amber-600/30 to-white" />
+        {/* Background */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%)' }} />
         
         <div className="relative z-10">
-        {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-orange-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-gray-900">Explore</h1>
-            <p className="text-gray-600 mt-2">Discover curated travel stories from the WorldMapPin community</p>
-          </div>
-        </div>
+        <ExploreHeader />
         
         {/* Error State */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -205,33 +192,21 @@ export default function ExplorePage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Background - matching home page */}
-      <div className="absolute inset-0 bg-gradient-to-b from-orange-300 to-orange-300" />
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-400/40 via-amber-600/30 to-white" />
+      {/* Background */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%)' }} />
       
       <div className="relative z-10">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-orange-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900">Explore</h1>
-          <p className="text-gray-600 mt-2">
-            Discover curated travel stories from the WorldMapPin community
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            Showing {posts.length} of {allCuratedPosts.length} {allCuratedPosts.length === 1 ? 'post' : 'posts'}
-          </p>
-        </div>
-      </div>
+      <ExploreHeader postCount={posts.length} totalCount={allCuratedPosts.length} />
       
       {/* Posts Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8 lg:py-12">
         {posts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No posts available</p>
+          <div className="text-center py-8 sm:py-12">
+            <p className="text-gray-600 text-sm sm:text-base">No posts available</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 items-stretch">
               {posts.map((post) => (
                 <ExploreCard key={post.slug} post={post} />
               ))}
@@ -239,27 +214,27 @@ export default function ExplorePage() {
             
             {/* Load More Button */}
             {hasMorePosts && (
-              <div className="mt-12 text-center">
+              <div className="mt-6 sm:mt-8 lg:mt-12 text-center">
                 <button
                   onClick={loadMorePosts}
                   disabled={loadingMore}
-                  className="inline-flex items-center gap-3 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-500/50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="inline-flex items-center gap-2 sm:gap-3 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 rounded-lg text-sm sm:text-base lg:text-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-500/50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {loadingMore ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
                       <span>Loading...</span>
                     </>
                   ) : (
                     <>
                       <span>Explore More</span>
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </>
                   )}
                 </button>
-                <p className="text-sm text-gray-500 mt-3">
+                <p className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3">
                   {allCuratedPosts.length - posts.length} more {allCuratedPosts.length - posts.length === 1 ? 'post' : 'posts'} to explore
                 </p>
               </div>
