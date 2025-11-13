@@ -24,7 +24,7 @@ export default function ExploreCard({ post }: ExploreCardProps) {
         {/* Cover Image with Overlay Content */}
         <div className="relative w-full bg-gradient-to-br from-orange-400 to-amber-500 overflow-hidden rounded-t-xl sm:rounded-t-2xl h-[180px] sm:h-[220px] lg:h-[249.6px]">
           {/* Top Gradient Overlay for better text visibility */}
-          <div className="absolute top-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-b from-black/40 to-transparent z-[1] pointer-events-none"></div>
+          <div className="absolute top-0 left-0 right-0 h-20 sm:h-32 bg-gradient-to-b from-black/70 to-transparent z-[1] pointer-events-none"></div>
           {post.coverImage && !imageError ? (
             <>
               {/* Loading Skeleton */}
@@ -130,14 +130,14 @@ export default function ExploreCard({ post }: ExploreCardProps) {
         {/* Like and Comment Ovals - Side by side on left, centered on border */}
         <div className="absolute left-2 sm:left-4 flex flex-row gap-1 sm:gap-2 z-20 top-[180px] sm:top-[220px] lg:top-[249.6px]" style={{ transform: 'translateY(-50%)' }}>
           {/* Like Oval */}
-          <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center gap-1 sm:gap-2" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#FFE6ED', boxShadow: '0px 2px 4px 0px #B6000026' }}>
+          <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center gap-1 sm:gap-2" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#FFE6ED', boxShadow: '0px 2px 4px 0px #B6000026', border: '2px solid #AA2C504D' }}>
             <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#DE2056' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
             <span className="text-xs sm:text-sm font-normal" style={{ color: '#560018' }}>{post.votes !== undefined ? post.votes : 0}</span>
           </div>
           {/* Comment Oval */}
-          <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center gap-1 sm:gap-2 shadow-md" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#E4EDFF' }}>
+          <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center gap-1 sm:gap-2 shadow-md" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#E4EDFF', border: '2px solid #18367233' }}>
             <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#3B79F4' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -148,7 +148,7 @@ export default function ExploreCard({ post }: ExploreCardProps) {
         {/* Date Oval - Right side, centered on border */}
         {post.created && (
           <div className="absolute right-2 sm:right-4 flex flex-row gap-2 z-20 top-[180px] sm:top-[220px] lg:top-[249.6px]" style={{ transform: 'translateY(-50%)' }}>
-            <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center shadow-md" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#E7E7E7' }}>
+            <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center shadow-md" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#E7E7E7', border: '2px solid #00000033' }}>
               <span className="text-xs sm:text-sm font-normal" style={{ color: '#000000' }}>
                 {new Date(post.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
@@ -170,8 +170,8 @@ export default function ExploreCard({ post }: ExploreCardProps) {
                 {post.tags.slice(0, 3).map((tag, index) => (
                   <span
                     key={index}
-                    className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full"
-                    style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#DCF5FF', color: '#006CC4' }}
+                    className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-semibold italic"
+                    style={{ fontFamily: 'var(--font-lexend)', color: '#2090EC' }}
                   >
                     #{tag}
                   </span>
