@@ -7,9 +7,10 @@ import { ProcessedPost } from '@/types/post';
 
 interface ExploreCardProps {
   post: ProcessedPost;
+  hideAvatar?: boolean;
 }
 
-export default function ExploreCard({ post }: ExploreCardProps) {
+export default function ExploreCard({ post, hideAvatar = false }: ExploreCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [useUnoptimized, setUseUnoptimized] = useState(false);
@@ -89,7 +90,8 @@ export default function ExploreCard({ post }: ExploreCardProps) {
           <div className="absolute inset-0 p-2 sm:p-4 flex items-start justify-between z-10">
             {/* Left Side - Avatar, Username, and Rating */}
             <div className="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0">
-              {/* Circular Avatar */}
+              {/* Circular Avatar - Hidden on user page */}
+              {!hideAvatar && (
               <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-sm border-2 border-white/50 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {!avatarError ? (
                   <Image
@@ -107,6 +109,7 @@ export default function ExploreCard({ post }: ExploreCardProps) {
                   </div>
                 )}
               </div>
+              )}
               {/* Username */}
               <span className="text-white font-medium text-xs sm:text-sm drop-shadow-md truncate" style={{ fontFamily: 'var(--font-lexend)' }}>
                 @{post.author}

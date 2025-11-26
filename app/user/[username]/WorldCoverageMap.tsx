@@ -554,27 +554,36 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
   );
 
   return (
-    <div className="relative">
-      {/* Coverage Stats Card with Mini Preview - Click anywhere to expand */}
+    <div className="relative h-full w-full flex flex-col">
+      {/* Coverage Stats Card - Click anywhere to expand */}
       <div 
         onClick={() => setIsExpanded(true)}
-        className="bg-gradient-to-br from-orange-50 to-amber-100 p-4 rounded-lg shadow-sm border border-orange-200 transition-all duration-300 hover:shadow-lg cursor-pointer"
+        className="bg-white p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer flex flex-col h-full w-full border border-[#0000001A]"
+        style={{ fontFamily: 'var(--font-lexend)' }}
       >
-        <div className="text-center mb-3">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            World Coverage
-          </h3>
-          
-          {/* Circular Progress */}
-          <div className="relative w-16 h-16 mx-auto mb-2">
-            <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 80 80">
+        {/* World Coverage Title - Left aligned */}
+        <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium mb-3 sm:mb-4 md:mb-6" style={{ color: '#592102' }}>
+          World Coverage
+        </h3>
+        
+        {/* Circular Progress - Centered */}
+        <div className="flex-1 flex items-center justify-center py-2 sm:py-4">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-[115px] md:h-[115px]">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+              {/* Define gradient for text */}
+              <defs>
+                <linearGradient id="percentageGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="1.84%" stopColor="#ED6D28" />
+                  <stop offset="100%" stopColor="#FFA600" />
+                </linearGradient>
+              </defs>
               {/* Background circle */}
               <circle
                 cx="40"
                 cy="40"
                 r="32"
-                stroke="#e5e7eb"
-                strokeWidth="6"
+                stroke="#D9D9D9"
+                strokeWidth="8"
                 fill="none"
               />
               {/* Progress circle */}
@@ -582,8 +591,8 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
                 cx="40"
                 cy="40"
                 r="32"
-                stroke="#FFA97B"
-                strokeWidth="6"
+                stroke="#ED6D28"
+                strokeWidth="8"
                 fill="none"
                 strokeLinecap="round"
                 strokeDasharray={`${(actualCoveragePercentage / 100) * 201.06} 201.06`}
@@ -591,73 +600,49 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-lg font-bold text-orange-600">
+              <span 
+                className="text-lg sm:text-xl md:text-2xl font-bold"
+                style={{ 
+                  background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
                 {actualCoveragePercentage}%
               </span>
             </div>
           </div>
+        </div>
 
-          <p className="text-xs text-gray-600 mb-1">
-            of the world explored
-          </p>
-          <p className="text-xs text-gray-700 font-semibold mb-2">
+        {/* Text below circle - Centered */}
+        <div className="text-center mt-2 sm:mt-4" style={{ color: '#592102' }}>
+          <p className="text-[10px] sm:text-xs md:text-sm font-medium">of the world explored!</p>
+          <p className="text-[10px] sm:text-xs md:text-sm font-medium">That's</p>
+          <p 
+            className="text-sm sm:text-lg md:text-2xl font-semibold mt-1 sm:mt-2"
+            style={{ 
+              background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
             {countryData.totalVisited} / {TOTAL_COUNTRIES} countries
           </p>
         </div>
 
-        {/* Mini Map Preview */}
-        <div className="relative bg-gradient-to-br from-orange-100 to-amber-50 rounded-lg p-3 mb-3 pointer-events-none">
-          <div className="relative w-full h-[100px] sm:h-[130px] md:h-[150px]">
-            {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-              </div>
-            ) : (
-              <ComposableMap
-                projection="geoMercator"
-                projectionConfig={{
-                  scale: 140,
-                  center: [0, 20]
-                }}
-                className="w-full h-full"
-              >
-                <Geographies geography={GEO_URL}>
-                  {({ geographies }: { geographies: any[] }) =>
-                    geographies.map((geo: any) => {
-                      const countryName = geo.properties.name;
-                      const isVisited = isCountryVisited(countryName, countryData.visitedCountries);
-                      
-                      return (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          fill={isVisited ? '#FFA97B' : '#d1d5db'}
-                          stroke="#ffffff"
-                          strokeWidth={0.5}
-                          style={{
-                            default: { outline: 'none' },
-                            hover: { outline: 'none' },
-                            pressed: { outline: 'none' }
-                          }}
-                        />
-                      );
-                    })
-                  }
-                </Geographies>
-              </ComposableMap>
-            )}
-          </div>
-        </div>
-
-        {/* Click to Expand Hint */}
-        <div className="text-center">
-          <div className="inline-flex items-center space-x-2 text-orange-600 text-sm font-medium">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        {/* View Detailed Map Button */}
+        <div className="mt-auto pt-3 sm:pt-4">
+          <button 
+            className="w-full px-3 sm:px-4 py-3 sm:py-4 md:py-5 rounded-lg flex items-center justify-between font-medium text-sm sm:text-base"
+            style={{ backgroundColor: '#EDA82847', color: '#5C2609', minHeight: '48px' }}
+          >
+            <span>View detailed map</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#5C2609' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <span>Click to view details</span>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -668,8 +653,8 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
             {/* Modal Header */}
             <div className="flex items-start justify-between p-4 sm:p-6 border-b border-gray-200">
               <div className="flex-1 pr-2">
-                <h3 className="text-lg sm:text-2xl font-bold text-gray-900">
-                  {username}'s World Coverage
+                <h3 className="text-lg sm:text-2xl font-bold" style={{ color: '#592102' }}>
+                  {username.charAt(0).toUpperCase() + username.slice(1)}'s World Coverage
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-600 mt-1">
                   <span className="font-semibold text-orange-600">{userPins.length}</span> pins across{' '}

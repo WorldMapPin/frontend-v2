@@ -4,8 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchUserPostsWithCoords } from '../../../lib/worldmappinApi';
 import { fetchPosts, fetchPostsProgressive } from '@/utils/hivePosts';
 import { ProcessedPost, CuratedPost } from '@/types/post';
-import PostCard from '@/components/shared/PostCard';
-import Link from 'next/link';
+import ExploreCard from '@/components/explore/ExploreCard';
 
 interface UserPostsProps {
   username: string;
@@ -179,34 +178,37 @@ export function UserPosts({ username }: UserPostsProps) {
 
   if (loading) {
     return (
-      <section className="py-8 sm:py-12 bg-gray-50">
+      <section className="py-6 sm:py-8 md:py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-              Travel Posts
-            </h2>
-            <p className="text-sm sm:text-base text-gray-600">
-              Discover all the amazing places @{username} has shared
-            </p>
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#592102' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102', fontFamily: 'var(--font-lexend)' }}>
+                Pins
+              </h2>
+            </div>
           </div>
           
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+          <div className="flex items-center justify-center py-8 sm:py-12">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-amber-500"></div>
           </div>
           
           {/* Loading Skeletons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mt-6 sm:mt-8">
             {[...Array(6)].map((_, index) => (
               <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-                <div className="h-48 bg-gray-300"></div>
-                <div className="p-4">
-                  <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
-                  <div className="flex gap-2 mb-4">
-                    <div className="h-6 bg-gray-300 rounded w-16"></div>
-                    <div className="h-6 bg-gray-300 rounded w-16"></div>
+                <div className="h-36 sm:h-44 md:h-48 bg-gray-300"></div>
+                <div className="p-3 sm:p-4">
+                  <div className="h-3 sm:h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 sm:h-4 bg-gray-300 rounded w-1/2 mb-3 sm:mb-4"></div>
+                  <div className="flex gap-2 mb-3 sm:mb-4">
+                    <div className="h-5 sm:h-6 bg-gray-300 rounded w-14 sm:w-16"></div>
+                    <div className="h-5 sm:h-6 bg-gray-300 rounded w-14 sm:w-16"></div>
                   </div>
-                  <div className="h-8 bg-gray-300 rounded"></div>
+                  <div className="h-7 sm:h-8 bg-gray-300 rounded"></div>
                 </div>
               </div>
             ))}
@@ -218,12 +220,18 @@ export function UserPosts({ username }: UserPostsProps) {
 
   if (error) {
     return (
-      <section className="py-8 sm:py-12 bg-gray-50">
+      <section className="py-6 sm:py-8 md:py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-              Travel Posts
-            </h2>
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#592102' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102', fontFamily: 'var(--font-lexend)' }}>
+                Pins
+              </h2>
+            </div>
           </div>
           <div className="text-center text-red-600 bg-red-50 p-6 rounded-lg">
             <p>{error}</p>
@@ -235,21 +243,24 @@ export function UserPosts({ username }: UserPostsProps) {
 
   if (posts.length === 0 && !loading) {
     return (
-      <section className="py-8 sm:py-12 bg-gray-50">
+      <section className="py-6 sm:py-8 md:py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-              Travel Posts
-            </h2>
-            <p className="text-sm sm:text-base text-gray-600">
-              Discover all the amazing places @{username} has shared
-            </p>
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#592102' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102', fontFamily: 'var(--font-lexend)' }}>
+                Pins
+              </h2>
+            </div>
           </div>
-          <div className="text-center py-12">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
+          <div className="text-center py-8 sm:py-12">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
               No Posts Found
             </h3>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               @{username} hasn't shared any travel posts yet.
             </p>
           </div>
@@ -259,69 +270,61 @@ export function UserPosts({ username }: UserPostsProps) {
   }
 
   return (
-    <section className="py-8 sm:py-12 bg-gray-50">
+    <section className="py-6 sm:py-8 md:py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Travel Posts
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600">
-            Discover all the amazing places @{username} has shared
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            Showing {posts.length} of {allBasicPosts.length} {allBasicPosts.length === 1 ? 'post' : 'posts'}
-          </p>
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#592102' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102', fontFamily: 'var(--font-lexend)' }}>
+              Pins
+            </h2>
+          </div>
         </div>
 
         {/* Posts Grid */}
         {posts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No posts available</p>
+          <div className="text-center py-8 sm:py-12">
+            <p className="text-sm sm:text-base text-gray-600">No posts available</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
               {posts.map((post) => (
-                <Link key={post.slug} href={`/read/${post.slug}`}>
-                  <PostCard
-                    coverImage={post.coverImage}
-                    title={post.title}
-                    username={post.author}
-                    reputation={post.reputation}
-                    tags={post.tags}
-                    votes={post.votes}
-                    comments={post.comments}
-                    payout={post.payout}
-                    date={post.created}
-                  />
-                </Link>
+                <ExploreCard key={post.slug} post={post} hideAvatar={true} />
               ))}
             </div>
             
             {/* Load More Button */}
             {hasMorePosts && (
-              <div className="mt-8 sm:mt-12 text-center">
+              <div className="mt-6 sm:mt-8 md:mt-12 text-center">
                 <button
                   onClick={loadMorePosts}
                   disabled={loadingMore}
-                  className="inline-flex items-center gap-3 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-amber-500/50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="inline-flex items-center gap-2 sm:gap-3 text-white font-semibold px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base md:text-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none disabled:cursor-not-allowed disabled:transform-none disabled:opacity-70"
+                  style={{ 
+                    background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
+                    boxShadow: '0px 1px 3px 1px #00000026, 0px 1px 2px 0px #0000004D'
+                  }}
                 >
                   {loadingMore ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
                       <span>Loading...</span>
                     </>
                   ) : (
                     <>
                       <span>Load More Posts</span>
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </>
                   )}
                 </button>
-                <p className="text-sm text-gray-500 mt-3">
+                <p className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3">
                   {allBasicPosts.length - posts.length} more {allBasicPosts.length - posts.length === 1 ? 'post' : 'posts'} to explore
                 </p>
               </div>
