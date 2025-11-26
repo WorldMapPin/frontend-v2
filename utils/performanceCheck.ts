@@ -41,6 +41,13 @@ export function isSlowConnection(): boolean {
  */
 export function checkPerformance(): Promise<boolean> {
   return new Promise((resolve) => {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      // Running on server, assume high performance
+      resolve(false);
+      return;
+    }
+
     // Set a default assumption for slower devices
     let isLowPerformance = false;
     let checksCompleted = 0;
@@ -233,6 +240,8 @@ export function initPerformanceCheck(): Promise<boolean> {
   return performanceCheckPromise;
 }
 
-// Start the check immediately
-initPerformanceCheck();
+// Start the check immediately (only in browser)
+if (typeof window !== 'undefined') {
+  initPerformanceCheck();
+}
 
