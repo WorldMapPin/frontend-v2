@@ -248,7 +248,7 @@ export function UserProfile({ username }: UserProfileProps) {
                   </div>
                   
                   {/* Rank - rounded bottom on desktop, rounded right on mobile */}
-                  {profileData.rank && (
+                  {(profileData.rank !== undefined && profileData.rank !== null) && (
                     <div className="bg-[#B6000026] px-3 sm:px-4 md:px-6 py-2.5 sm:py-[14px] md:py-[18px] rounded-r-[12px] sm:rounded-r-none sm:rounded-b-[17px] border-[2px] border-[#B6000026] flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-1 sm:gap-[34px] md:gap-[42px] flex-1 sm:flex-none sm:min-w-[240px] md:min-w-[288px]">
                       <div className="flex items-center gap-1 sm:gap-2">
                         <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#5C0909] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -295,7 +295,7 @@ export function UserProfile({ username }: UserProfileProps) {
                     </svg>
                     <span className="text-sm font-semibold text-[#5C2609]">{profileData.pinCount} Pins</span>
                   </div>
-                  {profileData.rank && (
+                  {(profileData.rank !== undefined && profileData.rank !== null) && (
                     <div className="flex items-center gap-1.5">
                       <svg className="w-4 h-4 text-[#5C0909]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
