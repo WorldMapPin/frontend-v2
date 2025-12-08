@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserMapComponent from './UserMapComponent';
 import WorldCoverageMap from './WorldCoverageMap';
 import UserPosts from './UserPosts';
@@ -26,7 +26,6 @@ interface UserProfileData {
 export function UserProfile({ username }: UserProfileProps) {
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
 
   // Fetch user profile data
@@ -99,10 +98,6 @@ export function UserProfile({ username }: UserProfileProps) {
     }
   }, [username]);
 
-  const toggleMapExpansion = () => {
-    setIsMapExpanded(!isMapExpanded);
-  };
-
   const minimizeProfile = () => {
     setIsMinimized(true);
   };
@@ -165,7 +160,7 @@ export function UserProfile({ username }: UserProfileProps) {
             background: 'linear-gradient(0deg, rgba(255, 166, 0, 0.14) 0%, rgba(237, 168, 40, 0.042) 111.74%)'
           }}
         >
-          <div className="w-full px-4 sm:px-8 md:px-12 lg:px-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Minimize Button - Hidden on mobile */}
             <button
               onClick={minimizeProfile}
@@ -355,21 +350,6 @@ export function UserProfile({ username }: UserProfileProps) {
                     </h2>
                   </div>
                 </div>
-                <button
-                  onClick={toggleMapExpansion}
-                  className="w-full sm:w-auto px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 sm:space-x-4 text-xs sm:text-sm md:text-base font-medium"
-                  style={{ background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)' }}
-                >
-                  <span>{isMapExpanded ? 'Collapse' : 'Expand'}</span>
-                  <svg
-                    className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${isMapExpanded ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
               </div>
             </div>
 
@@ -379,13 +359,11 @@ export function UserProfile({ username }: UserProfileProps) {
                 <div
                   className="border border-[#0000001A] rounded-xl sm:rounded-2xl p-1 sm:p-1.5 md:p-2 flex-1 flex flex-col"
                 >
-                  <div className={`transition-all duration-500 overflow-hidden rounded-xl sm:rounded-2xl flex-1 ${
-                    isMapExpanded ? 'max-h-screen' : ''
-                  }`}>
-                    <div className={`${isMapExpanded ? 'h-screen' : 'h-full min-h-[200px] sm:min-h-[280px] md:min-h-[350px]'} rounded-xl sm:rounded-2xl overflow-hidden`}>
+                  <div className="transition-all duration-500 overflow-hidden rounded-xl sm:rounded-2xl flex-1">
+                    <div className="h-full min-h-[200px] sm:min-h-[280px] md:min-h-[350px] rounded-xl sm:rounded-2xl overflow-hidden">
                       <UserMapComponent 
                         username={username}
-                        isExpanded={isMapExpanded}
+                        isExpanded={false}
                       />
                     </div>
                   </div>
@@ -405,9 +383,7 @@ export function UserProfile({ username }: UserProfileProps) {
       </section>
 
       {/* User Posts Section */}
-      {!isMapExpanded && (
-        <UserPosts username={username} />
-      )}
+      <UserPosts username={username} />
     </div>
   );
 }
