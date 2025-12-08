@@ -2,8 +2,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useAiohaSafe } from '@/hooks/use-aioha-safe'
 
 interface NavbarProps {
   className?: string
@@ -11,7 +12,28 @@ interface NavbarProps {
 
 export default function Navbar({ className = '' }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, isReady, logout } = useAiohaSafe()
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showUserMenu])
   const isMapPage = pathname?.startsWith('/map') ?? false
   const containerClasses = ['w-full', 'px-4', 'sm:px-6', 'lg:px-8']
 
@@ -21,6 +43,10 @@ export default function Navbar({ className = '' }: NavbarProps) {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
+  }
+
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu)
   }
 
   return (
@@ -147,6 +173,101 @@ export default function Navbar({ className = '' }: NavbarProps) {
               >
                 Stats
               </Link>
+
+              {/* Auth Section */}
+              {isReady ? (
+                user ? (
+                  // User Avatar - Logged In
+                  <div className="relative" ref={userMenuRef}>
+                    <button
+                      onClick={toggleUserMenu}
+                      className="flex items-center space-x-2 focus:outline-none"
+                      aria-label="User menu"
+                    >
+                      <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500 hover:border-orange-600 transition-colors">
+                        <Image
+                          src={`https://images.hive.blog/u/${user}/avatar`}
+                          alt={`@${user}`}
+                          fill
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/images/default-avatar.svg';
+                          }}
+                        />
+                      </div>
+                    </button>
+
+                    {/* User Dropdown Menu */}
+                    {showUserMenu && (
+                      <div
+                        className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50"
+                        style={{ border: '1px solid #ED6D28' }}
+                      >
+                        <div className="px-4 py-2 border-b" style={{ borderColor: '#ED6D28' }}>
+                          <span className="text-sm font-semibold" style={{ fontFamily: 'Lexend', color: '#5C2609' }}>
+                            @{user}
+                          </span>
+                        </div>
+                        <Link
+                          href={`/user/${user}`}
+                          className="block px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
+                          style={{ fontFamily: 'Lexend', color: '#5C2609' }}
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          My Profile
+                        </Link>
+                        <Link
+                          href={`/map/@${user}`}
+                          className="block px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
+                          style={{ fontFamily: 'Lexend', color: '#5C2609' }}
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          My Map
+                        </Link>
+                        <Link
+                          href="/settings"
+                          className="block px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
+                          style={{ fontFamily: 'Lexend', color: '#5C2609' }}
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          Settings
+                        </Link>
+                        <hr className="my-2" style={{ borderColor: '#ED6D28' }} />
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            logout();
+                            router.push('/');
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
+                          style={{ fontFamily: 'Lexend', color: '#ED6D28', fontWeight: 600 }}
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Login Button - Not Logged In
+                  <Link
+                    href="/signup"
+                    className="px-6 py-2 text-base font-semibold transition-all duration-200 hover:shadow-lg hover:scale-105"
+                    style={{
+                      fontFamily: 'Lexend',
+                      background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
+                      color: '#FFFFFF',
+                      borderRadius: '30px',
+                      boxShadow: '0px 1px 7px 0px #00000040'
+                    }}
+                  >
+                    Login
+                  </Link>
+                )
+              ) : (
+                // Loading State
+                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+              )}
             </div>
           </div>
 
@@ -209,6 +330,30 @@ export default function Navbar({ className = '' }: NavbarProps) {
           suppressHydrationWarning={true}
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t" suppressHydrationWarning={true}>
+            {/* User Info Section - Mobile */}
+            {isReady && user && (
+              <div className="flex items-center space-x-3 px-3 py-3 mb-2 bg-orange-50 rounded-lg">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500">
+                  <Image
+                    src={`https://images.hive.blog/u/${user}/avatar`}
+                    alt={`@${user}`}
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/images/default-avatar.svg';
+                    }}
+                  />
+                </div>
+                <span
+                  className="text-sm font-semibold"
+                  style={{ fontFamily: 'Lexend', color: '#5C2609' }}
+                >
+                  @{user}
+                </span>
+              </div>
+            )}
+
             <Link
               href="/"
               className="block px-3 py-2 rounded-md text-sm"
@@ -300,10 +445,88 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 letterSpacing: '-0.03em',
                 color: '#5C2609'
               }}
+              onClick={() => setIsMenuOpen(false)}
               suppressHydrationWarning={true}
             >
               Roadmap
             </Link>
+
+            {/* Auth Section - Mobile */}
+            {isReady && (
+              <>
+                <hr className="my-2" style={{ borderColor: '#ED6D28' }} />
+                {user ? (
+                  <>
+                    <Link
+                      href={`/user/${user}`}
+                      className="block px-3 py-2 rounded-md text-sm"
+                      style={{
+                        fontFamily: 'Lexend',
+                        fontWeight: 500,
+                        color: '#5C2609'
+                      }}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                    <Link
+                      href={`/map/@${user}`}
+                      className="block px-3 py-2 rounded-md text-sm"
+                      style={{
+                        fontFamily: 'Lexend',
+                        fontWeight: 500,
+                        color: '#5C2609'
+                      }}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      My Map
+                    </Link>
+                    <Link
+                      href="/settings"
+                      className="block px-3 py-2 rounded-md text-sm"
+                      style={{
+                        fontFamily: 'Lexend',
+                        fontWeight: 500,
+                        color: '#5C2609'
+                      }}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        logout();
+                        router.push('/');
+                      }}
+                      className="block w-full text-left px-3 py-2 rounded-md text-sm"
+                      style={{
+                        fontFamily: 'Lexend',
+                        fontWeight: 600,
+                        color: '#ED6D28'
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/signup"
+                    className="block mx-3 my-2 px-4 py-3 text-center text-sm font-semibold"
+                    style={{
+                      fontFamily: 'Lexend',
+                      background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
+                      color: '#FFFFFF',
+                      borderRadius: '30px',
+                      boxShadow: '0px 1px 7px 0px #00000040'
+                    }}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

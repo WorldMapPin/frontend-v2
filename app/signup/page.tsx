@@ -10,7 +10,7 @@ import { useAiohaSafe } from '@/hooks/use-aioha-safe';
 export default function SignupPage() {
   const router = useRouter();
   const [modalDisplayed, setModalDisplayed] = useState(false);
-  const { user, isReady } = useAiohaSafe();
+  const { user, isReady, refreshUser } = useAiohaSafe();
 
   const handleJoinCommunity = () => {
     // Only open modal if Aioha is ready
@@ -23,8 +23,13 @@ export default function SignupPage() {
     console.log('User logged in:', result);
     setModalDisplayed(false);
     
-    // Redirect to map after successful login
-    router.push('/map');
+    // Manually refresh user state immediately
+    refreshUser();
+    
+    // Small delay to ensure state updates before redirect
+    setTimeout(() => {
+      router.push('/map');
+    }, 100);
   };
 
   return (

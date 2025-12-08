@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, createContext, useContext } from 'react';
+import { useEffect, useState, createContext } from 'react';
 import { AiohaProvider as AiohaReactProvider } from '@aioha/react-ui';
 import { Aioha } from '@aioha/aioha';
 
@@ -12,13 +12,17 @@ interface SafeAiohaContextType {
   user: string | null;
   aioha: Aioha | null;
   isReady: boolean;
+  logout: () => void;
+  refreshUser: () => void;
 }
 
 // Create safe context that's always available
 export const SafeAiohaContext = createContext<SafeAiohaContextType>({
   user: null,
   aioha: null,
-  isReady: false
+  isReady: false,
+  logout: () => {},
+  refreshUser: () => {}
 });
 
 /**
@@ -67,11 +71,59 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
     }
   }, []);
 
+  // Poll for user changes to detect login/logout
+  useEffect(() => {
+    if (!aioha) return;
+
+    const checkUserChange = () => {
+      const currentUser = aioha.getCurrentUser();
+      const newUser = currentUser ?? null;
+      
+      if (newUser !== user) {
+        console.log('User changed:', newUser);
+        setUser(newUser);
+      }
+    };
+
+    // Check immediately
+    checkUserChange();
+
+    // Poll every 500ms for user changes
+    const interval = setInterval(checkUserChange, 500);
+
+    return () => clearInterval(interval);
+  }, [aioha, user]);
+
+  // Logout function
+  const logout = () => {
+    if (aioha) {
+      try {
+        aioha.logout();
+        setUser(null);
+        console.log('User logged out successfully');
+      } catch (error) {
+        console.error('Failed to logout:', error);
+      }
+    }
+  };
+
+  // Refresh user function - manually check for user changes
+  const refreshUser = () => {
+    if (aioha) {
+      const currentUser = aioha.getCurrentUser();
+      const newUser = currentUser ?? null;
+      console.log('Manually refreshing user:', newUser);
+      setUser(newUser);
+    }
+  };
+
   // Provide safe context wrapper
   const contextValue: SafeAiohaContextType = {
     user,
     aioha,
-    isReady: isClient && !!aioha
+    isReady: isClient && !!aioha,
+    logout,
+    refreshUser
   };
 
   // Always render with safe context
