@@ -54,9 +54,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
       className={`fixed top-0 w-full z-50 ${className}`}
       style={{
         backgroundColor: '#FFFFFF',
-        boxShadow: '0px 4px 6px 0px #00000033',
-        borderBottomLeftRadius: '20px',
-        borderBottomRightRadius: '20px'
+        boxShadow: '0px 4px 6px 0px #00000033'
       }}
       role="navigation"
       aria-label="Main navigation"

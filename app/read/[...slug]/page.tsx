@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { ProcessedPost } from '@/types/post';
 import { fetchPostWithRetry } from '@/utils/hivePosts';
 import ReactMarkdown from 'react-markdown';
@@ -183,13 +182,14 @@ export default function PostReaderPage() {
                 }}
               />
               {/* Back Button */}
-              <Link
-                href="/explore"
+              <button
+                onClick={() => router.back()}
                 className="absolute top-3 left-3 sm:top-4 sm:-left-4 z-10 flex items-center justify-center bg-white hover:bg-gray-50 transition-colors cursor-pointer w-10 h-10 sm:w-12 sm:h-12"
                 style={{
                   borderRadius: '50px',
                   boxShadow: '0px 1px 3px 0px #0000004D, 0px 4px 8px 3px #00000026'
                 }}
+                aria-label="Go back"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -211,7 +211,7 @@ export default function PostReaderPage() {
                     strokeLinecap="round"
                   />
                 </svg>
-              </Link>
+              </button>
             </div>
           )}
 

@@ -608,6 +608,47 @@ body {
     font-size: 16px;
   }
   
+  /* Mobile button adjustments - make buttons more compact */
+  .mobile-control-buttons {
+    gap: 0.5rem !important;
+  }
+  
+  .mobile-control-buttons button {
+    min-width: 100px !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .mobile-control-buttons button svg {
+    width: 0.875rem !important;
+    height: 0.875rem !important;
+  }
+  
+  .mobile-control-buttons button span {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Extra small mobile screens */
+@media (max-width: 380px) {
+  .mobile-control-buttons button {
+    min-width: 90px !important;
+    padding: 0.4rem 0.6rem !important;
+  }
+  
+  .mobile-control-buttons button span {
+    font-size: 0.7rem !important;
+  }
+  
+  /* Make filter banners more compact on very small screens */
+  .filter-banner-mobile {
+    padding: 0.5rem !important;
+  }
+  
+  .filter-banner-mobile p {
+    font-size: 0.7rem !important;
+  }
+  
   .code-description-input {
     height: 40px;
     font-size: 13px;

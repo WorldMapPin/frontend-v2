@@ -693,25 +693,80 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         {/* Old Loading Spinner */}
         {loading && <OldLoadingSpinner message={`Loading ${selectedCommunity.name} pins...`} />}
 
-        {/* Get Code Button */}
-        <GetCodeButton 
-          isCodeMode={codeMode} 
-          onToggleCodeMode={toggleCodeMode} 
-        />
+        {/* Control Buttons Container - Responsive Layout */}
+        <div className="mobile-control-buttons absolute top-20 right-4 z-30 flex flex-col gap-2 md:gap-2.5">
+          {/* Get Code Button */}
+          <button
+            onClick={toggleCodeMode}
+            className={`${
+              codeMode 
+                ? 'bg-red-500/90 hover:bg-red-600' 
+                : 'bg-gradient-to-r from-purple-500/90 to-indigo-500/90 hover:from-purple-600 hover:to-indigo-600'
+            } backdrop-blur-md text-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-white/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]`}
+            title={codeMode ? "Exit Code Mode" : "Get Code"}
+          >
+            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {codeMode ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              )}
+            </svg>
+            <span className="text-xs md:text-sm font-medium">{codeMode ? "Exit" : "Get Code"}</span>
+          </button>
 
+          {/* Community Selector Button */}
+          <button
+            onClick={() => setShowCommunitySelector(true)}
+            className="bg-orange-500/90 backdrop-blur-md hover:bg-orange-600 text-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-orange-200/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]"
+          >
+            <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs md:text-sm font-medium text-white truncate max-w-[70px] md:max-w-none">{selectedCommunity.name}</span>
+          </button>
+
+          {/* Journey Toggle Button */}
+          <button
+            onClick={() => setShowJourneyControls(!showJourneyControls)}
+            className="bg-purple-500/90 backdrop-blur-md hover:bg-purple-600 text-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-purple-200/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]"
+          >
+            <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7" />
+            </svg>
+            <span className="text-xs md:text-sm font-medium text-white">Journeys</span>
+          </button>
+
+          {/* Performance Indicator */}
+          {performanceResult && (
+            <div className="bg-white/90 backdrop-blur-md rounded-xl px-2.5 py-1.5 md:px-3 md:py-2 shadow-lg border border-white/20 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]">
+              <div className={`w-2 h-2 rounded-full ${
+                performanceResult.isExtremelySlow ? 'bg-red-500 animate-pulse' :
+                performanceResult.isSlow ? 'bg-yellow-500' : 'bg-green-500'
+              }`}></div>
+              <span className="text-xs font-medium text-gray-600">
+                {performanceResult.isExtremelySlow ? 'Slow' :
+                 performanceResult.isSlow ? 'Fair' : 'Fast'}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Filter Banners - Responsive positioning to avoid button overlap */}
         {/* Username Filter Banner */}
         {searchParams.author && (
-          <div className="absolute top-4 left-4 right-4 z-30 bg-orange-500/90 backdrop-blur-md rounded-2xl px-4 py-3 shadow-lg border border-orange-200/20 transition-all duration-200">
+          <div className="absolute top-4 left-4 right-4 md:left-[170px] md:right-[170px] z-30 bg-orange-500/90 backdrop-blur-md rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 shadow-lg border border-orange-200/20 transition-all duration-200">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Showing posts by</p>
-                  <p className="text-lg font-bold text-white">@{searchParams.author}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs md:text-sm font-medium text-white">Showing posts by</p>
+                  <p className="text-sm md:text-lg font-bold text-white truncate">@{searchParams.author}</p>
                 </div>
               </div>
               <button
@@ -719,9 +774,9 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                   setSearchParams({ curated_only: false });
                   loadMarkers(false, { curated_only: false });
                 }}
-                className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
+                className="w-6 h-6 md:w-8 md:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
               >
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -731,17 +786,17 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
         {/* Permlink Filter Banner */}
         {searchParams.permlink && (
-          <div className="absolute top-4 left-4 right-4 z-30 bg-blue-500/90 backdrop-blur-md rounded-2xl px-4 py-3 shadow-lg border border-blue-200/20 transition-all duration-200">
+          <div className="absolute top-4 left-4 right-4 md:left-[170px] md:right-[170px] z-30 bg-blue-500/90 backdrop-blur-md rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 shadow-lg border border-blue-200/20 transition-all duration-200">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Showing specific post</p>
-                  <p className="text-sm font-bold text-white truncate max-w-xs">{searchParams.permlink}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs md:text-sm font-medium text-white">Showing specific post</p>
+                  <p className="text-xs md:text-sm font-bold text-white truncate">{searchParams.permlink}</p>
                 </div>
               </div>
               <button
@@ -749,9 +804,9 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                   setSearchParams({ curated_only: false });
                   loadMarkers(false, { curated_only: false });
                 }}
-                className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
+                className="w-6 h-6 md:w-8 md:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
               >
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -761,17 +816,17 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
         {/* Tag Filter Banner */}
         {searchParams.tags && searchParams.tags.length > 0 && (
-          <div className="absolute top-4 left-4 right-4 z-30 bg-green-500/90 backdrop-blur-md rounded-2xl px-4 py-3 shadow-lg border border-green-200/20 transition-all duration-200">
+          <div className="absolute top-4 left-4 right-4 md:left-[170px] md:right-[170px] z-30 bg-green-500/90 backdrop-blur-md rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 shadow-lg border border-green-200/20 transition-all duration-200">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Showing posts with tags</p>
-                  <p className="text-sm font-bold text-white">{searchParams.tags.join(', ')}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs md:text-sm font-medium text-white">Showing posts with tags</p>
+                  <p className="text-xs md:text-sm font-bold text-white truncate">{searchParams.tags.join(', ')}</p>
                 </div>
               </div>
               <button
@@ -779,42 +834,15 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                   setSearchParams({ curated_only: false });
                   loadMarkers(false, { curated_only: false });
                 }}
-                className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200"
+                className="w-6 h-6 md:w-8 md:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
               >
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
           </div>
         )}
-
-        {/* Community Selector Button */}
-          <button
-            onClick={() => setShowCommunitySelector(true)}
-            className={`absolute z-30 bg-orange-500/90 backdrop-blur-md hover:bg-orange-600 text-white rounded-2xl px-4 py-3 shadow-lg border border-orange-200/20 transition-all duration-200 flex items-center space-x-2 ${
-              searchParams.author || searchParams.permlink || (searchParams.tags && searchParams.tags.length > 0) ? 'top-20 right-4' : 'top-4 right-4'
-            }`}
-          >
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span className="text-sm font-medium text-white">{selectedCommunity.name}</span>
-          </button>
-
-        {/* Journey Toggle Button */}
-        <button
-          onClick={() => setShowJourneyControls(!showJourneyControls)}
-          className={`absolute z-30 bg-purple-500/90 backdrop-blur-md hover:bg-purple-600 text-white rounded-2xl px-4 py-3 shadow-lg border border-purple-200/20 transition-all duration-200 flex items-center space-x-2 ${
-            searchParams.author || searchParams.permlink || (searchParams.tags && searchParams.tags.length > 0) ? 'top-36 right-4' : 'top-20 right-4'
-          }`}
-        >
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7" />
-          </svg>
-          <span className="text-sm font-medium text-white">Journeys</span>
-        </button>
 
         {/* Community Header Image */}
         {showCommunityHeader && loadedCommunity && (
@@ -846,17 +874,15 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           </div>
         )}
 
-        {/* Filter Button */}
+        {/* Filter Button - Left Side */}
         <button
           onClick={() => setShowFilter(true)}
-          className={`absolute z-30 bg-white/90 backdrop-blur-md hover:bg-white rounded-2xl px-4 py-3 shadow-lg border border-white/20 transition-all duration-200 flex items-center space-x-2 ${
-            searchParams.author || searchParams.permlink || (searchParams.tags && searchParams.tags.length > 0) ? 'top-20 left-4' : 'top-4 left-4'
-          }`}
+          className="absolute top-20 left-4 z-30 bg-white/90 backdrop-blur-md hover:bg-gray-50 rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-white/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]"
         >
-          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
           </svg>
-          <span className="text-sm font-medium text-gray-700">Filter</span>
+          <span className="text-xs md:text-sm font-medium text-gray-700">Filter</span>
         </button>
 
         {/* Code Mode Interface - Show when in code mode OR when marker is set from context menu */}
@@ -1106,35 +1132,6 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           </Map>
         </div>
 
-        {/* Mobile Cluster Count - Floating Badge */}
-        {/* {numClusters > 0 && (
-          <div className="absolute top-4 left-4 z-30">
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl px-4 py-2 shadow-lg border border-white/20">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">{numClusters} locations</span>
-              </div>
-            </div>
-          </div>
-        )} */}
-
-        {/* Mobile Performance Indicator - Compact */}
-        {performanceResult && (
-          <div className="absolute top-4 right-4 z-30">
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl px-3 py-2 shadow-lg border border-white/20">
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  performanceResult.isExtremelySlow ? 'bg-red-500' :
-                  performanceResult.isSlow ? 'bg-yellow-500' : 'bg-green-500'
-                }`}></div>
-                <span className="text-xs font-medium text-gray-600">
-                  {performanceResult.isExtremelySlow ? 'Slow' :
-                   performanceResult.isSlow ? 'Fair' : 'Fast'}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </APIProvider>
   );
