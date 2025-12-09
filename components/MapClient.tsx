@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import axios from 'axios';
 
@@ -689,7 +690,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
   return (
     <APIProvider apiKey={API_KEY} version={'beta'}>
-      <div className="h-screen w-full relative overflow-hidden">
+      <div className="h-[calc(100vh-3rem)] sm:h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] w-full relative overflow-hidden">
         {/* Old Loading Spinner */}
         {loading && <OldLoadingSpinner message={`Loading ${selectedCommunity.name} pins...`} />}
 
@@ -753,30 +754,35 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           )}
         </div>
 
-        {/* Filter Banners - Responsive positioning to avoid button overlap */}
+        {/* Filter Banners */}
         {/* Username Filter Banner */}
         {searchParams.author && (
-          <div className="absolute top-4 left-4 right-4 md:left-[170px] md:right-[170px] z-30 bg-orange-500/90 backdrop-blur-md rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 shadow-lg border border-orange-200/20 transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs md:text-sm font-medium text-white">Showing posts by</p>
-                  <p className="text-sm md:text-lg font-bold text-white truncate">@{searchParams.author}</p>
-                </div>
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30 pointer-events-auto">
+            <div className="bg-orange-500/95 backdrop-blur-sm rounded-full px-3 py-2 shadow-lg border border-orange-300/30 transition-all duration-200 flex items-center space-x-2 max-w-[90vw] md:max-w-md">
+              <div className="relative w-6 h-6 rounded-full overflow-hidden border-2 border-white flex-shrink-0">
+                <Image
+                  src={`https://images.hive.blog/u/${searchParams.author}/avatar`}
+                  alt={`@${searchParams.author}`}
+                  fill
+                  className="object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/images/default-avatar.svg';
+                  }}
+                />
               </div>
+              <span className="text-sm font-medium text-white truncate">
+                @{searchParams.author}
+              </span>
               <button
                 onClick={() => {
                   setSearchParams({ curated_only: false });
                   loadMarkers(false, { curated_only: false });
                 }}
-                className="w-6 h-6 md:w-8 md:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
+                className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
+                aria-label="Clear filter"
               >
-                <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -786,27 +792,23 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
         {/* Permlink Filter Banner */}
         {searchParams.permlink && (
-          <div className="absolute top-4 left-4 right-4 md:left-[170px] md:right-[170px] z-30 bg-blue-500/90 backdrop-blur-md rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 shadow-lg border border-blue-200/20 transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs md:text-sm font-medium text-white">Showing specific post</p>
-                  <p className="text-xs md:text-sm font-bold text-white truncate">{searchParams.permlink}</p>
-                </div>
-              </div>
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30 pointer-events-auto">
+            <div className="bg-blue-500/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg border border-blue-300/30 transition-all duration-200 flex items-center space-x-2 max-w-[90vw] md:max-w-md">
+              <svg className="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              <span className="text-sm font-medium text-white truncate">
+                {searchParams.permlink}
+              </span>
               <button
                 onClick={() => {
                   setSearchParams({ curated_only: false });
                   loadMarkers(false, { curated_only: false });
                 }}
-                className="w-6 h-6 md:w-8 md:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
+                className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
+                aria-label="Clear filter"
               >
-                <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -816,27 +818,23 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
         {/* Tag Filter Banner */}
         {searchParams.tags && searchParams.tags.length > 0 && (
-          <div className="absolute top-4 left-4 right-4 md:left-[170px] md:right-[170px] z-30 bg-green-500/90 backdrop-blur-md rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 shadow-lg border border-green-200/20 transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs md:text-sm font-medium text-white">Showing posts with tags</p>
-                  <p className="text-xs md:text-sm font-bold text-white truncate">{searchParams.tags.join(', ')}</p>
-                </div>
-              </div>
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30 pointer-events-auto">
+            <div className="bg-green-500/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg border border-green-300/30 transition-all duration-200 flex items-center space-x-2 max-w-[90vw] md:max-w-md">
+              <svg className="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span className="text-sm font-medium text-white truncate">
+                {searchParams.tags.join(', ')}
+              </span>
               <button
                 onClick={() => {
                   setSearchParams({ curated_only: false });
                   loadMarkers(false, { curated_only: false });
                 }}
-                className="w-6 h-6 md:w-8 md:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-2"
+                className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
+                aria-label="Clear filter"
               >
-                <svg className="w-3 h-3 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
