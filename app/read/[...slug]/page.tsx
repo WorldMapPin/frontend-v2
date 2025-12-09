@@ -15,7 +15,7 @@ export default function PostReaderPage() {
   const [post, setPost] = useState<ProcessedPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [timeUntilCashout, setTimeUntilCashout] = useState<string | null>(null);
+  const [showAllTags, setShowAllTags] = useState(false);
 
   // Parse slug from params: catch-all returns array like ['@author', 'permlink']
   // Decode URI components in case @ is encoded as %40
@@ -55,40 +55,6 @@ export default function PostReaderPage() {
 
     loadPost();
   }, [author, permlink]);
-
-  // Calculate time until cashout
-  useEffect(() => {
-    if (!post?.cashoutTime) return;
-
-    function updateCashoutTime() {
-      if (!post?.cashoutTime) return;
-      const cashoutDate = new Date(post.cashoutTime);
-      const now = new Date();
-      const diffInMs = cashoutDate.getTime() - now.getTime();
-
-      if (diffInMs <= 0) {
-        setTimeUntilCashout('Cashed out');
-        return;
-      }
-
-      const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
-
-      if (days > 0) {
-        setTimeUntilCashout(`${days}d ${hours}h until cashout`);
-      } else if (hours > 0) {
-        setTimeUntilCashout(`${hours}h ${minutes}m until cashout`);
-      } else {
-        setTimeUntilCashout(`${minutes}m until cashout`);
-      }
-    }
-
-    updateCashoutTime();
-    const interval = setInterval(updateCashoutTime, 60000); // Update every minute
-
-    return () => clearInterval(interval);
-  }, [post]);
 
   if (loading) {
     return (
@@ -181,6 +147,42 @@ export default function PostReaderPage() {
                   target.style.display = 'none';
                 }}
               />
+              
+              {/* Bottom gradient overlay */}
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-24 sm:h-32"
+                style={{
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
+                  borderBottomLeftRadius: '18px',
+                  borderBottomRightRadius: '18px'
+                }}
+              />
+              
+              {/* Date, Reading Time, and Payout - Bottom of Cover */}
+              <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 flex items-center justify-between z-10">
+                <div
+                  className="flex items-center gap-2 text-xs sm:text-sm"
+                  style={{
+                    fontFamily: 'Lexend',
+                    color: '#FFFFFF'
+                  }}
+                >
+                  <span>{post.createdRelative}</span>
+                  <span>•</span>
+                  <span>{post.readingTimeMin} min read</span>
+                </div>
+                
+                <span
+                  className="font-bold text-lg sm:text-xl lg:text-2xl"
+                  style={{
+                    fontFamily: 'Lexend',
+                    color: '#8EDB1B'
+                  }}
+                >
+                  {post.payout}
+                </span>
+              </div>
+              
               {/* Back Button */}
               <button
                 onClick={() => router.back()}
@@ -217,31 +219,180 @@ export default function PostReaderPage() {
 
           {/* Content */}
           <div className="p-4 sm:p-6 lg:p-8">
-            {/* Author Name and Reputation */}
-            <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <a
-                href={`https://peakd.com/@${post.author}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-lg sm:text-xl lg:text-2xl font-semibold transition-colors"
-                style={{
-                  fontFamily: 'Lexend',
-                  color: '#996027'
-                }}
-              >
-                @{post.author}
-              </a>
-              <span
-                className="text-xs sm:text-sm px-2.5 sm:px-3 py-1 rounded-full font-medium"
-                style={{
-                  fontFamily: 'Lexend',
-                  backgroundColor: '#FFF9ED',
-                  color: '#996027',
-                  border: '1px solid #99602733'
-                }}
-              >
-                {post.reputation}
-              </span>
+            {/* Author Name, Reputation, and Stats */}
+            <div className="mb-3 sm:mb-4">
+              {/* Mobile Layout - Stacked */}
+              <div className="flex sm:hidden gap-2 items-center">
+                {/* Profile Picture Avatar */}
+                <a
+                  href={`https://peakd.com/@${post.author}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0"
+                >
+                  <img
+                    src={`https://images.hive.blog/u/${post.author}/avatar`}
+                    alt={`${post.author}'s profile`}
+                    className="w-10 h-10 rounded-full object-cover border-2"
+                    style={{
+                      borderColor: '#99602733'
+                    }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/images/default-avatar.svg';
+                    }}
+                  />
+                </a>
+                
+                <div className="flex flex-col gap-2 flex-1">
+                  {/* Username and Reputation */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <a
+                      href={`https://peakd.com/@${post.author}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-lg font-semibold transition-colors"
+                      style={{
+                        fontFamily: 'Lexend',
+                        color: '#996027'
+                      }}
+                    >
+                      @{post.author}
+                    </a>
+                    <span
+                      className="text-xs px-2.5 py-1 rounded-full font-medium"
+                      style={{
+                        fontFamily: 'Lexend',
+                        backgroundColor: '#FFF9ED',
+                        color: '#996027',
+                        border: '1px solid #99602733'
+                      }}
+                    >
+                      {post.reputation}
+                    </span>
+                  </div>
+                  
+                  {/* Votes and Comments */}
+                  <div className="flex items-center gap-1.5">
+                    {/* Likes */}
+                    <div
+                      className="flex items-center gap-1 px-2 py-1"
+                      style={{
+                        fontFamily: 'Lexend',
+                        backgroundColor: '#FFE6ED',
+                        border: '1.5px solid #DE20564D',
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#DE2056' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      <span className="font-medium text-xs" style={{ color: '#DE2056' }}>{post.votes}</span>
+                    </div>
+                    {/* Comments */}
+                    <div
+                      className="flex items-center gap-1 px-2 py-1"
+                      style={{
+                        fontFamily: 'Lexend',
+                        backgroundColor: '#E4EDFF',
+                        border: '1.5px solid #3B79F44D',
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#3B79F4' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      <span className="font-medium text-xs" style={{ color: '#3B79F4' }}>{post.comments}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Desktop Layout - Horizontal */}
+              <div className="hidden sm:flex items-center justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  {/* Profile Picture Avatar */}
+                  <a
+                    href={`https://peakd.com/@${post.author}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0"
+                  >
+                    <img
+                      src={`https://images.hive.blog/u/${post.author}/avatar`}
+                      alt={`${post.author}'s profile`}
+                      className="w-12 h-12 rounded-full object-cover border-2"
+                      style={{
+                        borderColor: '#99602733'
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/images/default-avatar.svg';
+                      }}
+                    />
+                  </a>
+                  
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`https://peakd.com/@${post.author}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xl lg:text-2xl font-semibold transition-colors"
+                      style={{
+                        fontFamily: 'Lexend',
+                        color: '#996027'
+                      }}
+                    >
+                      @{post.author}
+                    </a>
+                    <span
+                      className="text-sm px-3 py-1 rounded-full font-medium"
+                      style={{
+                        fontFamily: 'Lexend',
+                        backgroundColor: '#FFF9ED',
+                        color: '#996027',
+                        border: '1px solid #99602733'
+                      }}
+                    >
+                      {post.reputation}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Votes and Comments - Compact */}
+                <div className="flex items-center gap-1.5">
+                  {/* Likes */}
+                  <div
+                    className="flex items-center gap-1 px-2.5 py-1"
+                    style={{
+                      fontFamily: 'Lexend',
+                      backgroundColor: '#FFE6ED',
+                      border: '1.5px solid #DE20564D',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#DE2056' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    <span className="font-medium text-sm" style={{ color: '#DE2056' }}>{post.votes}</span>
+                  </div>
+                  {/* Comments */}
+                  <div
+                    className="flex items-center gap-1 px-2.5 py-1"
+                    style={{
+                      fontFamily: 'Lexend',
+                      backgroundColor: '#E4EDFF',
+                      border: '1.5px solid #3B79F44D',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#3B79F4' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <span className="font-medium text-sm" style={{ color: '#3B79F4' }}>{post.comments}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Title */}
@@ -257,159 +408,38 @@ export default function PostReaderPage() {
 
             {/* Tags */}
             {post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                {post.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-colors"
-                    style={{
-                      fontFamily: 'Lexend',
-                      backgroundColor: '#DCF5FF',
-                      color: '#006CC4'
-                    }}
-                  >
-                    #{tag}
-                  </span>
-                ))}
+              <div className="mb-3 sm:mb-4">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  {(showAllTags ? post.tags : post.tags.slice(0, 4)).map((tag, index) => (
+                    <span
+                      key={index}
+                      className="text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-colors"
+                      style={{
+                        fontFamily: 'Lexend',
+                        backgroundColor: '#DCF5FF',
+                        color: '#006CC4'
+                      }}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                  {post.tags.length > 4 && (
+                    <button
+                      onClick={() => setShowAllTags(!showAllTags)}
+                      className="text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-all hover:opacity-80 cursor-pointer"
+                      style={{
+                        fontFamily: 'Lexend',
+                        backgroundColor: '#F0F0F0',
+                        color: '#666666',
+                        border: '1px solid #DDDDDD'
+                      }}
+                    >
+                      {showAllTags ? 'Show less' : `+${post.tags.length - 4} more`}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
-
-            {/* Author Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-4 sm:mb-6 pb-4 sm:pb-6">
-              <div className="flex items-center gap-3">
-                <div>
-                  <div
-                    className="flex flex-wrap items-center gap-1.5 sm:gap-3 text-xs sm:text-sm"
-                    style={{
-                      fontFamily: 'Lexend',
-                      color: '#3F4B53'
-                    }}
-                  >
-                    <span>{post.createdRelative}</span>
-                    <span>•</span>
-                    <span>{post.readingTimeMin} min read</span>
-                    {timeUntilCashout && (
-                      <>
-                        <span className="hidden sm:inline">•</span>
-                        <span style={{ color: '#ED6D28' }}>{timeUntilCashout}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <span
-                  className="font-bold text-xl sm:text-2xl"
-                  style={{
-                    fontFamily: 'Lexend',
-                    color: '#8EDB1B'
-                  }}
-                >
-                  {post.payout}
-                </span>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-2 mb-4 sm:mb-6 pb-4 sm:pb-6">
-              {/* Left side - Likes and Comments */}
-              <div className="flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
-                {/* Likes Rectangle - rounded on top-left and bottom-left (outside edge) */}
-                <div
-                  className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 flex-1 sm:flex-none min-h-[48px] sm:min-h-0"
-                  style={{
-                    fontFamily: 'Lexend',
-                    backgroundColor: '#FFE6ED',
-                    border: '2px solid #DE20564D',
-                    borderTopLeftRadius: '15px',
-                    borderBottomLeftRadius: '15px',
-                    borderTopRightRadius: '7px',
-                    borderBottomRightRadius: '7px',
-                    paddingTop: 'calc(0.5rem * 1.04)',
-                    paddingBottom: 'calc(0.5rem * 1.04)'
-                  }}
-                >
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#DE2056' }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                  <span className="font-medium text-sm sm:text-base" style={{ color: '#DE2056' }}>{post.votes}</span>
-                  <span className="text-sm sm:text-base hidden sm:inline" style={{ color: '#DE2056' }}>votes</span>
-                </div>
-                {/* Comments Rectangle - rounded on top-right and bottom-right (outside edge) */}
-                <div
-                  className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 flex-1 sm:flex-none min-h-[48px] sm:min-h-0"
-                  style={{
-                    fontFamily: 'Lexend',
-                    backgroundColor: '#E4EDFF',
-                    border: '2px solid #3B79F44D',
-                    borderTopRightRadius: '15px',
-                    borderBottomRightRadius: '15px',
-                    borderTopLeftRadius: '7px',
-                    borderBottomLeftRadius: '7px',
-                    paddingTop: 'calc(0.5rem * 1.04)',
-                    paddingBottom: 'calc(0.5rem * 1.04)'
-                  }}
-                >
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#3B79F4' }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  <span className="font-medium text-sm sm:text-base" style={{ color: '#3B79F4' }}>{post.comments}</span>
-                  <span className="text-sm sm:text-base hidden sm:inline" style={{ color: '#3B79F4' }}>comments</span>
-                </div>
-              </div>
-              
-              {/* Right side - Action Buttons */}
-              <div className="flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
-                {/* Open on PeakD Button - rounded on top-left and bottom-left (outside edge) */}
-                <a
-                  href={post.canonicalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 cursor-pointer transition-opacity hover:opacity-80 flex-1 sm:flex-none min-h-[48px] sm:min-h-0"
-                  style={{
-                    fontFamily: 'Lexend',
-                    backgroundColor: '#28EDEA26',
-                    border: '2px solid #28EAED80',
-                    borderTopLeftRadius: '15px',
-                    borderBottomLeftRadius: '15px',
-                    borderTopRightRadius: '7px',
-                    borderBottomRightRadius: '7px',
-                    paddingTop: 'calc(0.5rem * 1.04)',
-                    paddingBottom: 'calc(0.5rem * 1.04)'
-                  }}
-                >
-                  <span className="font-medium text-xs sm:text-sm lg:text-base" style={{ color: '#1AB5B8' }}>Open on PeakD</span>
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#1AB5B8' }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-                {/* View Raw JSON Button - rounded on top-right and bottom-right (outside edge) */}
-                {process.env.NODE_ENV === 'development' && (
-                  <a
-                    href={post.rawJsonUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 cursor-pointer transition-opacity hover:opacity-80 flex-1 sm:flex-none min-h-[48px] sm:min-h-0"
-                  style={{
-                    fontFamily: 'Lexend',
-                    backgroundColor: '#ED6D281A',
-                    border: '2px solid #ED6D2847',
-                    borderTopRightRadius: '15px',
-                    borderBottomRightRadius: '15px',
-                    borderTopLeftRadius: '7px',
-                    borderBottomLeftRadius: '7px',
-                    paddingTop: 'calc(0.5rem * 1.04)',
-                    paddingBottom: 'calc(0.5rem * 1.04)'
-                  }}
-                >
-                    <span className="font-medium text-xs sm:text-sm lg:text-base" style={{ color: '#ED6D28' }}>View Raw JSON</span>
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#ED6D28' }}>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                    </svg>
-                  </a>
-                )}
-              </div>
-            </div>
 
             {/* Body Markdown */}
             <div
@@ -438,6 +468,29 @@ export default function PostReaderPage() {
               >
                 {post.bodyMarkdown || ''}
               </ReactMarkdown>
+            </div>
+
+            {/* Open on PeakD Button - Bottom of Post */}
+            <div className="mt-8 sm:mt-10 lg:mt-12 flex justify-center">
+              <a
+                href={post.canonicalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 cursor-pointer transition-all hover:opacity-90 hover:scale-105"
+                style={{
+                  fontFamily: 'Lexend',
+                  background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
+                  borderRadius: '16px',
+                  boxShadow: '0px 1px 7px 0px #00000040'
+                }}
+              >
+                <span className="font-semibold text-sm sm:text-base lg:text-lg" style={{ color: '#FFFFFF' }}>
+                  Open on PeakD
+                </span>
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#FFFFFF' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
             </div>
 
           </div>
