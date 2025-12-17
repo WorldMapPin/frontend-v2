@@ -1,13 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ProcessedPost } from '@/types/post';
 import { fetchPostWithRetry } from '@/utils/hivePosts';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize from 'rehype-sanitize';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
+// Configure marked options
+marked.setOptions({
+  gfm: true, // GitHub Flavored Markdown
+  breaks: true, // Convert \n to <br>
+  pedantic: false, // Don't be strict about markdown rules
+});
 
 export default function PostReaderPage() {
   const params = useParams();
@@ -55,6 +60,82 @@ export default function PostReaderPage() {
 
     loadPost();
   }, [author, permlink]);
+
+  // Process markdown to HTML with sanitization
+  const processedHtml = useMemo(() => {
+    if (!post?.bodyMarkdown) return '';
+    
+    try {
+      // Preprocess: Handle markdown inside HTML tags
+      let preprocessedMarkdown = post.bodyMarkdown;
+      
+      // Find HTML tags that contain markdown and process them
+      preprocessedMarkdown = preprocessedMarkdown.replace(
+        /<(h[1-6]|p|div|center|span)([^>]*)>(.*?)<\/\1>/gis,
+        (match, tagName, attributes, content) => {
+          // Process markdown inside the HTML tag
+          const processedContent = content
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // Bold
+            .replace(/\*([^*]+)\*/g, '<em>$1</em>') // Italic
+            .replace(/_([^_]+)_/g, '<em>$1</em>') // Italic with underscores
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>') // Links
+            .replace(/`([^`]+)`/g, '<code>$1</code>'); // Inline code
+          
+          return `<${tagName}${attributes}>${processedContent}</${tagName}>`;
+        }
+      );
+      
+      // Convert markdown to HTML
+      const rawHtml = marked.parse(preprocessedMarkdown) as string;
+      
+      // Sanitize HTML but allow common formatting tags
+      const cleanHtml = DOMPurify.sanitize(rawHtml, {
+        ALLOWED_TAGS: [
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+          'p', 'br', 'hr',
+          'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del',
+          'a', 'img',
+          'ul', 'ol', 'li',
+          'blockquote', 'pre', 'code',
+          'table', 'thead', 'tbody', 'tr', 'th', 'td',
+          'div', 'span', 'center',
+          'sup', 'sub',
+        ],
+        ALLOWED_ATTR: [
+          'href', 'target', 'rel',
+          'src', 'alt', 'title', 'width', 'height', 'loading',
+          'class', 'className', 'style', 'id',
+        ],
+        ALLOW_DATA_ATTR: false,
+      });
+      
+      return cleanHtml;
+    } catch (err) {
+      console.error('Error processing markdown:', err);
+      return '<p>Error rendering content</p>';
+    }
+  }, [post?.bodyMarkdown]);
+
+  // Handle image errors after content is rendered
+  useEffect(() => {
+    if (!processedHtml) return;
+    
+    const handleImageError = (e: Event) => {
+      const img = e.target as HTMLImageElement;
+      img.style.display = 'none';
+    };
+    
+    const images = document.querySelectorAll('.markdown-content img');
+    images.forEach(img => {
+      img.addEventListener('error', handleImageError);
+    });
+    
+    return () => {
+      images.forEach(img => {
+        img.removeEventListener('error', handleImageError);
+      });
+    };
+  }, [processedHtml]);
 
   if (loading) {
     return (
@@ -443,32 +524,13 @@ export default function PostReaderPage() {
 
             {/* Body Markdown */}
             <div
-              className="prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-img:rounded-lg prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-headings:text-[#592102] prose-p:leading-relaxed"
+              className="prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-img:rounded-lg prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-headings:text-[#592102] prose-p:leading-relaxed markdown-content"
               style={{
                 fontFamily: 'Lexend',
                 color: '#371300'
               }}
-            >
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw, rehypeSanitize]}
-                components={{
-                  img: ({ ...props }) => (
-                    <img
-                      {...props}
-                      className="w-full rounded-lg shadow-md my-4 sm:my-6"
-                      loading="lazy"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
-                  ),
-                }}
-              >
-                {post.bodyMarkdown || ''}
-              </ReactMarkdown>
-            </div>
+              dangerouslySetInnerHTML={{ __html: processedHtml }}
+            />
 
             {/* Open on PeakD Button - Bottom of Post */}
             <div className="mt-8 sm:mt-10 lg:mt-12 flex justify-center">
