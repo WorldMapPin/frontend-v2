@@ -223,14 +223,6 @@ export default function Navbar({ className = '' }: NavbarProps) {
                         >
                           My Map
                         </Link>
-                        <Link
-                          href="/settings"
-                          className="block px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
-                          style={{ fontFamily: 'Lexend', color: '#5C2609' }}
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          Settings
-                        </Link>
                         <hr className="my-2" style={{ borderColor: '#ED6D28' }} />
                         <button
                           onClick={() => {
@@ -478,18 +470,6 @@ export default function Navbar({ className = '' }: NavbarProps) {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       My Map
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="block px-3 py-2 rounded-md text-sm"
-                      style={{
-                        fontFamily: 'Lexend',
-                        fontWeight: 500,
-                        color: '#5C2609'
-                      }}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Settings
                     </Link>
                     <button
                       onClick={() => {
