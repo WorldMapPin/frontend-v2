@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ProcessedPost } from '@/types/post';
 import { fetchPostWithRetry } from '@/utils/hivePosts';
 import { marked } from 'marked';
@@ -306,10 +307,8 @@ export default function PostReaderPage() {
               <div className="flex sm:hidden items-center justify-between gap-1.5">
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   {/* Profile Picture Avatar */}
-                  <a
-                    href={`https://peakd.com/@${post.author}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    href={`/user/${post.author}`}
                     className="flex-shrink-0"
                   >
                     <img
@@ -324,13 +323,11 @@ export default function PostReaderPage() {
                         target.src = '/images/default-avatar.svg';
                       }}
                     />
-                  </a>
+                  </Link>
                   
                   {/* Username */}
-                  <a
-                    href={`https://peakd.com/@${post.author}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    href={`/user/${post.author}`}
                     className="text-sm font-semibold transition-colors truncate"
                     style={{
                       fontFamily: 'Lexend',
@@ -338,7 +335,7 @@ export default function PostReaderPage() {
                     }}
                   >
                     @{post.author}
-                  </a>
+                  </Link>
                   
                   {/* Reputation */}
                   <span
@@ -393,10 +390,8 @@ export default function PostReaderPage() {
               <div className="hidden sm:flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
                   {/* Profile Picture Avatar */}
-                  <a
-                    href={`https://peakd.com/@${post.author}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    href={`/user/${post.author}`}
                     className="flex-shrink-0"
                   >
                     <img
@@ -411,13 +406,11 @@ export default function PostReaderPage() {
                         target.src = '/images/default-avatar.svg';
                       }}
                     />
-                  </a>
+                  </Link>
                   
                   <div className="flex items-center gap-2">
-                    <a
-                      href={`https://peakd.com/@${post.author}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      href={`/user/${post.author}`}
                       className="text-xl lg:text-2xl font-semibold transition-colors"
                       style={{
                         fontFamily: 'Lexend',
@@ -425,7 +418,7 @@ export default function PostReaderPage() {
                       }}
                     >
                       @{post.author}
-                    </a>
+                    </Link>
                     <span
                       className="text-sm px-3 py-1 rounded-full font-medium"
                       style={{
