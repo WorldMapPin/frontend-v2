@@ -116,17 +116,17 @@ export default function Home() {
               <span className="block">Blockchain.</span>
             </p>
             {/* CTA Buttons */}
-            <div className="flex flex-col gap-3 justify-center items-center w-full max-w-xs mx-auto">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full mx-auto">
               <a
                 href="/signup"
-                className="inline-flex items-center justify-center text-white font-semibold px-8 py-3 rounded-lg text-base transition-all duration-300 font-lexend w-full max-w-xs hover:shadow-2xl hover:scale-105 active:scale-95"
+                className="inline-flex items-center justify-center text-white font-semibold px-8 py-3 rounded-lg text-base border-2 border-transparent transition-all duration-300 font-lexend w-full sm:w-56 hover:shadow-2xl hover:scale-105 active:scale-95 whitespace-nowrap"
                 style={{ background: '#A74F1A' }}
               >
                 Join the Community
               </a>
               <a
                 href="/explore"
-                className="inline-flex items-center justify-center bg-transparent text-white font-semibold px-8 py-3 rounded-lg text-base border-2 border-white transition-all duration-300 font-lexend w-full max-w-xs hover:bg-white hover:text-orange-500 hover:shadow-2xl hover:scale-105 active:scale-95"
+                className="inline-flex items-center justify-center bg-transparent text-white font-semibold px-8 py-3 rounded-lg text-base border-2 border-white transition-all duration-300 font-lexend w-full sm:w-56 hover:bg-white hover:text-orange-500 hover:shadow-2xl hover:scale-105 active:scale-95 whitespace-nowrap"
               >
                 Explore Stories
               </a>
@@ -245,9 +245,45 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Background decoration */}
-        <div className="absolute inset-0 flex items-center justify-end pr-8 lg:pr-16 opacity-20 pointer-events-none">
-          <span className="text-[300px] lg:text-[500px] font-bold text-orange-600 font-lexend">3</span>
+        
+      </section>
+
+      {/* FINAL CTA SECTION */}
+      <section 
+        className="w-full py-24 lg:py-32 relative overflow-hidden font-lexend"
+        style={{ background: 'linear-gradient(180deg, #FFFFFF 0%, #FFF9F5 50%, #FFFFFF 100%)' }}
+      >
+        {/* Subtle decorative background elements */}
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-200/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-200/50 to-transparent" />
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 font-lexend tracking-tight leading-tight">
+              <GradientText>Ready to Start Your Journey?</GradientText>
+            </h2>
+            <p className="text-lg sm:text-xl mb-12 font-lexend leading-relaxed max-w-2xl mx-auto" style={{ color: '#6F5B50' }}>
+              Every place has a story. Pin yours on the map.
+              <br />
+              Travel stories, mapped by the community.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <a
+                href="/signup"
+                className="inline-flex items-center justify-center text-white font-bold px-8 py-3 rounded-lg text-base transition-all duration-300 font-lexend hover:shadow-2xl hover:scale-105 active:scale-95 w-full sm:w-56 whitespace-nowrap"
+                style={{ background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)' }}
+              >
+                Join the Community
+              </a>
+              <a
+                href="/explore"
+                className="inline-flex items-center justify-center bg-white text-[#ED6D28] font-bold px-8 py-3 rounded-lg text-base border-2 border-[#ED6D28] transition-all duration-300 font-lexend hover:shadow-xl hover:scale-105 active:scale-95 w-full sm:w-56 whitespace-nowrap"
+              >
+                Explore Stories
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </main>
