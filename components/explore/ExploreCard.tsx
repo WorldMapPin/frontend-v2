@@ -15,8 +15,8 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
   const [imageLoading, setImageLoading] = useState(true);
   const [useUnoptimized, setUseUnoptimized] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  
-  
+
+
   const profileImageUrl = `https://images.hive.blog/u/${post.author}/avatar`;
 
   return (
@@ -34,7 +34,7 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
                 </div>
               )}
-              
+
               {/* Main Image */}
               {!useUnoptimized ? (
                 <Image
@@ -42,9 +42,8 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
                   alt={post.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className={`object-cover group-hover:scale-105 transition-all duration-500 ${
-                    imageLoading ? 'opacity-0' : 'opacity-100'
-                  }`}
+                  className={`object-cover group-hover:scale-105 transition-all duration-500 ${imageLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
                   loading="lazy"
                   onLoad={() => setImageLoading(false)}
                   onError={(e) => {
@@ -64,9 +63,8 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
                   alt={post.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className={`object-cover group-hover:scale-105 transition-all duration-500 ${
-                    imageLoading ? 'opacity-0' : 'opacity-100'
-                  }`}
+                  className={`object-cover group-hover:scale-105 transition-all duration-500 ${imageLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
                   loading="lazy"
                   onLoad={() => setImageLoading(false)}
                   onError={() => {
@@ -92,23 +90,23 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
             <div className="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0">
               {/* Circular Avatar - Hidden on user page */}
               {!hideAvatar && (
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-sm border-2 border-white/50 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {!avatarError ? (
-                  <Image
-                    src={profileImageUrl}
-                    alt={post.author}
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-cover"
-                    onError={() => setAvatarError(true)}
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-[10px] sm:text-xs" style={{ fontFamily: 'var(--font-lexend)' }}>
-                    {post.author.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-sm border-2 border-white/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {!avatarError ? (
+                    <Image
+                      src={profileImageUrl}
+                      alt={post.author}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                      onError={() => setAvatarError(true)}
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-[10px] sm:text-xs" style={{ fontFamily: 'var(--font-lexend)' }}>
+                      {post.author.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
               )}
               {/* Username */}
               <span className="text-white font-medium text-xs sm:text-sm drop-shadow-md truncate" style={{ fontFamily: 'var(--font-lexend)' }}>
@@ -159,13 +157,13 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
           </div>
         )}
 
-        
+
         <div className="p-3 sm:p-4 pb-3 sm:pb-4 flex flex-col flex-1">
-         
+
           <h3 className="text-base sm:text-lg font-medium mt-1 sm:mt-2 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-lexend)', color: '#592102' }}>
             {post.title}
           </h3>
-          
+
           {/* Tags */}
           <div className="mt-auto">
             {post.tags && post.tags.length > 0 ? (
@@ -184,7 +182,7 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
               <div className="h-5 sm:h-6"></div>
             )}
           </div>
-          
+
         </div>
       </div>
     </Link>

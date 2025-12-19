@@ -11,6 +11,7 @@ import { fetchUserPins, ApiPinData } from '../../../lib/worldmappinApi';
 
 interface UserMapComponentProps {
   username: string;
+  initialPins?: ApiPinData[];
   isExpanded: boolean;
 }
 
@@ -29,37 +30,30 @@ const bounds = {
 };
 
 // Inner component to access map instance
-function UserMapContent({ username, isExpanded, onLoad }: UserMapComponentProps & { onLoad: (loaded: boolean) => void }) {
+function UserMapContent({ username, initialPins, isExpanded, onLoad, currentZoom }: UserMapComponentProps & { onLoad: (loaded: boolean) => void, currentZoom: number }) {
   const map = useMap();
   const [geojson, setGeojson] = useState<any>(null);
   const [infowindowData, setInfowindowData] = useState<InfoWindowData>(null);
-  const [currentZoom, setCurrentZoom] = useState(3);
 
-  // Track zoom changes
+  // Handle pin data and map setup
   useEffect(() => {
-    if (!map) return;
-
-    const listener = map.addListener('zoom_changed', () => {
-      const zoom = map.getZoom();
-      if (zoom) {
-        setCurrentZoom(zoom);
-      }
-    });
-
-    return () => listener.remove();
-  }, [map]);
-
-  // Fetch user-specific pins
-  useEffect(() => {
-    const fetchUserPinsData = async () => {
+    const setupMapWithPins = async () => {
       try {
         onLoad(false);
-        
-        // Fetch user pins from WorldMapPin API
-        const userPins: ApiPinData[] = await fetchUserPins(username);
-        
-        if (userPins.length === 0) {
+
+        let userPins: ApiPinData[] = [];
+
+        if (initialPins && initialPins.length > 0) {
+          // Use pre-fetched pins if available
+          userPins = initialPins;
+        } else if (username && map) {
+          // Fallback fetch if not provided
+          userPins = await fetchUserPins(username);
+        }
+
+        if (!userPins || userPins.length === 0) {
           setGeojson({ type: "FeatureCollection", features: [] });
+          // Even with no pins, we need to signal load completion
           onLoad(true);
           return;
         }
@@ -68,43 +62,55 @@ function UserMapContent({ username, isExpanded, onLoad }: UserMapComponentProps 
         const geojsonData = await convertDatafromApitoGeojson(userPins);
         setGeojson(geojsonData);
 
-        // Calculate center point and zoom level for user's pins
-        const lats = userPins.map(pin => pin.json_metadata.location.latitude);
-        const lngs = userPins.map(pin => pin.json_metadata.location.longitude);
-        
-        const centerLat = lats.reduce((sum, lat) => sum + lat, 0) / lats.length;
-        const centerLng = lngs.reduce((sum, lng) => sum + lng, 0) / lngs.length;
-        
+        // Robust coordinate extraction
+        const coords = userPins.map(pin => {
+          const lat = pin.json_metadata?.location?.latitude ?? pin.lattitude;
+          const lng = pin.json_metadata?.location?.longitude ?? pin.longitude;
+          return { lat: Number(lat), lng: Number(lng) };
+        }).filter(c => !isNaN(c.lat) && !isNaN(c.lng));
+
+        if (coords.length === 0) {
+          setGeojson({ type: "FeatureCollection", features: [] });
+          onLoad(true);
+          return;
+        }
+
+        const centerLat = coords.reduce((sum, c) => sum + c.lat, 0) / coords.length;
+        const centerLng = coords.reduce((sum, c) => sum + c.lng, 0) / coords.length;
+
         // Calculate appropriate zoom level based on pin spread
+        const lats = coords.map(c => c.lat);
+        const lngs = coords.map(c => c.lng);
         const latRange = Math.max(...lats) - Math.min(...lats);
         const lngRange = Math.max(...lngs) - Math.min(...lngs);
         const maxRange = Math.max(latRange, lngRange);
-        
+
         let zoom = 10;
         if (maxRange > 50) zoom = 3;
         else if (maxRange > 20) zoom = 4;
         else if (maxRange > 10) zoom = 5;
         else if (maxRange > 5) zoom = 6;
         else if (maxRange > 1) zoom = 8;
-        
+
         // Set map center and zoom
         if (map) {
           map.setCenter({ lat: centerLat, lng: centerLng });
           map.setZoom(zoom);
         }
 
+        console.log(`Map initialized with ${coords.length} valid coordinates`);
         onLoad(true);
       } catch (error) {
-        console.error('Error fetching user pins:', error);
+        console.error('Error setting up user map:', error);
         setGeojson({ type: "FeatureCollection", features: [] });
         onLoad(true);
       }
     };
 
-    if (username && map) {
-      fetchUserPinsData();
+    if (map) {
+      setupMapWithPins();
     }
-  }, [username, map, onLoad]);
+  }, [username, map, initialPins, onLoad]);
 
   // Handle clusters ready
   const handleClustersReady = useCallback((clusterCount: number) => {
@@ -117,7 +123,7 @@ function UserMapContent({ username, isExpanded, onLoad }: UserMapComponentProps 
       {geojson && geojson.features && geojson.features.length > 0 && (
         <ClusteredMarkers
           geojson={geojson}
-          setNumClusters={() => {}} // Not needed for user map
+          setNumClusters={() => { }} // Not needed for user map
           setInfowindowData={setInfowindowData}
           currentZoom={currentZoom}
           onClustersReady={handleClustersReady}
@@ -156,13 +162,14 @@ function UserMapContent({ username, isExpanded, onLoad }: UserMapComponentProps 
           </div>
           <div className="text-xs sm:text-sm text-gray-600">Pins</div>
         </div>
-      </div>      
+      </div>
     </>
   );
 }
 
-export function UserMapComponent({ username, isExpanded }: UserMapComponentProps) {
+export function UserMapComponent({ username, initialPins, isExpanded }: UserMapComponentProps) {
   const [loading, setLoading] = useState(true);
+  const [currentZoom, setCurrentZoom] = useState(3);
 
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -186,39 +193,49 @@ export function UserMapComponent({ username, isExpanded }: UserMapComponentProps
   }
 
   return (
-    <div className="w-full h-full relative">
-      <APIProvider apiKey={API_KEY}>
-        <div ref={mapRef} className="w-full h-full">
-          <Map
-            mapId={MAP_CONFIG.mapId}
-            mapTypeId={MAP_CONFIG.mapTypeId}
-            defaultCenter={{ lat: 20, lng: 0 }}
-            defaultZoom={1}
-            minZoom={1}
-            maxZoom={20}
-            zoomControl={true}
-            gestureHandling={'greedy'}
-            disableDefaultUI={false}
-            isFractionalZoomEnabled={false}
-            fullscreenControl={isExpanded}
-            streetViewControl={false}
-            mapTypeControl={true}
-            restriction={{
-              latLngBounds: bounds,
-              strictBounds: true,
-            }}
-            controlSize={28}
-            className="w-full h-full"
-          >
-            <UserMapContent 
-              username={username} 
-              isExpanded={isExpanded}
-              onLoad={handleLoad}
-            />
-          </Map>
-        </div>
-      </APIProvider>
-    </div>
+    <APIProvider apiKey={API_KEY} version={'beta'}>
+      <div className="w-full h-full min-h-[400px] relative bg-gray-50 rounded-xl overflow-hidden">
+        {loading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-50/80 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500"></div>
+              <p className="text-xs font-bold text-amber-900/40 tracking-widest uppercase">Initializing Map...</p>
+            </div>
+          </div>
+        )}
+
+        <Map
+          mapId={MAP_CONFIG.mapId}
+          mapTypeId={MAP_CONFIG.mapTypeId}
+          defaultCenter={{ lat: 20, lng: 0 }}
+          defaultZoom={1}
+          minZoom={1}
+          maxZoom={20}
+          zoomControl={true}
+          gestureHandling={'greedy'}
+          disableDefaultUI={false}
+          isFractionalZoomEnabled={false}
+          fullscreenControl={isExpanded}
+          streetViewControl={false}
+          mapTypeControl={true}
+          className="w-full h-full"
+          onZoomChanged={(e) => {
+            const zoom = e.map.getZoom();
+            if (zoom) {
+              setCurrentZoom(zoom);
+            }
+          }}
+        >
+          <UserMapContent
+            username={username}
+            initialPins={initialPins}
+            isExpanded={isExpanded}
+            onLoad={handleLoad}
+            currentZoom={currentZoom}
+          />
+        </Map>
+      </div>
+    </APIProvider>
   );
 }
 

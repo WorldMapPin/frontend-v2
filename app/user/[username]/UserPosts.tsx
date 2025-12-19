@@ -8,11 +8,12 @@ import ExploreCard from '@/components/explore/ExploreCard';
 
 interface UserPostsProps {
   username: string;
+  initialPins?: any[];
 }
 
 const POSTS_PER_PAGE = 12;
 
-export function UserPosts({ username }: UserPostsProps) {
+export function UserPosts({ username, initialPins }: UserPostsProps) {
   const [posts, setPosts] = useState<ProcessedPost[]>([]);
   const [allBasicPosts, setAllBasicPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,16 +27,22 @@ export function UserPosts({ username }: UserPostsProps) {
       try {
         setLoading(true);
         setError(null);
-        
-        // First, get basic post data (fast - just coordinates and basic info)
-        const basicPosts = await fetchUserPostsWithCoords(username);
+
+        // Use initialPins if provided, otherwise fetch them
+        let basicPosts = [];
+        if (initialPins && initialPins.length > 0) {
+          basicPosts = initialPins;
+        } else {
+          basicPosts = await fetchUserPostsWithCoords(username);
+        }
+
         setAllBasicPosts(basicPosts);
-        
+
         if (basicPosts.length === 0) {
           setLoading(false);
           return;
         }
-        
+
         // Convert to CuratedPost format for fetchPosts
         const curatedPosts: CuratedPost[] = basicPosts
           .filter((post: any) => post.author && post.permlink)
@@ -45,19 +52,19 @@ export function UserPosts({ username }: UserPostsProps) {
             author: post.author,
             permlink: post.permlink
           }));
-        
+
         if (curatedPosts.length === 0) {
           setError('No posts with valid author/permlink found');
           setLoading(false);
           return;
         }
-        
+
         const firstBatch = curatedPosts.slice(0, POSTS_PER_PAGE);
-        
+
         // Prioritize first 6 posts for immediate display
         const priorityPosts = firstBatch.slice(0, 6);
         const remainingPosts = firstBatch.slice(6);
-        
+
         // Fetch priority posts first with higher concurrency
         const initialPosts = await fetchPosts(priorityPosts, 10);
         // Deduplicate posts by slug to prevent duplicate keys
@@ -66,7 +73,7 @@ export function UserPosts({ username }: UserPostsProps) {
         );
         setPosts(uniqueInitialPosts);
         setLoading(false);
-        
+
         // Progressive loading for remaining posts
         if (remainingPosts.length > 0) {
           await fetchPostsProgressive(
@@ -93,17 +100,17 @@ export function UserPosts({ username }: UserPostsProps) {
       loadInitialPosts();
     }
   }, [username]);
-  
+
   // Load more posts with progressive rendering
   const loadMorePosts = async () => {
     if (loadingMore) return;
-    
+
     try {
       setLoadingMore(true);
       const nextPage = currentPage + 1;
       const startIndex = currentPage * POSTS_PER_PAGE;
       const endIndex = startIndex + POSTS_PER_PAGE;
-      
+
       // Convert remaining basic posts to CuratedPost format
       const remainingBasicPosts = allBasicPosts.slice(startIndex);
       const curatedPosts: CuratedPost[] = remainingBasicPosts
@@ -114,14 +121,14 @@ export function UserPosts({ username }: UserPostsProps) {
           author: post.author,
           permlink: post.permlink
         }));
-      
+
       const nextBatch = curatedPosts.slice(0, POSTS_PER_PAGE);
-      
+
       if (nextBatch.length === 0) {
         setLoadingMore(false);
         return;
       }
-      
+
       // Progressive loading for "Load More"
       await fetchPostsProgressive(
         nextBatch,
@@ -135,7 +142,7 @@ export function UserPosts({ username }: UserPostsProps) {
         },
         10
       );
-      
+
       setCurrentPage(nextPage);
       setLoadingMore(false);
     } catch (err) {
@@ -143,7 +150,7 @@ export function UserPosts({ username }: UserPostsProps) {
       setLoadingMore(false);
     }
   };
-  
+
   // Cache warming - Prefetch next batch in background
   useEffect(() => {
     if (!loading && posts.length > 0 && posts.length >= POSTS_PER_PAGE) {
@@ -152,7 +159,7 @@ export function UserPosts({ username }: UserPostsProps) {
         const nextStartIndex = currentPage * POSTS_PER_PAGE;
         const nextEndIndex = nextStartIndex + POSTS_PER_PAGE;
         const remainingBasicPosts = allBasicPosts.slice(nextStartIndex, nextEndIndex);
-        
+
         const curatedPosts: CuratedPost[] = remainingBasicPosts
           .filter((post: any) => post.author && post.permlink)
           .map((post: any) => ({
@@ -161,7 +168,7 @@ export function UserPosts({ username }: UserPostsProps) {
             author: post.author,
             permlink: post.permlink
           }));
-        
+
         if (curatedPosts.length > 0) {
           // Silently prefetch in background (lower priority - 3 concurrent)
           fetchPosts(curatedPosts, 3).catch(() => {
@@ -169,11 +176,11 @@ export function UserPosts({ username }: UserPostsProps) {
           });
         }
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [loading, posts.length, currentPage, allBasicPosts]);
-  
+
   const hasMorePosts = posts.length < allBasicPosts.length;
 
   if (loading) {
@@ -191,11 +198,11 @@ export function UserPosts({ username }: UserPostsProps) {
               </h2>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-center py-8 sm:py-12">
             <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-amber-500"></div>
           </div>
-          
+
           {/* Loading Skeletons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mt-6 sm:mt-8">
             {[...Array(6)].map((_, index) => (
@@ -297,7 +304,7 @@ export function UserPosts({ username }: UserPostsProps) {
                 <ExploreCard key={post.slug} post={post} hideAvatar={true} />
               ))}
             </div>
-            
+
             {/* Load More Button */}
             {hasMorePosts && (
               <div className="mt-6 sm:mt-8 md:mt-12 text-center">
@@ -305,7 +312,7 @@ export function UserPosts({ username }: UserPostsProps) {
                   onClick={loadMorePosts}
                   disabled={loadingMore}
                   className="inline-flex items-center gap-2 sm:gap-3 text-white font-semibold px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base md:text-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none disabled:cursor-not-allowed disabled:transform-none disabled:opacity-70"
-                  style={{ 
+                  style={{
                     background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
                     boxShadow: '0px 1px 3px 1px #00000026, 0px 1px 2px 0px #0000004D'
                   }}

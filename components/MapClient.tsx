@@ -58,20 +58,20 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const [infowindowData, setInfowindowData] = useState<InfoWindowData>(null);
   const [currentZoom, setCurrentZoom] = useState(2); // Start at 2, skip 3
   const previousZoomRef = React.useRef(2); // Track previous zoom for direction detection
-  
+
   // Code mode states
   const [codeMode, setCodeMode] = useState(false);
   const [codeModeMarker, setCodeModeMarker] = useState<{ lat: number; lng: number } | null>(null);
-  
+
   // Floating context menu states
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
-  
+
   // Location and zoom states
   const [location, setLocation] = useState<google.maps.places.Place | undefined>(undefined);
   const [mylocationzoom, setMyLocationZoom] = useState<number | undefined>(undefined);
-  
+
   // Set global functions
   setGlobalLocation = setLocation;
   setGlobalZoom = setMyLocationZoom;
@@ -85,7 +85,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     } as unknown as google.maps.places.Place);
     setMyLocationZoom(18); // Higher zoom level for better store highlighting
   };
-  
+
   // Performance states
   const [performanceResult, setPerformanceResult] = useState<{
     isLowEndDevice: boolean;
@@ -115,10 +115,10 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const [showCommunityHeader, setShowCommunityHeader] = useState(false);
 
   // Journey states
-  const [journeyState, setJourneyState] = useState<JourneyState>({ 
-    journeys: [], 
-    currentJourney: null, 
-    editableUsers: [], 
+  const [journeyState, setJourneyState] = useState<JourneyState>({
+    journeys: [],
+    currentJourney: null,
+    editableUsers: [],
     activeUser: '',
     isEditMode: false
   });
@@ -131,7 +131,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
   // API key
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-  
+
   // Debug API key
   useEffect(() => {
     console.log('API Key status:', API_KEY ? 'Set' : 'Missing');
@@ -167,28 +167,28 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         const networkSpeed = getNetworkSpeed();
         const isExtremelySlow = isExtremelySlowConnection();
         const isSlow = isSlowConnection();
-        
+
         const result = {
           isLowEndDevice,
           networkSpeed,
           isExtremelySlow,
           isSlow
         };
-        
+
         setPerformanceResult(result);
-        
+
         console.log("📊 Performance Check Results:");
         console.log(`   Device Type: ${isLowEndDevice ? 'Low-end' : 'High-end'}`);
         console.log(`   Network Speed: ${networkSpeed.toFixed(2)} Kbps`);
         console.log(`   Extremely Slow: ${isExtremelySlow}`);
         console.log(`   Slow Connection: ${isSlow}`);
         console.log("✅ Performance check complete!");
-        
+
       } catch (error) {
         console.error("❌ Performance check failed:", error);
       }
     };
-    
+
     runPerformanceCheck();
   }, []);
 
@@ -200,7 +200,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       setLoading(true);
       setClustersReady(false);
       loadMarkers(false, searchParams, initialCommunity);
-      
+
       // Fallback timeout in case clusters never load (10 seconds)
       setTimeout(() => {
         if (loading) {
@@ -239,20 +239,20 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   async function loadMarkers(reloadExisting = false, filterParams?: SearchParams, community?: Community) {
     try {
       const targetCommunity = community || selectedCommunity;
-      
+
       // Only set loading state if not already set (to avoid overriding handleLoadPins)
       if (!loading) {
         setLoading(true);
       }
       setClustersReady(false);
-      
+
       if (reloadExisting && geojson) {
         // Just reload the existing geojson data without fetching from API
         setGeojson(geojson);
       } else {
         // Fetch new data from community API
         const params = filterParams || searchParams;
-        
+
         let geoJsonData;
         if (targetCommunity.isDefault) {
           // Use the original WorldMapPin API for default community
@@ -262,7 +262,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           // Use community-specific API
           geoJsonData = await fetchCommunityPins(targetCommunity);
         }
-        
+
         setGeojson(geoJsonData);
         setLoadedCommunity(targetCommunity); // Set the community that actually has loaded pins
       }
@@ -278,7 +278,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     // Only stop loading if we have actual clusters (not empty data)
     if (clusterCount > 0) {
       setClustersReady(true);
-      
+
       // Add delay like in OLDMAPCODE (100ms delay)
       setTimeout(() => {
         setLoading(false);
@@ -293,11 +293,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       // Exiting code mode - clear marker and reload geolocations
       setCodeModeMarker(null);
       setContextMenuVisible(false);
-      
+
       // Show loading spinner and reload existing geolocations
       setLoading(true);
       setClustersReady(false);
-      
+
       // Reload the existing geolocations
       loadMarkers(true);
     }
@@ -307,11 +307,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     setCodeMode(false);
     setCodeModeMarker(null);
     setContextMenuVisible(false);
-    
+
     // Show loading spinner and reload existing geolocations
     setLoading(true);
     setClustersReady(false);
-    
+
     // Reload the existing geolocations
     loadMarkers(true);
   };
@@ -339,9 +339,9 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     if ((codeMode || codeModeMarker) && !journeyState.isEditMode) {
       const latLng = e.detail?.latLng;
       if (latLng) {
-        setCodeModeMarker({ 
-          lat: latLng.lat, 
-          lng: latLng.lng 
+        setCodeModeMarker({
+          lat: latLng.lat,
+          lng: latLng.lng
         });
       }
     }
@@ -366,16 +366,16 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     setSelectedCommunity(community);
     setClustersReady(false);
     setLoading(true);
-    
+
     // Show community header image for specific communities
     if (community.id === 'spendhbd' || community.id === 'foodie') {
       setShowCommunityHeader(true);
     }
-    
+
     // Clear existing data and load new markers
     setGeojson({ type: "FeatureCollection", features: [] });
     loadMarkers(false, searchParams, community);
-    
+
     // Fallback timeout in case clusters never load (10 seconds)
     setTimeout(() => {
       if (loading) {
@@ -390,7 +390,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     if (infowindowData?.features) {
       setOriginalClusterFeatures(infowindowData.features);
     }
-    
+
     // Show the selected store's posts
     setInfowindowData({
       anchor: infowindowData?.anchor || null as any,
@@ -422,7 +422,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         end_date: filterData.endDate || '',
         curated_only: filterData.isCurated || false
       };
-      
+
       setSearchParams(newSearchParams);
       loadMarkers(false, newSearchParams, selectedCommunity);
     } else {
@@ -481,8 +481,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
 
   // State for temporary location highlight
-  const [highlightedLocation, setHighlightedLocation] = useState<{lat: number, lng: number} | null>(null);
-  
+  const [highlightedLocation, setHighlightedLocation] = useState<{ lat: number, lng: number } | null>(null);
+
   // Refs for custom event handling
   const mapRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -490,14 +490,14 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
 
   // Function to show temporary location highlight
-  const showLocationHighlight = (position: {lat: number, lng: number}) => {
+  const showLocationHighlight = (position: { lat: number, lng: number }) => {
     // Validate position before setting
-    if (typeof position?.lat !== 'number' || typeof position?.lng !== 'number' || 
-        isNaN(position.lat) || isNaN(position.lng)) {
+    if (typeof position?.lat !== 'number' || typeof position?.lng !== 'number' ||
+      isNaN(position.lat) || isNaN(position.lng)) {
       console.warn('Invalid position for highlight:', position);
       return;
     }
-    
+
     console.log('Setting highlight at:', position);
     console.log('Visual offset position (slightly lower):', { lat: position.lat - 0.0001, lng: position.lng });
     setHighlightedLocation(position);
@@ -529,11 +529,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       const rect = mapElement.getBoundingClientRect();
       const relativeX = x - rect.left;
       const relativeY = y - rect.top;
-      
+
       // Use Google Maps projection to convert pixel coordinates to lat/lng
       const point = new google.maps.Point(relativeX, relativeY);
       const latLng = map.getProjection()?.fromPointToLatLng(point);
-      
+
       if (latLng) {
         return { lat: latLng.lat(), lng: latLng.lng() };
       }
@@ -559,11 +559,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
   // Handle map idle
   const handleMapIdle = (e: any) => {
-    setLocation(undefined); 
-    setMyLocationZoom(undefined); 
-    
+    setLocation(undefined);
+    setMyLocationZoom(undefined);
+
     const newZoom = e.map.getZoom();
-    
+
     // Skip zoom level 3 - jump to 2 or 4 depending on direction
     if (newZoom === 3) {
       const previousZoom = previousZoomRef.current;
@@ -585,7 +585,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       setCurrentZoom(newZoom);
       previousZoomRef.current = newZoom;
     }
-    
+
     // Store map instance for coordinate conversion
     mapInstanceRef.current = e.map;
   };
@@ -600,10 +600,10 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         e.preventDefault();
         const x = e.clientX;
         const y = e.clientY;
-        
+
         // Store the click position for the context menu
         setContextMenuPosition({ x, y });
-        
+
         // Convert screen coordinates to lat/lng using improved method
         const latLng = screenToLatLng(x, y, mapElement);
         setPendingLocation(latLng);
@@ -614,16 +614,16 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     const handleTouchStart = (e: TouchEvent) => {
       if (!codeMode) { // Only show context menu when NOT in code mode
         touchStartTime.current = Date.now();
-        
+
         longPressTimer.current = setTimeout(() => {
           // Long press detected
           const touch = e.touches[0];
           const x = touch.clientX;
           const y = touch.clientY;
-          
+
           // Store the touch position for the context menu
           setContextMenuPosition({ x, y });
-          
+
           // Convert screen coordinates to lat/lng using improved method
           const latLng = screenToLatLng(x, y, mapElement);
           setPendingLocation(latLng);
@@ -663,7 +663,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   }, [codeMode, codeModeMarker, screenToLatLng]);
 
 
-  
+
   if (!API_KEY) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-100">
@@ -699,11 +699,10 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           {/* Get Code Button */}
           <button
             onClick={toggleCodeMode}
-            className={`${
-              codeMode 
-                ? 'bg-red-500/90 hover:bg-red-600' 
+            className={`${codeMode
+                ? 'bg-red-500/90 hover:bg-red-600'
                 : 'bg-gradient-to-r from-purple-500/90 to-indigo-500/90 hover:from-purple-600 hover:to-indigo-600'
-            } backdrop-blur-md text-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-white/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]`}
+              } backdrop-blur-md text-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-white/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]`}
             title={codeMode ? "Exit Code Mode" : "Get Code"}
           >
             <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -742,13 +741,12 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           {/* Performance Indicator */}
           {performanceResult && (
             <div className="bg-white/90 backdrop-blur-md rounded-xl px-2.5 py-1.5 md:px-3 md:py-2 shadow-lg border border-white/20 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]">
-              <div className={`w-2 h-2 rounded-full ${
-                performanceResult.isExtremelySlow ? 'bg-red-500 animate-pulse' :
-                performanceResult.isSlow ? 'bg-yellow-500' : 'bg-green-500'
-              }`}></div>
+              <div className={`w-2 h-2 rounded-full ${performanceResult.isExtremelySlow ? 'bg-red-500 animate-pulse' :
+                  performanceResult.isSlow ? 'bg-yellow-500' : 'bg-green-500'
+                }`}></div>
               <span className="text-xs font-medium text-gray-600">
                 {performanceResult.isExtremelySlow ? 'Slow' :
-                 performanceResult.isSlow ? 'Fair' : 'Fast'}
+                  performanceResult.isSlow ? 'Fair' : 'Fast'}
               </span>
             </div>
           )}
@@ -853,18 +851,18 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
               >
                 ×
               </button>
-              
+
               {loadedCommunity.id === 'spendhbd' && (
-                <img 
-                  src="/images/WMP-x-Distriator.jpg" 
-                  alt="SpendHBD Community Header" 
+                <img
+                  src="/images/WMP-x-Distriator.jpg"
+                  alt="SpendHBD Community Header"
                   className="w-full h-auto max-h-32 object-contain rounded-xl"
                 />
               )}
               {loadedCommunity.id === 'foodie' && (
-                <img 
-                  src="/images/wmp-x-foodie-bee-hive.png" 
-                  alt="Foodies Bee Hive Community Header" 
+                <img
+                  src="/images/wmp-x-foodie-bee-hive.png"
+                  alt="Foodies Bee Hive Community Header"
                   className="w-full h-auto max-h-32 object-contain rounded-xl"
                 />
               )}
@@ -885,7 +883,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
         {/* Code Mode Interface - Show when in code mode OR when marker is set from context menu */}
         {(codeMode || codeModeMarker) && (
-          <CodeModeInterface 
+          <CodeModeInterface
             codeModeMarker={codeModeMarker}
             onBack={codeMode ? handleBackFromCodeMode : () => setCodeModeMarker(null)}
             isFullCodeMode={codeMode}
@@ -932,201 +930,201 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
         {/* Mobile Map Container */}
         <div ref={mapRef} className="map-wrapper">
-            <Map
-              mapId={MAP_CONFIG.mapId}
-              mapTypeId={MAP_CONFIG.mapTypeId}
-              defaultCenter={{ lat: 50, lng: 20 }}
-              defaultZoom={2}
-              minZoom={2}
-              maxZoom={20}
-              zoomControl={true}
-              gestureHandling={'greedy'}
-              disableDefaultUI={false}
-              isFractionalZoomEnabled={false}
-              fullscreenControl={true}
-              streetViewControl={true}
-              restriction={{
-                latLngBounds: bounds,
-                strictBounds: true,
-              }}
-              center={location?.location}
-              zoom={location?.location ? mylocationzoom : undefined}
-              onIdle={handleMapIdle}
-              onClick={handleMapClick}
-              className={`mobile-map-container ${(codeMode || codeModeMarker) ? 'code-mode-active' : ''}`}
-            >
-          {/* Clustered Markers - Show when not in full code mode and journey controls are hidden */}
-          {!codeMode && !showJourneyControls && geojson && (
-            <ClusteredMarkers
-              key={`${loadedCommunity?.id}-${geojson.features?.length || 0}`}
-              geojson={geojson}
-              setNumClusters={setNumClusters}
-              setInfowindowData={setInfowindowData}
-              currentZoom={currentZoom}
-              onClustersReady={handleClustersReady}
-              community={loadedCommunity}
-            />
-          )}
+          <Map
+            mapId={MAP_CONFIG.mapId}
+            mapTypeId={MAP_CONFIG.mapTypeId}
+            defaultCenter={{ lat: 50, lng: 20 }}
+            defaultZoom={2}
+            minZoom={2}
+            maxZoom={20}
+            zoomControl={true}
+            gestureHandling={'greedy'}
+            disableDefaultUI={false}
+            isFractionalZoomEnabled={false}
+            fullscreenControl={true}
+            streetViewControl={true}
+            restriction={{
+              latLngBounds: bounds,
+              strictBounds: true,
+            }}
+            center={location?.location}
+            zoom={location?.location ? mylocationzoom : undefined}
+            onIdle={handleMapIdle}
+            onClick={handleMapClick}
+            className={`mobile-map-container ${(codeMode || codeModeMarker) ? 'code-mode-active' : ''}`}
+          >
+            {/* Clustered Markers - Show when not in full code mode and journey controls are hidden */}
+            {!codeMode && !showJourneyControls && geojson && (
+              <ClusteredMarkers
+                key={`${loadedCommunity?.id}-${geojson.features?.length || 0}`}
+                geojson={geojson}
+                setNumClusters={setNumClusters}
+                setInfowindowData={setInfowindowData}
+                currentZoom={currentZoom}
+                onClustersReady={handleClustersReady}
+                community={loadedCommunity}
+              />
+            )}
 
-          {/* Simple Journey Map - Show when journey controls are visible */}
-          {showJourneyControls && !showUserPostsOnMap && (
-            <SimpleJourneyMap 
-              journey={journeyState.currentJourney}
-              journeyState={journeyState}
-            />
-          )}
+            {/* Simple Journey Map - Show when journey controls are visible */}
+            {showJourneyControls && !showUserPostsOnMap && (
+              <SimpleJourneyMap
+                journey={journeyState.currentJourney}
+                journeyState={journeyState}
+              />
+            )}
 
-          {/* User Posts on Map - Show when selecting starting post */}
-          {showUserPostsOnMap && userPostsUsername && onUserPostClick && (
-            <UserPostsOnMap
-              username={userPostsUsername}
-              onPostClick={onUserPostClick}
-              selectedPostId={selectedStartingPostId}
-            />
-          )}
+            {/* User Posts on Map - Show when selecting starting post */}
+            {showUserPostsOnMap && userPostsUsername && onUserPostClick && (
+              <UserPostsOnMap
+                username={userPostsUsername}
+                onPostClick={onUserPostClick}
+                selectedPostId={selectedStartingPostId}
+              />
+            )}
 
-          {/* Code Mode Marker - Show when marker is set */}
-          {codeModeMarker && (
-            <AdvancedMarker position={{ lat: codeModeMarker.lat, lng: codeModeMarker.lng }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                backgroundColor: '#ff6b6b',
-                border: '3px solid white',
-                borderRadius: '50%',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-              }} />
-            </AdvancedMarker>
-          )}
+            {/* Code Mode Marker - Show when marker is set */}
+            {codeModeMarker && (
+              <AdvancedMarker position={{ lat: codeModeMarker.lat, lng: codeModeMarker.lng }}>
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  backgroundColor: '#ff6b6b',
+                  border: '3px solid white',
+                  borderRadius: '50%',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                }} />
+              </AdvancedMarker>
+            )}
 
-          {/* Temporary Location Highlight - Only Pulsating Animation */}
-          {highlightedLocation && 
-           typeof highlightedLocation.lat === 'number' && 
-           typeof highlightedLocation.lng === 'number' && 
-           !isNaN(highlightedLocation.lat) && 
-           !isNaN(highlightedLocation.lng) && (
-            <AdvancedMarker position={{
-              lat: highlightedLocation.lat,
-              lng: highlightedLocation.lng
-            }}>
-              <div className="location-highlight">
-                {/* Multiple pulsing rings with WorldMapPin orange color */}
-                <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-75"></div>
-                <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-50" style={{animationDelay: '0.5s'}}></div>
-                <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-25" style={{animationDelay: '1s'}}></div>
-                <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-10" style={{animationDelay: '1.5s'}}></div>
-              </div>
-            </AdvancedMarker>
-          )}
-
-          {/* Post Popup - Responsive: Bottom Sheet (Mobile) / Centered Modal (Desktop) */}
-          {infowindowData && (
-            <div className="absolute inset-0 z-40 pointer-events-none">
-              {/* Backdrop */}
-              <div 
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
-                onClick={closeTab}
-              ></div>
-              
-              {/* Mobile: Bottom Sheet */}
-              <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden">
-                <div className="mobile-post-popup bg-white/95 backdrop-blur-md rounded-t-3xl shadow-2xl transform transition-all duration-300 ease-out animate-slide-up border border-white/20">
-                  {/* Handle Bar */}
-                  <div className="flex justify-center pt-3 pb-2">
-                    <div className="w-12 h-1 bg-gray-400/60 rounded-full"></div>
+            {/* Temporary Location Highlight - Only Pulsating Animation */}
+            {highlightedLocation &&
+              typeof highlightedLocation.lat === 'number' &&
+              typeof highlightedLocation.lng === 'number' &&
+              !isNaN(highlightedLocation.lat) &&
+              !isNaN(highlightedLocation.lng) && (
+                <AdvancedMarker position={{
+                  lat: highlightedLocation.lat,
+                  lng: highlightedLocation.lng
+                }}>
+                  <div className="location-highlight">
+                    {/* Multiple pulsing rings with WorldMapPin orange color */}
+                    <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-75"></div>
+                    <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-50" style={{ animationDelay: '0.5s' }}></div>
+                    <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-25" style={{ animationDelay: '1s' }}></div>
+                    <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-10" style={{ animationDelay: '1.5s' }}></div>
                   </div>
-                  
-                  {/* Close Button */}
-                  <button 
-                    className="absolute top-4 right-4 w-8 h-8 bg-white/80 backdrop-blur-sm hover:bg-white/90 rounded-full flex items-center justify-center transition-colors duration-200 z-10 shadow-md border border-white/20"
-                    onClick={closeTab}
-                  >
-                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                  
-                  {/* Content */}
-                  <div className="px-6 pb-6 max-h-[70vh] overflow-y-auto">
-                    {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
-                      <SpendHBDClusterInfo 
-                        features={infowindowData.features}
-                        onStoreSelect={handleStoreSelect}
-                        onClose={closeTab}
-                        onViewOnMap={handleViewOnMap}
-                      />
-                    ) : loadedCommunity?.id === 'spendhbd' && infowindowData.features[0]?.properties?.name ? (
-                      <SpendHBDInfoWindow 
-                        features={infowindowData.features}
-                        onBack={handleBackToCluster}
-                        onClose={closeTab}
-                        showBackButton={true}
-                        onViewOnMap={handleViewOnMap}
-                        isCluster={infowindowData.isCluster || false}
-                      />
-                    ) : (
-                      <InfoWindowContent features={infowindowData.features} />
-                    )}
-                  </div>
-                </div>
-              </div>
+                </AdvancedMarker>
+              )}
 
-              {/* Desktop: Centered Modal - Matching Explore Page Width */}
-              <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-4">
-                <div className="w-full max-w-7xl bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl transform transition-all duration-300 ease-out animate-fade-in border border-orange-100/50 overflow-hidden">
-                  {/* Header with Orange Accent */}
-                  <div className="relative bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100">
-                    <div className="px-8 py-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-2xl font-bold text-gray-900">Discover Posts</h2>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} at this location
-                          </p>
-                        </div>
-                        
-                        {/* Close Button */}
-                        <button 
-                          className="w-10 h-10 bg-white hover:bg-orange-50 rounded-full flex items-center justify-center transition-all duration-200 shadow-md border border-orange-100 group"
-                          onClick={closeTab}
-                        >
-                          <svg className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
+            {/* Post Popup - Responsive: Bottom Sheet (Mobile) / Centered Modal (Desktop) */}
+            {infowindowData && (
+              <div className="absolute inset-0 z-40 pointer-events-none">
+                {/* Backdrop */}
+                <div
+                  className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
+                  onClick={closeTab}
+                ></div>
+
+                {/* Mobile: Bottom Sheet */}
+                <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden">
+                  <div className="mobile-post-popup bg-white/95 backdrop-blur-md rounded-t-3xl shadow-2xl transform transition-all duration-300 ease-out animate-slide-up border border-white/20">
+                    {/* Handle Bar */}
+                    <div className="flex justify-center pt-3 pb-2">
+                      <div className="w-12 h-1 bg-gray-400/60 rounded-full"></div>
                     </div>
-                    
-                    {/* Decorative Line */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-amber-400 to-orange-400"></div>
+
+                    {/* Close Button */}
+                    <button
+                      className="absolute top-4 right-4 w-8 h-8 bg-white/80 backdrop-blur-sm hover:bg-white/90 rounded-full flex items-center justify-center transition-colors duration-200 z-10 shadow-md border border-white/20"
+                      onClick={closeTab}
+                    >
+                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+
+                    {/* Content */}
+                    <div className="px-6 pb-6 max-h-[70vh] overflow-y-auto">
+                      {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
+                        <SpendHBDClusterInfo
+                          features={infowindowData.features}
+                          onStoreSelect={handleStoreSelect}
+                          onClose={closeTab}
+                          onViewOnMap={handleViewOnMap}
+                        />
+                      ) : loadedCommunity?.id === 'spendhbd' && infowindowData.features[0]?.properties?.name ? (
+                        <SpendHBDInfoWindow
+                          features={infowindowData.features}
+                          onBack={handleBackToCluster}
+                          onClose={closeTab}
+                          showBackButton={true}
+                          onViewOnMap={handleViewOnMap}
+                          isCluster={infowindowData.isCluster || false}
+                        />
+                      ) : (
+                        <InfoWindowContent features={infowindowData.features} />
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* Content - Scrollable with matching explore page padding */}
-                  <div className="px-8 py-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
-                    {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
-                      <SpendHBDClusterInfo 
-                        features={infowindowData.features}
-                        onStoreSelect={handleStoreSelect}
-                        onClose={closeTab}
-                        onViewOnMap={handleViewOnMap}
-                      />
-                    ) : loadedCommunity?.id === 'spendhbd' && infowindowData.features[0]?.properties?.name ? (
-                      <SpendHBDInfoWindow 
-                        features={infowindowData.features}
-                        onBack={handleBackToCluster}
-                        onClose={closeTab}
-                        showBackButton={true}
-                        onViewOnMap={handleViewOnMap}
-                        isCluster={infowindowData.isCluster || false}
-                      />
-                    ) : (
-                      <InfoWindowContent features={infowindowData.features} />
-                    )}
+                </div>
+
+                {/* Desktop: Centered Modal - Matching Explore Page Width */}
+                <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-4">
+                  <div className="w-full max-w-7xl bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl transform transition-all duration-300 ease-out animate-fade-in border border-orange-100/50 overflow-hidden">
+                    {/* Header with Orange Accent */}
+                    <div className="relative bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100">
+                      <div className="px-8 py-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h2 className="text-2xl font-bold text-gray-900">Discover Posts</h2>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} at this location
+                            </p>
+                          </div>
+
+                          {/* Close Button */}
+                          <button
+                            className="w-10 h-10 bg-white hover:bg-orange-50 rounded-full flex items-center justify-center transition-all duration-200 shadow-md border border-orange-100 group"
+                            onClick={closeTab}
+                          >
+                            <svg className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Decorative Line */}
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-amber-400 to-orange-400"></div>
+                    </div>
+
+                    {/* Content - Scrollable with matching explore page padding */}
+                    <div className="px-8 py-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                      {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
+                        <SpendHBDClusterInfo
+                          features={infowindowData.features}
+                          onStoreSelect={handleStoreSelect}
+                          onClose={closeTab}
+                          onViewOnMap={handleViewOnMap}
+                        />
+                      ) : loadedCommunity?.id === 'spendhbd' && infowindowData.features[0]?.properties?.name ? (
+                        <SpendHBDInfoWindow
+                          features={infowindowData.features}
+                          onBack={handleBackToCluster}
+                          onClose={closeTab}
+                          showBackButton={true}
+                          onViewOnMap={handleViewOnMap}
+                          isCluster={infowindowData.isCluster || false}
+                        />
+                      ) : (
+                        <InfoWindowContent features={infowindowData.features} />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
           </Map>
         </div>
 

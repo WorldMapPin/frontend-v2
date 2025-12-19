@@ -5,7 +5,8 @@ import UserMapComponent from './UserMapComponent';
 import { WorldCoverageSection } from './WorldCoverageSection';
 import UserPosts from './UserPosts';
 import { fetchUserProfile, HiveUserProfile } from '../../../lib/hiveClient';
-import { getUserPinCount, getUserRank } from '../../../lib/worldmappinApi';
+import { fetchUserPins, getUserRank } from '../../../lib/worldmappinApi';
+import WorldCoverageMap from './WorldCoverageMap';
 
 interface UserProfileProps {
   username: string;
@@ -25,6 +26,7 @@ interface UserProfileData {
 
 export function UserProfile({ username }: UserProfileProps) {
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
+  const [userPins, setUserPins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
 
@@ -52,11 +54,15 @@ export function UserProfile({ username }: UserProfileProps) {
           return;
         }
 
-        // Fetch additional data in parallel
-        const [pinCount, rank] = await Promise.all([
-          getUserPinCount(username),
+        // Fetch pins and rank in parallel
+        // We fetch pins once here and share them with children
+        const [pins, rank] = await Promise.all([
+          fetchUserPins(username),
           getUserRank(username)
         ]);
+
+        const pinCount = pins.length;
+        setUserPins(pins);
 
         const profile = hiveProfile.profile!;
 
@@ -353,23 +359,14 @@ export function UserProfile({ username }: UserProfileProps) {
               </div>
             </div>
 
-            <div className="flex flex-col lg:flex-row lg:items-stretch gap-4 sm:gap-6 py-4 sm:py-6">
-              <div className="flex flex-col lg:flex-row lg:items-stretch gap-4 sm:gap-6 py-4 sm:py-6">
-                {/* Map Container - Full width */}
-                <div className="w-full flex">
-                  <div
-                    className="border border-[#0000001A] rounded-xl sm:rounded-2xl p-1 sm:p-1.5 md:p-2 flex-1 flex flex-col"
-                  >
-                    <div className="transition-all duration-500 overflow-hidden rounded-xl sm:rounded-2xl flex-1">
-                      <div className="h-full min-h-[300px] sm:min-h-[400px] md:min-h-[500px] rounded-xl sm:rounded-2xl overflow-hidden">
-                        <UserMapComponent
-                          username={username}
-                          isExpanded={false}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="py-4 sm:py-6 lg:py-8">
+              {/* Map Container - Explicit height to ensure it doesn't collapse */}
+              <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] border border-[#0000001A] rounded-xl sm:rounded-2xl overflow-hidden bg-[#FDF8F3] relative">
+                <UserMapComponent
+                  username={username}
+                  initialPins={userPins}
+                  isExpanded={false}
+                />
               </div>
             </div>
           </div>
@@ -384,7 +381,7 @@ export function UserProfile({ username }: UserProfileProps) {
 
 
       {/* User Posts Section */}
-      <UserPosts username={username} />
+      <UserPosts username={username} initialPins={userPins} />
     </div>
   );
 }

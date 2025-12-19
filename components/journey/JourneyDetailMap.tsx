@@ -58,7 +58,7 @@ function JourneyMapContent({ journey }: { journey: Journey }) {
     segments.forEach(segment => {
       const fromPin = journey.pins.find(p => p.id === segment.fromPinId);
       const toPin = journey.pins.find(p => p.id === segment.toPinId);
-      
+
       if (!fromPin || !toPin) return;
 
       if (segment.travelMode === 'FLYING') {
@@ -79,7 +79,7 @@ function JourneyMapContent({ journey }: { journey: Journey }) {
             repeat: '20px'
           }]
         });
-        
+
         flightPath.setMap(map);
         newDirectLines[segment.id] = flightPath;
       } else {
@@ -163,7 +163,7 @@ function JourneyMapContent({ journey }: { journey: Journey }) {
                 style={{ backgroundColor: getPinColor(pin.pinType) }}
               >
                 <span className="text-sm">{index + 1}</span>
-                
+
                 {/* Pin type indicator */}
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center text-xs shadow">
                   {(!pin.pinType || pin.pinType === 'post') && '📄'}
@@ -176,7 +176,7 @@ function JourneyMapContent({ journey }: { journey: Journey }) {
               {/* Pointer */}
               <div
                 className="absolute left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent"
-                style={{ 
+                style={{
                   borderTop: `8px solid ${getPinColor(pin.pinType)}`,
                   top: '100%'
                 }}
@@ -194,7 +194,7 @@ export default function JourneyDetailMap({ journey }: JourneyDetailMapProps) {
     if (journey.pins.length === 0) {
       return { lat: 0, lng: 0 };
     }
-    
+
     const sum = journey.pins.reduce(
       (acc, pin) => ({
         lat: acc.lat + pin.position.lat,
@@ -202,7 +202,7 @@ export default function JourneyDetailMap({ journey }: JourneyDetailMapProps) {
       }),
       { lat: 0, lng: 0 }
     );
-    
+
     return {
       lat: sum.lat / journey.pins.length,
       lng: sum.lng / journey.pins.length
@@ -217,7 +217,7 @@ export default function JourneyDetailMap({ journey }: JourneyDetailMapProps) {
     // Calculate bounds
     const lats = journey.pins.map(p => p.position.lat);
     const lngs = journey.pins.map(p => p.position.lng);
-    
+
     const latRange = Math.max(...lats) - Math.min(...lats);
     const lngRange = Math.max(...lngs) - Math.min(...lngs);
     const maxRange = Math.max(latRange, lngRange);
