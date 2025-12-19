@@ -52,6 +52,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.travelfeed.io',
+        port: '',
+        pathname: '/**',
+      },
     ],
   }
 }

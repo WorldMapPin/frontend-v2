@@ -58,25 +58,24 @@ const HeroBackgroundGrid = () => {
 
         .hero-grid-track {
           display: grid;
-          grid-template-columns: repeat(8, 1fr);
-          grid-template-rows: repeat(5, 1fr);
-          gap: 10px;
+          grid-template-columns: repeat(4, 1fr);
+          grid-template-rows: repeat(3, 1fr);
+          gap: 6px;
           width: 200%;
-          height: 130%;
+          height: 120%;
           position: absolute;
-          top: -15%;
+          top: -10%;
           left: 0;
-          opacity: 0.3;
-          animation: drift 55s linear infinite;
-          transform: rotate(-6deg);
+          opacity: 0.25;
+          animation: drift-mobile 60s linear infinite;
         }
 
         .hero-grid-cell {
           width: 100%;
           height: 100%;
           overflow: hidden;
-          border-radius: 12px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
         }
 
         .hero-grid-image {
@@ -90,23 +89,41 @@ const HeroBackgroundGrid = () => {
           inset: 0;
           background: 
             radial-gradient(
-              ellipse 70% 60% at 50% 45%,
-              rgba(237, 109, 40, 0.85) 0%,
-              rgba(245, 130, 50, 0.6) 40%,
-              rgba(255, 166, 0, 0.3) 70%,
+              ellipse 80% 70% at 50% 45%,
+              rgba(237, 109, 40, 0.9) 0%,
+              rgba(245, 130, 50, 0.65) 35%,
+              rgba(255, 166, 0, 0.35) 65%,
               transparent 100%
             ),
             linear-gradient(
               to bottom,
-              rgba(237, 109, 40, 0.7) 0%,
-              transparent 25%,
-              transparent 80%,
-              rgba(255, 255, 255, 0.9) 100%
+              rgba(237, 109, 40, 0.75) 0%,
+              transparent 20%,
+              transparent 75%,
+              rgba(255, 255, 255, 0.95) 100%
             );
           pointer-events: none;
         }
 
-        @keyframes drift {
+        @keyframes drift-mobile {
+          0% {
+            transform: translateX(0) rotate(-4deg);
+          }
+          100% {
+            transform: translateX(-50%) rotate(-4deg);
+          }
+        }
+
+        @keyframes drift-tablet {
+          0% {
+            transform: translateX(0) rotate(-5deg);
+          }
+          100% {
+            transform: translateX(-50%) rotate(-5deg);
+          }
+        }
+
+        @keyframes drift-desktop {
           0% {
             transform: translateX(0) rotate(-6deg);
           }
@@ -115,10 +132,89 @@ const HeroBackgroundGrid = () => {
           }
         }
 
+        /* Tablet and up */
+        @media (min-width: 768px) {
+          .hero-grid-track {
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 8px;
+            opacity: 0.28;
+            animation: drift-tablet 58s linear infinite;
+          }
+
+          .hero-grid-cell {
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          }
+
+          .hero-grid-overlay {
+            background: 
+              radial-gradient(
+                ellipse 75% 65% at 50% 45%,
+                rgba(237, 109, 40, 0.87) 0%,
+                rgba(245, 130, 50, 0.62) 38%,
+                rgba(255, 166, 0, 0.32) 68%,
+                transparent 100%
+              ),
+              linear-gradient(
+                to bottom,
+                rgba(237, 109, 40, 0.72) 0%,
+                transparent 22%,
+                transparent 78%,
+                rgba(255, 255, 255, 0.92) 100%
+              );
+          }
+        }
+
+        /* Desktop */
+        @media (min-width: 1024px) {
+          .hero-grid-track {
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px;
+            height: 130%;
+            top: -15%;
+            opacity: 0.3;
+            animation: drift-desktop 55s linear infinite;
+          }
+
+          .hero-grid-cell {
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+          }
+
+          .hero-grid-overlay {
+            background: 
+              radial-gradient(
+                ellipse 70% 60% at 50% 45%,
+                rgba(237, 109, 40, 0.85) 0%,
+                rgba(245, 130, 50, 0.6) 40%,
+                rgba(255, 166, 0, 0.3) 70%,
+                transparent 100%
+              ),
+              linear-gradient(
+                to bottom,
+                rgba(237, 109, 40, 0.7) 0%,
+                transparent 25%,
+                transparent 80%,
+                rgba(255, 255, 255, 0.9) 100%
+              );
+          }
+        }
+
         /* Reduce motion for accessibility */
         @media (prefers-reduced-motion: reduce) {
           .hero-grid-track {
-            animation: none;
+            animation: none !important;
+          }
+        }
+
+        /* Performance optimization for mobile */
+        @media (max-width: 767px) {
+          .hero-grid-track {
+            will-change: transform;
+            backface-visibility: hidden;
+            transform: translateZ(0);
           }
         }
       `}</style>
