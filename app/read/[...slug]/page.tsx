@@ -62,13 +62,45 @@ export default function PostReaderPage() {
     loadPost();
   }, [author, permlink]);
 
-  // Process markdown to HTML with sanitization
   const processedHtml = useMemo(() => {
     if (!post?.bodyMarkdown) return '';
     
     try {
-      // Preprocess: Handle markdown inside HTML tags
       let preprocessedMarkdown = post.bodyMarkdown;
+
+      
+      // [![](https://images.ecency.com/....jpg)](https://images.ecency.com/....jpg)
+      // into HTML <a><img/></a> so they always render correctly
+      preprocessedMarkdown = preprocessedMarkdown.replace(
+        /\[!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)\]\((https?:\/\/[^\s)]+)\)/g,
+        (_match, alt, src, href) =>
+          `<a href="${href}" target="_blank" rel="noopener noreferrer"><img src="${src}" alt="${alt}" loading="lazy" /></a>`
+      );
+
+      // Preprocess: Handle markdown inside HTML tags
+
+      // Convert image URLs from PeakD (and similar) to markdown image syntax
+      // 1) Standalone on their own line
+      preprocessedMarkdown = preprocessedMarkdown.replace(
+        /^(https?:\/\/[^\s]+?\.(?:png|jpe?g|gif|webp|svg))(?:\s*)$/gim,
+        '![]($1)'
+      );
+
+      // 2) Anywhere in the text, but only if not already part of markdown []()
+      preprocessedMarkdown = preprocessedMarkdown.replace(
+        /(https?:\/\/files\.peakd\.com\/[^\s]+?\.(?:png|jpe?g|gif|webp|svg))/gi,
+        (match, _url, offset, full) => {
+          const before = full.slice(0, offset);
+          const prefix = before.slice(-2);
+
+          // Skip if it's already inside markdown link/image: ](url)
+          if (prefix === '](') {
+            return match;
+          }
+
+          return `![](${match})`;
+        }
+      );
       
       // Find HTML tags that contain markdown and process them
       preprocessedMarkdown = preprocessedMarkdown.replace(
@@ -76,6 +108,8 @@ export default function PostReaderPage() {
         (match, tagName, attributes, content) => {
           // Process markdown inside the HTML tag
           const processedContent = content
+            // Images: ![alt](src)
+            .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" loading="lazy" />')
             .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // Bold
             .replace(/\*([^*]+)\*/g, '<em>$1</em>') // Italic
             .replace(/_([^_]+)_/g, '<em>$1</em>') // Italic with underscores

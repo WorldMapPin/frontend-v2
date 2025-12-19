@@ -38,6 +38,7 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
               <div className="flex flex-col gap-3">
                 <Link
                   href="/about"
+                  
                   className="block font-semibold text-[#45220B] hover:text-orange-500"
                 >
                   <span className="relative inline-flex items-start gap-1">
@@ -60,6 +61,7 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                 </Link>
                 <Link
                   href="/team"
+                  
                   className="block font-semibold text-[#45220B] hover:text-orange-500"
                 >
                   <span className="relative inline-flex items-start gap-1">
@@ -84,6 +86,7 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
               <div className="flex flex-col gap-3">
                 <Link
                   href="/explore"
+                  suppressHydrationWarning
                   className="block font-semibold text-[#45220B] hover:text-orange-500"
                 >
                   <span className="relative inline-flex items-start gap-1">
@@ -106,6 +109,7 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                 </Link>
                 <Link
                   href="/signup"
+                  suppressHydrationWarning
                   className="block font-semibold text-[#45220B] hover:text-orange-500"
                 >
                   <span className="relative inline-flex items-start gap-1">

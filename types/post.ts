@@ -61,3 +61,27 @@ export interface PostCache {
     timestamp: number;
   };
 }
+
+// Travel Digest related interfaces
+export interface DigestPost {
+  rank: 1 | 2 | 3;
+  title: string;
+  author: string;
+  permlink: string;
+  imageUrl?: string;
+  excerpt?: string;
+  postUrl: string;
+}
+
+export interface TravelDigest {
+  digestNumber: number;
+  publishDate: string;
+  posts: DigestPost[];
+}
+
+export interface DigestFetchResult {
+  success: boolean;
+  digest?: TravelDigest;
+  error?: string;
+  cached?: boolean;
+}

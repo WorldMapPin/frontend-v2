@@ -7,6 +7,8 @@ import GradientText from '../components/home/GradientText';
 import FeatureCard from '../components/home/FeatureCard';
 import ShowcaseCard from '../components/home/ShowcaseCard';
 import BenefitItem from '../components/home/BenefitItem';
+import TravelDigestSection from '../components/home/TravelDigestSection';
+import HeroBackgroundGrid from '../components/home/HeroBackgroundGrid';
 
 export default function Home() {
   const features = [
@@ -99,6 +101,9 @@ export default function Home() {
         className="w-full min-h-[520px] sm:min-h-[560px] md:min-h-[600px] lg:min-h-[690px] relative overflow-hidden flex items-center justify-center" 
         style={{ background: 'linear-gradient(150.44deg, #ED6D28 20.69%, #FFA600 81.91%)' }}
       >
+        {/* Animated background grid */}
+        <HeroBackgroundGrid />
+        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 font-lexend" style={{ lineHeight: 1.15 }}>
@@ -119,6 +124,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full mx-auto">
               <a
                 href="/signup"
+                suppressHydrationWarning
                 className="inline-flex items-center justify-center text-white font-semibold px-8 py-3 rounded-lg text-base border-2 border-transparent transition-all duration-300 font-lexend w-full sm:w-56 hover:shadow-2xl hover:scale-105 active:scale-95 whitespace-nowrap"
                 style={{ background: '#A74F1A' }}
               >
@@ -126,6 +132,7 @@ export default function Home() {
               </a>
               <a
                 href="/explore"
+                suppressHydrationWarning
                 className="inline-flex items-center justify-center bg-transparent text-white font-semibold px-8 py-3 rounded-lg text-base border-2 border-white transition-all duration-300 font-lexend w-full sm:w-56 hover:bg-white hover:text-orange-500 hover:shadow-2xl hover:scale-105 active:scale-95 whitespace-nowrap"
               >
                 Explore Stories
@@ -182,6 +189,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* TRAVEL DIGEST SECTION */}
+      <TravelDigestSection className="bg-gradient-to-b from-white to-orange-50/20" />
 
       {/* FEATURES SECTION */}
       <section className="w-full bg-gradient-to-b from-white to-orange-50/30 py-12 lg:py-20">
@@ -271,6 +281,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a
                 href="/signup"
+                suppressHydrationWarning
                 className="inline-flex items-center justify-center text-white font-bold px-8 py-3 rounded-lg text-base transition-all duration-300 font-lexend hover:shadow-2xl hover:scale-105 active:scale-95 w-full sm:w-56 whitespace-nowrap"
                 style={{ background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)' }}
               >
@@ -278,6 +289,7 @@ export default function Home() {
               </a>
               <a
                 href="/explore"
+                suppressHydrationWarning
                 className="inline-flex items-center justify-center bg-white text-[#ED6D28] font-bold px-8 py-3 rounded-lg text-base border-2 border-[#ED6D28] transition-all duration-300 font-lexend hover:shadow-xl hover:scale-105 active:scale-95 w-full sm:w-56 whitespace-nowrap"
               >
                 Explore Stories

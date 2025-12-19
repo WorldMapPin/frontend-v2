@@ -128,14 +128,93 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
     // Get cover image - use first valid image from the image array
     let coverImage = null;
     
+  
+    const cleanImageUrl = (url: string): string | null => {
+      if (!url || typeof url !== 'string') return null;
+      
+      // Handle Ecency format: [![](url)](url) - extract the first URL
+      const ecencyMatch = url.match(/\[!\[\]\(([^)]+)\)\]\([^)]+\)/);
+      if (ecencyMatch && ecencyMatch[1]) {
+        const extractedUrl = ecencyMatch[1];
+        if (extractedUrl.startsWith('http://') || extractedUrl.startsWith('https://')) {
+          return extractedUrl;
+        }
+      }
+      
+      // Handle standard markdown image: ![alt](url)
+      const markdownImgMatch = url.match(/!\[[^\]]*\]\(([^)]+)\)/);
+      if (markdownImgMatch && markdownImgMatch[1]) {
+        const extractedUrl = markdownImgMatch[1];
+        if (extractedUrl.startsWith('http://') || extractedUrl.startsWith('https://')) {
+          return extractedUrl;
+        }
+      }
+      
+      // Handle markdown link: [url](url) or [text](url)
+      const markdownLinkMatch = url.match(/\[[^\]]*\]\(([^)]+)\)/);
+      if (markdownLinkMatch && markdownLinkMatch[1]) {
+        const extractedUrl = markdownLinkMatch[1];
+        if (extractedUrl.startsWith('http://') || extractedUrl.startsWith('https://')) {
+          return extractedUrl;
+        }
+      }
+      
+      // Handle malformed URLs with "](" - take the part before it
+      if (url.includes('](')) {
+        const beforeBracket = url.split('](')[0];
+        if (beforeBracket.startsWith('http://') || beforeBracket.startsWith('https://')) {
+          return beforeBracket;
+        }
+      }
+      
+      // Handle plain URLs - validate they start with http:// or https://
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      
+      return null;
+    };
+    
+    /**
+     * Extract the first image URL from markdown body as fallback
+     * Looks for patterns like ![alt](url) or [![alt](url)](url)
+     */
+    const extractFirstImageFromBody = (body: string): string | null => {
+      if (!body) return null;
+      
+      // Match markdown image: ![...](url) - capture the URL
+      const imgMatch = body.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/);
+      if (imgMatch && imgMatch[1]) {
+        return imgMatch[1];
+      }
+      
+      // Match standalone image URL on its own line
+      const standaloneMatch = body.match(/^(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg))$/im);
+      if (standaloneMatch && standaloneMatch[1]) {
+        return standaloneMatch[1];
+      }
+      
+      return null;
+    };
+    
+    // Try to get cover image from metadata.image array first
     if (metadata.image && Array.isArray(metadata.image) && metadata.image.length > 0) {
       // Find first valid HTTP/HTTPS URL in the images array
-      const originalImage = metadata.image.find((img: any) => 
-        typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))
-      );
-      
-      // Optimize image URL using Ecency proxy for faster loading
-      coverImage = originalImage ? optimizeImageUrl(originalImage, 'thumb') : null;
+      for (const img of metadata.image) {
+        const cleanedUrl = cleanImageUrl(img);
+        if (cleanedUrl) {
+          coverImage = optimizeImageUrl(cleanedUrl, 'thumb');
+          break;
+        }
+      }
+    }
+    
+    // Fallback: extract first image from post body if metadata didn't have valid images
+    if (!coverImage && post.body) {
+      const bodyImage = extractFirstImageFromBody(post.body);
+      if (bodyImage) {
+        coverImage = optimizeImageUrl(bodyImage, 'thumb');
+      }
     }
     
     // Calculate payout: show pending amount while active, otherwise combine author + curator payouts
