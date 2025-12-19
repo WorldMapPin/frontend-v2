@@ -9,6 +9,7 @@ import ShowcaseCard from '../components/home/ShowcaseCard';
 import BenefitItem from '../components/home/BenefitItem';
 import TravelDigestSection from '../components/home/TravelDigestSection';
 import HeroBackgroundGrid from '../components/home/HeroBackgroundGrid';
+import Link from 'next/link';
 
 export default function Home() {
   const features = [
@@ -97,13 +98,13 @@ export default function Home() {
   return (
     <main className="w-full min-h-screen bg-white">
       {/* HERO SECTION */}
-      <section 
-        className="w-full min-h-[520px] sm:min-h-[560px] md:min-h-[600px] lg:min-h-[690px] relative overflow-hidden flex items-center justify-center" 
+      <section
+        className="w-full min-h-[520px] sm:min-h-[560px] md:min-h-[600px] lg:min-h-[690px] relative overflow-hidden flex items-center justify-center"
         style={{ background: 'linear-gradient(150.44deg, #ED6D28 20.69%, #FFA600 81.91%)' }}
       >
         {/* Animated background grid */}
         <HeroBackgroundGrid />
-        
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 font-lexend" style={{ lineHeight: 1.15 }}>
@@ -141,9 +142,9 @@ export default function Home() {
           </div>
         </div>
         {/* Fade-away gradient */}
-        <div 
+        <div
           className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none"
-          style={{ 
+          style={{
             background: 'linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.6) 65%, rgba(255, 255, 255, 0.85) 85%, rgba(255, 255, 255, 1) 100%)'
           }}
         />
@@ -152,39 +153,29 @@ export default function Home() {
       {/* MAP PREVIEW SECTION */}
       <section className="w-full bg-white py-12 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#592102] font-lexend">
-                Explore the World
-              </h2>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                aria-hidden="true"
-                className="text-[#592102] w-6 h-6 md:w-8 md:h-8 animate-bounce"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            {/* Left Column: Map Image */}
+            <div className="relative w-full aspect-[4/3] bg-[#F4F1EE] rounded-2xl overflow-hidden border-4 border-[#FDF6E3] shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-500 cursor-pointer">
+              <Link href="/map">
+                <img
+                  src="/images/map-preview.png"
+                  alt="Interactive world map showing travel pins from community members"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                 />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-                />
-              </svg>
+              </Link>
             </div>
-            <div className="relative w-full aspect-[4/3] md:aspect-[21/9] bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden border-2 border-gray-300 shadow-2xl hover:shadow-3xl transition-shadow duration-300">
-              <img
-                src="/images/map-preview.png"
-                alt="Interactive world map showing travel pins from community members"
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
+
+            {/* Right Column: Text Content */}
+            <div className="flex flex-col items-center justify-center text-center space-y-6">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-lexend text-[#8B3A3A] leading-tight">
+                Explore the World
+                <br />
+                One Pin at a Time
+              </h2>
+              <p className="text-lg sm:text-xl font-lexend text-[#8B3A3A]/80 max-w-lg">
+                Navigate our interactive global map to discover hidden gems and travel stories from our community. From bustling cities to remote landscapes, visualize the journey of travelers worldwide.
+              </p>
             </div>
           </div>
         </div>
@@ -234,9 +225,9 @@ export default function Home() {
       </section>
 
       {/* WEB3 BENEFITS SECTION */}
-      <section 
-        className="w-full py-12 lg:py-20 relative overflow-hidden" 
-        style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,233,221,0.6) 14.42%, rgba(255,165,116,0.6) 73.56%, rgba(255,255,255,0.6) 99.52%)'}}
+      <section
+        className="w-full py-12 lg:py-20 relative overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,233,221,0.6) 14.42%, rgba(255,165,116,0.6) 73.56%, rgba(255,255,255,0.6) 99.52%)' }}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
@@ -255,18 +246,18 @@ export default function Home() {
           </div>
         </div>
 
-        
+
       </section>
 
       {/* FINAL CTA SECTION */}
-      <section 
+      <section
         className="w-full py-24 lg:py-32 relative overflow-hidden font-lexend"
         style={{ background: 'linear-gradient(180deg, #FFFFFF 0%, #FFF9F5 50%, #FFFFFF 100%)' }}
       >
         {/* Subtle decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-200/50 to-transparent" />
         <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-200/50 to-transparent" />
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 font-lexend tracking-tight leading-tight">
