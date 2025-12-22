@@ -8,8 +8,8 @@ import { teamMembers, categories } from '@/data/team';
 export default function TeamPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const filteredMembers = selectedCategory === 'All' 
-    ? teamMembers 
+  const filteredMembers = selectedCategory === 'All'
+    ? teamMembers
     : teamMembers.filter(member => member.category.includes(selectedCategory));
 
   return (
@@ -26,7 +26,7 @@ export default function TeamPage() {
         </div>
         <div className="max-w-4xl mx-auto text-center px-3 sm:px-4 lg:px-6 relative z-10">
           <p className="font-lexend text-white text-sm sm:text-base font-bold mb-2 sm:mb-3 lg:mb-4">Our Team</p>
-            <h1 className="font-lexend text-3xl sm:text-4xl lg:text-5xl font-semibold mb-4 sm:mb-5 lg:mb-6 leading-tight" style={{background: 'linear-gradient(95.13deg, #FFFFFF 63.62%, #FFCFB5 78.99%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text'}}>
+          <h1 className="font-lexend text-3xl sm:text-4xl lg:text-5xl font-semibold mb-4 sm:mb-5 lg:mb-6 leading-tight" style={{ background: 'linear-gradient(95.13deg, #FFFFFF 63.62%, #FFCFB5 78.99%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
             The People Behind<br />WorldMapPin
           </h1>
           <p className="font-lexend text-white text-lg sm:text-2xl lg:text-3xl max-w-xl sm:max-w-2xl mx-auto leading-snug sm:leading-normal">
@@ -38,7 +38,7 @@ export default function TeamPage() {
       {/* Team Section */}
       <section className="py-16 bg-[linear-gradient(180deg,_#FFFFFF_0%,_#FFF3DC_20.67%,_#FFF3DC_94.23%,_#FFFFFF_100%)]">
         <div className="max-w-7xl mx-auto px-4">
-            <h2 className="font-lexend text-3xl sm:text-4xl font-semibold text-center mb-12">
+          <h2 className="font-lexend text-3xl sm:text-4xl font-semibold text-center mb-12">
             Meet the <span className="text-[#F47521]">Team</span>
           </h2>
 

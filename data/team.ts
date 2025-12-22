@@ -69,7 +69,7 @@ export const row2Members: TeamMember[] = [
     id: '7',
     name: 'Hari Prasad',
     username: '@hariprasadd',
-    role: 'UI Designer',
+    role: 'UI Designer and Frontend Developer',
     category: ['Design', 'Development'],
     image: `${HIVE_AVATAR_BASE_URL}hariprasadd/avatar`
   },

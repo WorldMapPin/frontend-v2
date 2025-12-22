@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { AiohaModal } from '@aioha/react-ui';
-import { KeyTypes, Providers } from '@aioha/aioha';
 import { useAiohaSafe } from '@/hooks/use-aioha-safe';
+import WalletConnectModal from './WalletConnectModal';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -239,21 +238,12 @@ export default function SignupPage() {
 
       {/* Aioha Wallet Connection Modal - Only render when provider is ready */}
       {isReady && (
-        <AiohaModal
-          displayed={modalDisplayed}
-          loginTitle="Connect to WorldMapPin"
-          loginOptions={{
-            msg: 'Login to WorldMapPin',
-            keyType: KeyTypes.Posting
-          }}
-          onLogin={handleLogin}
+        <WalletConnectModal
+          isOpen={modalDisplayed}
           onClose={() => setModalDisplayed(false)}
-          imageServer="https://images.hive.blog"
-          explorerUrl="https://hivehub.dev"
-          forceShowProviders={[Providers.Keychain, Providers.HiveSigner]}
+          onLoginSuccess={handleLogin}
         />
       )}
     </div>
   );
 }
-
