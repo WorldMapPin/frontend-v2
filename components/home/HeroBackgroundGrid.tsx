@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const images = [
   'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/sofathana/EqBcB9LmxN2S38qHeTWAvkqFmaKgVaFYrdTcBzroY1PSRJBQ5onsqf6T4SRYRDzPnyo.JPG',
@@ -29,6 +29,17 @@ const images = [
 const duplicatedImages = [...images, ...images];
 
 const HeroBackgroundGrid = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Don't render anything until client-side hydration is complete
+  if (!isMounted) {
+    return null;
+  }
+
   return (
     <div className="hero-grid-container">
       {/* Animated grid layer */}

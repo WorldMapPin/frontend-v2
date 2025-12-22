@@ -142,21 +142,6 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 Explore
               </Link>
               <Link
-                href="/journeys"
-                className="px-3 py-2 rounded-md text-lg transition-colors duration-200"
-                style={{
-                  fontFamily: 'Lexend',
-                  fontWeight: 500,
-                  fontStyle: 'normal',
-                  lineHeight: '100%',
-                  letterSpacing: '-0.03em',
-                  color: '#5C2609'
-                }}
-                suppressHydrationWarning={true}
-              >
-                Journeys
-              </Link>
-              <Link
                 href="/stats"
                 className="px-3 py-2 rounded-md text-lg transition-colors duration-200"
                 style={{
@@ -397,22 +382,6 @@ export default function Navbar({ className = '' }: NavbarProps) {
               suppressHydrationWarning={true}
             >
               Explore
-            </Link>
-            <Link
-              href="/journeys"
-              className="block px-3 py-2 rounded-md text-sm"
-              style={{
-                fontFamily: 'Lexend',
-                fontWeight: 500,
-                fontStyle: 'normal',
-                lineHeight: '100%',
-                letterSpacing: '-0.03em',
-                color: '#5C2609'
-              }}
-              onClick={() => setIsMenuOpen(false)}
-              suppressHydrationWarning={true}
-            >
-              Journeys
             </Link>
             <Link
               href="/stats"
