@@ -80,13 +80,40 @@ export default function PostReaderPage() {
       // Preprocess: Handle markdown inside HTML tags
 
       // Convert image URLs from PeakD (and similar) to markdown image syntax
-      // 1) Standalone on their own line
+      // 1) Standalone on their own line (with possible leading/trailing whitespace)
       preprocessedMarkdown = preprocessedMarkdown.replace(
-        /^(https?:\/\/[^\s]+?\.(?:png|jpe?g|gif|webp|svg))(?:\s*)$/gim,
+        /^[\s]*(https?:\/\/[^\s]+?\.(?:png|jpe?g|gif|webp|svg))[\s]*$/gim,
         '![]($1)'
       );
 
-      // 2) Anywhere in the text, but only if not already part of markdown []()
+      // 2) Handle InLeo/Leopedia images - standalone URLs on their own line
+      // InLeo posts often have URLs like: https://img.leopedia.io/hash/filename.jpeg
+      preprocessedMarkdown = preprocessedMarkdown.replace(
+        /^[\s]*(https?:\/\/img\.leopedia\.io\/[^\s]+)[\s]*$/gim,
+        (match, url) => {
+          // Skip if already wrapped in markdown
+          if (match.includes('![')) return match;
+          return `![](${url})`;
+        }
+      );
+
+      // 3) Handle InLeo images anywhere in text (not already in markdown)
+      preprocessedMarkdown = preprocessedMarkdown.replace(
+        /(https?:\/\/img\.leopedia\.io\/[^\s\)]+)/gi,
+        (match, url, offset, full) => {
+          const before = full.slice(0, offset);
+          const prefix = before.slice(-2);
+
+          // Skip if it's already inside markdown link/image: ](url) or ![
+          if (prefix === '](' || before.endsWith('![')) {
+            return match;
+          }
+
+          return `![](${url})`;
+        }
+      );
+
+      // 4) Anywhere in the text for PeakD, but only if not already part of markdown []()
       preprocessedMarkdown = preprocessedMarkdown.replace(
         /(https?:\/\/files\.peakd\.com\/[^\s]+?\.(?:png|jpe?g|gif|webp|svg))/gi,
         (match, _url, offset, full) => {
@@ -559,7 +586,7 @@ export default function PostReaderPage() {
               dangerouslySetInnerHTML={{ __html: processedHtml }}
             />
 
-            {/* Open on PeakD Button - Bottom of Post */}
+            {/* Open on Original Platform Button - Bottom of Post */}
             <div className="mt-8 sm:mt-10 lg:mt-12 flex justify-center">
               <a
                 href={post.canonicalUrl}
@@ -568,13 +595,22 @@ export default function PostReaderPage() {
                 className="flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 cursor-pointer transition-all hover:opacity-90 hover:scale-105"
                 style={{
                   fontFamily: 'Lexend',
-                  background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
+                  background: post.canonicalUrl.includes('inleo.io') 
+                    ? 'linear-gradient(92.88deg, #FFD700 1.84%, #FF8C00 100%)'
+                    : post.canonicalUrl.includes('ecency.com')
+                    ? 'linear-gradient(92.88deg, #357CE6 1.84%, #2563EB 100%)'
+                    : 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
                   borderRadius: '16px',
                   boxShadow: '0px 1px 7px 0px #00000040'
                 }}
               >
                 <span className="font-semibold text-sm sm:text-base lg:text-lg" style={{ color: '#FFFFFF' }}>
-                  Open on PeakD
+                  Open on {
+                    post.canonicalUrl.includes('inleo.io') ? 'InLeo' :
+                    post.canonicalUrl.includes('ecency.com') ? 'Ecency' :
+                    post.canonicalUrl.includes('hive.blog') ? 'Hive.blog' :
+                    'PeakD'
+                  }
                 </span>
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#FFFFFF' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

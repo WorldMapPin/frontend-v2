@@ -330,7 +330,7 @@ export function generatePostSlug(author: string, permlink: string): string {
 async function fetchPostData(author: string, permlink: string): Promise<{ votes: number; comments: number; payout: string; created: string; reputation: string; coverImage: string | null } | null> {
   try {
     // Use the internal API route which handles CORS properly
-    const apiUrl = `/api/hive-post?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
+    const apiUrl = `/api/hive/post?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
     const response = await fetch(apiUrl, {
       signal: AbortSignal.timeout(10000), // 10 second timeout
     });

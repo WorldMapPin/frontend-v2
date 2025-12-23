@@ -378,7 +378,7 @@ interface HivePostData {
 async function fetchHivePostData(author: string, permlink: string): Promise<HivePostData | null> {
   try {
     // Use Next.js API route to avoid CORS issues
-    const apiUrl = `/api/hive-post?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
+    const apiUrl = `/api/hive/post?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
     const response = await fetch(apiUrl);
     
     if (!response.ok) {

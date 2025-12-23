@@ -28,25 +28,28 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
           <div className="absolute top-0 left-0 right-0 h-20 sm:h-32 bg-gradient-to-b from-black/70 to-transparent z-[1] pointer-events-none"></div>
           {post.coverImage && !imageError ? (
             <>
-              {/* Loading Skeleton */}
-              {imageLoading && (
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-amber-500 animate-pulse">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+              {/* Loading Skeleton with smooth shimmer */}
+              <div 
+                className={`absolute inset-0 bg-gradient-to-br from-orange-200 via-orange-100 to-amber-100 transition-opacity duration-500 ${imageLoading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              >
+                <div className="absolute inset-0 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
                 </div>
-              )}
+              </div>
 
-              {/* Main Image */}
+              {/* Main Image with smooth fade-in */}
               {!useUnoptimized ? (
                 <Image
                   src={post.coverImage}
                   alt={post.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className={`object-cover group-hover:scale-105 transition-all duration-500 ${imageLoading ? 'opacity-0' : 'opacity-100'
-                    }`}
+                  className={`object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
+                    imageLoading ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+                  }`}
                   loading="lazy"
                   onLoad={() => setImageLoading(false)}
-                  onError={(e) => {
+                  onError={() => {
                     if (!useUnoptimized) {
                       setUseUnoptimized(true);
                       setImageLoading(true);
@@ -63,8 +66,9 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
                   alt={post.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className={`object-cover group-hover:scale-105 transition-all duration-500 ${imageLoading ? 'opacity-0' : 'opacity-100'
-                    }`}
+                  className={`object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
+                    imageLoading ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+                  }`}
                   loading="lazy"
                   onLoad={() => setImageLoading(false)}
                   onError={() => {

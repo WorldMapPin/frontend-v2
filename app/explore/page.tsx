@@ -1,187 +1,131 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ProcessedPost, CuratedPost } from '@/types/post';
-import { loadCuratedPosts, fetchPosts, fetchPostsProgressive } from '@/utils/hivePosts';
+import { useCallback } from 'react';
 import ExploreCard from '@/components/explore/ExploreCard';
 import ExploreHeader from '@/components/explore/ExploreHeader';
+import { usePostPaginator, useInfiniteScroll } from '@/hooks/use-post-paginator';
 
-const POSTS_PER_PAGE = 12;
-
-export default function ExplorePage() {
-  const [posts, setPosts] = useState<ProcessedPost[]>([]);
-  const [allCuratedPosts, setAllCuratedPosts] = useState<CuratedPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Load initial posts with progressive rendering for faster perceived performance
-  useEffect(() => {
-    async function loadInitialPosts() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Load curated posts list (fast - just JSON)
-        const curatedPosts = await loadCuratedPosts();
-        setAllCuratedPosts(curatedPosts);
-
-        if (curatedPosts.length === 0) {
-          setError('No curated posts found');
-          setLoading(false);
-          return;
-        }
-
-        const firstBatch = curatedPosts.slice(0, POSTS_PER_PAGE);
-
-        // Prioritize first 6 posts for immediate display
-        const priorityPosts = firstBatch.slice(0, 6);
-        const remainingPosts = firstBatch.slice(6);
-
-        // Fetch priority posts first with higher concurrency
-        const initialPosts = await fetchPosts(priorityPosts, 10);
-        setPosts(initialPosts);
-        setLoading(false);
-
-        // Progressive loading for remaining posts
-        if (remainingPosts.length > 0) {
-          await fetchPostsProgressive(
-            remainingPosts,
-            (newPosts) => {
-              setPosts(prev => [...prev, ...newPosts]);
-            },
-            10
-          );
-        }
-      } catch (err) {
-        console.error('Error loading posts:', err);
-        setError('Failed to load posts. Please try again later.');
-        setLoading(false);
-      }
-    }
-
-    loadInitialPosts();
-  }, []);
-
-  // Load more posts with progressive rendering
-  const loadMorePosts = async () => {
-    if (loadingMore) return;
-
-    try {
-      setLoadingMore(true);
-      const nextPage = currentPage + 1;
-      const startIndex = currentPage * POSTS_PER_PAGE;
-      const endIndex = startIndex + POSTS_PER_PAGE;
-
-      const nextBatch = allCuratedPosts.slice(startIndex, endIndex);
-
-      if (nextBatch.length === 0) {
-        setLoadingMore(false);
-        return;
-      }
-
-      // Progressive loading for "Load More"
-      await fetchPostsProgressive(
-        nextBatch,
-        (newPosts) => {
-          setPosts(prevPosts => [...prevPosts, ...newPosts]);
-        },
-        10
-      );
-
-      setCurrentPage(nextPage);
-      setLoadingMore(false);
-    } catch (err) {
-      console.error('Error loading more posts:', err);
-      setLoadingMore(false);
-    }
-  };
-
-  // Cache warming - Prefetch next batch in background
-  useEffect(() => {
-    if (!loading && posts.length > 0 && posts.length >= POSTS_PER_PAGE) {
-      // Wait 2 seconds after initial load, then prefetch next batch
-      const timer = setTimeout(() => {
-        const nextStartIndex = currentPage * POSTS_PER_PAGE;
-        const nextEndIndex = nextStartIndex + POSTS_PER_PAGE;
-        const nextBatch = allCuratedPosts.slice(nextStartIndex, nextEndIndex);
-
-        if (nextBatch.length > 0) {
-          // Silently prefetch in background (lower priority - 3 concurrent)
-          fetchPosts(nextBatch, 3).catch(() => {
-            // Fail silently - this is just cache warming
-          });
-        }
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [loading, posts.length, currentPage, allCuratedPosts]);
-
-  const hasMorePosts = posts.length < allCuratedPosts.length;
-
-  if (loading) {
-    return (
-      <div className="relative min-h-screen overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%)' }} />
-
-        <div className="relative z-10">
-          <ExploreHeader />
-
-          {/* Loading State */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
-              <p className="text-gray-600">Loading curated posts...</p>
-            </div>
-
-            {/* Loading Skeletons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-              {[...Array(12)].map((_, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-                  <div className="h-48 bg-gray-300"></div>
-                  <div className="p-4">
-                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
-                    <div className="flex gap-2 mb-4">
-                      <div className="h-6 bg-gray-300 rounded w-16"></div>
-                      <div className="h-6 bg-gray-300 rounded w-16"></div>
-                    </div>
-                    <div className="h-8 bg-gray-300 rounded"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+// Skeleton card component that matches ExploreCard design
+function SkeletonCard({ index }: { index: number }) {
+  return (
+    <div 
+      className="bg-white rounded-xl sm:rounded-2xl overflow-visible flex flex-col relative h-full animate-pulse"
+      style={{ 
+        boxShadow: '0px 4px 4px 0px #00000020',
+        animationDelay: `${index * 100}ms`
+      }}
+    >
+      {/* Cover Image Skeleton */}
+      <div className="relative w-full overflow-hidden rounded-t-xl sm:rounded-t-2xl h-[180px] sm:h-[220px] lg:h-[249.6px]">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-orange-100 to-amber-100">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skeleton-shimmer" />
+        </div>
+        
+        {/* Avatar and username skeleton overlay */}
+        <div className="absolute top-3 left-3 flex items-center gap-2">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/60" />
+          <div className="h-3 w-20 bg-white/60 rounded" />
+        </div>
+        
+        {/* Payout skeleton */}
+        <div className="absolute top-3 right-3">
+          <div className="h-4 w-12 bg-white/60 rounded" />
         </div>
       </div>
-    );
-  }
 
-  if (error) {
+      {/* Stats badges skeleton - positioned on border */}
+      <div className="absolute left-3 sm:left-4 flex flex-row gap-1.5 sm:gap-2 z-20 top-[180px] sm:top-[220px] lg:top-[249.6px]" style={{ transform: 'translateY(-50%)' }}>
+        <div className="rounded-full px-3 py-1 bg-pink-100/80 w-14 h-6" />
+        <div className="rounded-full px-3 py-1 bg-blue-100/80 w-14 h-6" />
+      </div>
+      
+      {/* Date skeleton */}
+      <div className="absolute right-3 sm:right-4 z-20 top-[180px] sm:top-[220px] lg:top-[249.6px]" style={{ transform: 'translateY(-50%)' }}>
+        <div className="rounded-full px-3 py-1 bg-gray-200/80 w-20 h-6" />
+      </div>
+
+      {/* Content skeleton */}
+      <div className="p-3 sm:p-4 pb-3 sm:pb-4 flex flex-col flex-1 pt-5">
+        <div className="space-y-2 mt-2">
+          <div className="h-4 bg-gray-200 rounded w-full" />
+          <div className="h-4 bg-gray-200 rounded w-3/4" />
+        </div>
+        
+        {/* Tags skeleton */}
+        <div className="mt-auto pt-3 flex gap-2">
+          <div className="h-4 bg-blue-100 rounded w-14" />
+          <div className="h-4 bg-blue-100 rounded w-16" />
+          <div className="h-4 bg-blue-100 rounded w-12" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Inline loading dots animation
+function LoadingDots() {
+  return (
+    <span className="inline-flex gap-1 ml-2">
+      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+    </span>
+  );
+}
+
+export default function ExplorePage() {
+  const {
+    posts,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    sortType,
+    totalLoaded,
+    fetchNextPage,
+    changeSortType
+  } = usePostPaginator({ initialSort: 'created', postsPerPage: 20 });
+
+  // Memoized load more function for infinite scroll
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      fetchNextPage();
+    }
+  }, [loadingMore, hasMore, fetchNextPage]);
+
+  // Enable infinite scroll
+  useInfiniteScroll(handleLoadMore, {
+    threshold: 400,
+    enabled: !loading && hasMore
+  });
+
+  // Error state
+  if (error && !loading && posts.length === 0) {
     return (
       <div className="relative min-h-screen overflow-hidden">
-        {/* Background */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%)' }} />
-
         <div className="relative z-10">
-          <ExploreHeader />
-
-          {/* Error State */}
+          <ExploreHeader sortType={sortType} onSortChange={changeSortType} />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="text-center">
-              <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Posts</h2>
-              <p className="text-gray-600 mb-6">{error}</p>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'var(--font-lexend)' }}>
+                Unable to load posts
+              </h2>
+              <p className="text-gray-500 mb-6 text-sm">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium"
+                style={{ fontFamily: 'var(--font-lexend)' }}
               >
-                Retry
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Try Again
               </button>
             </div>
           </div>
@@ -195,48 +139,124 @@ export default function ExplorePage() {
       {/* Background */}
       <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%)' }} />
 
+      {/* Shimmer animation styles */}
+      <style jsx global>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .skeleton-shimmer {
+          animation: shimmer 1.5s infinite;
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeInUp {
+          animation: fadeInUp 0.4s ease-out forwards;
+        }
+      `}</style>
+
       <div className="relative z-10">
-        <ExploreHeader postCount={posts.length} totalCount={allCuratedPosts.length} />
+        <ExploreHeader 
+          postCount={loading ? undefined : totalLoaded} 
+          sortType={sortType} 
+          onSortChange={changeSortType}
+          loading={loading || loadingMore}
+        />
 
         {/* Posts Grid */}
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8 lg:py-12">
-          {posts.length === 0 ? (
-            <div className="text-center py-8 sm:py-12">
-              <p className="text-gray-600 text-sm sm:text-base">No posts available</p>
+          {/* Initial Loading State - Show skeleton grid */}
+          {loading && posts.length === 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 items-stretch">
+              {[...Array(12)].map((_, index) => (
+                <SkeletonCard key={index} index={index} />
+              ))}
+            </div>
+          ) : posts.length === 0 ? (
+            /* Empty State */
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <p className="text-gray-500 font-medium" style={{ fontFamily: 'var(--font-lexend)' }}>No posts found</p>
+              <p className="text-gray-400 text-sm mt-1">Try selecting a different filter</p>
             </div>
           ) : (
             <>
+              {/* Posts Grid with Skeleton placeholders for loading more */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 items-stretch">
-                {posts.map((post) => (
-                  <ExploreCard key={post.slug} post={post} />
+                {/* Actual posts */}
+                {posts.map((post, index) => (
+                  <div 
+                    key={`${post.slug}-${index}`} 
+                    className="animate-fadeInUp"
+                    style={{ animationDelay: `${(index % 20) * 50}ms` }}
+                  >
+                    <ExploreCard post={post} />
+                  </div>
+                ))}
+                
+                {/* Skeleton cards while loading more - seamlessly continues the grid */}
+                {loadingMore && [...Array(6)].map((_, index) => (
+                  <SkeletonCard key={`skeleton-${index}`} index={index} />
                 ))}
               </div>
 
-              {/* Load More Button */}
-              {hasMorePosts && (
-                <div className="mt-6 sm:mt-8 lg:mt-12 text-center">
+              {/* Subtle loading indicator at the bottom */}
+              {loadingMore && (
+                <div className="mt-6 flex justify-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-orange-100">
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-lexend)' }}>
+                      Loading more
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* End of Posts */}
+              {!hasMore && posts.length > 0 && !loadingMore && (
+                <div className="mt-10 flex justify-center">
+                  <div className="inline-flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-100">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700" style={{ fontFamily: 'var(--font-lexend)' }}>
+                        You&apos;ve explored all {totalLoaded} posts
+                      </p>
+                      <p className="text-xs text-gray-400">Check back later for new adventures!</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Manual Load More Button - Shows when not loading and has more */}
+              {hasMore && !loadingMore && (
+                <div className="mt-8 flex flex-col items-center gap-2">
                   <button
-                    onClick={loadMorePosts}
-                    disabled={loadingMore}
-                    className="inline-flex items-center gap-2 sm:gap-3 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 rounded-lg text-sm sm:text-base lg:text-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-500/50 disabled:cursor-not-allowed disabled:transform-none"
+                    onClick={fetchNextPage}
+                    className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-medium px-6 py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ fontFamily: 'var(--font-lexend)' }}
                   >
-                    {loadingMore ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-                        <span>Loading...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Explore More</span>
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </>
-                    )}
+                    <span>Load More Posts</span>
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </button>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3">
-                    {allCuratedPosts.length - posts.length} more {allCuratedPosts.length - posts.length === 1 ? 'post' : 'posts'} to explore
-                  </p>
+                  <p className="text-xs text-gray-400">or scroll down to auto-load</p>
                 </div>
               )}
             </>

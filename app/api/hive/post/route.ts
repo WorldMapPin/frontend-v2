@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * GET /api/hive/post?author=xxx&permlink=xxx
+ * Fetches a single post from Hive blockchain by author and permlink
+ */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const author = searchParams.get('author');
@@ -43,3 +47,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

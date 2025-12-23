@@ -106,7 +106,7 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
   
   try {
     // Use Next.js API route to avoid CORS issues
-    const apiUrl = `/api/hive-post?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
+    const apiUrl = `/api/hive/post?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
     const response = await fetch(apiUrl);
     
     if (!response.ok) {
@@ -178,6 +178,7 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
     /**
      * Extract the first image URL from markdown body as fallback
      * Looks for patterns like ![alt](url) or [![alt](url)](url)
+     * Also handles InLeo format where images are standalone URLs
      */
     const extractFirstImageFromBody = (body: string): string | null => {
       if (!body) return null;
@@ -188,19 +189,27 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
         return imgMatch[1];
       }
       
-      // Match standalone image URL on its own line
-      const standaloneMatch = body.match(/^(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg))$/im);
+      // Match standalone image URL on its own line (handles InLeo format with leading/trailing whitespace)
+      const standaloneMatch = body.match(/^\s*(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg))\s*$/im);
       if (standaloneMatch && standaloneMatch[1]) {
         return standaloneMatch[1];
+      }
+      
+      // Match InLeo/Leopedia images specifically (they may not have standard extensions)
+      const leopediaMatch = body.match(/^\s*(https?:\/\/img\.leopedia\.io\/[^\s]+)\s*$/im);
+      if (leopediaMatch && leopediaMatch[1]) {
+        return leopediaMatch[1];
       }
       
       return null;
     };
     
-    // Try to get cover image from metadata.image array first
-    if (metadata.image && Array.isArray(metadata.image) && metadata.image.length > 0) {
+    // Try to get cover image from metadata.image or metadata.images array first
+    // Note: Some platforms use 'image' (Ecency, PeakD), others use 'images' (InLeo)
+    const imageArray = metadata.image || metadata.images;
+    if (imageArray && Array.isArray(imageArray) && imageArray.length > 0) {
       // Find first valid HTTP/HTTPS URL in the images array
-      for (const img of metadata.image) {
+      for (const img of imageArray) {
         const cleanedUrl = cleanImageUrl(img);
         if (cleanedUrl) {
           coverImage = optimizeImageUrl(cleanedUrl, 'thumb');
@@ -232,6 +241,9 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
       payoutValue = `${combinedPayout.toFixed(3)} HBD`;
     }
     
+    // Determine canonical URL - use metadata if available (InLeo, etc.), otherwise default to PeakD
+    const canonicalUrl = metadata.canonical_url || `https://peakd.com/@${post.author}/${post.permlink}`;
+    
     // Process the post
     const processedPost: ProcessedPost = {
       title: post.title || 'Untitled',
@@ -247,11 +259,11 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
       reputation: formatReputation(post.author_reputation),
       slug: `@${post.author}/${post.permlink}`,
       bodyMarkdown: post.body,
-      images: metadata.image || [],
+      images: metadata.image || metadata.images || [],
       readingTimeMin: calculateReadingTime(post.body),
       cashoutTime: post.cashout_time,
       activeVotesCount: post.active_votes?.length || 0,
-      canonicalUrl: `https://peakd.com/@${post.author}/${post.permlink}`,
+      canonicalUrl: canonicalUrl,
       rawJsonUrl: getHiveBlogUrl(post.author, post.permlink)
     };
     
