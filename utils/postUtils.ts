@@ -23,17 +23,26 @@ export function parsePeakDUrl(url: string): { author: string; permlink: string }
 
 /**
  * Convert Hive reputation to human-readable format
- * Based on Hive reputation algorithm
- * @param rawReputation - Raw reputation value from Hive
+ * 
+ * Note: bridge.get_ranked_posts API returns reputation already formatted (e.g., 78.69)
+ * while other APIs (condenser_api) return raw large integers that need conversion.
+ * This function handles both cases.
+ * 
+ * @param rawReputation - Reputation value (pre-formatted number OR raw large integer)
  * @returns Formatted reputation (e.g., "68.2")
  */
 export function formatReputation(rawReputation: number | string): string {
   try {
-    const rep = typeof rawReputation === 'string' ? parseInt(rawReputation) : rawReputation;
+    const rep = typeof rawReputation === 'string' ? parseFloat(rawReputation) : rawReputation;
     
     if (isNaN(rep)) return '25.0';
     
-    // Hive reputation formula
+    // Already formatted (from bridge API) - reputation values are typically -25 to 80
+    if (Math.abs(rep) < 1000) {
+      return rep.toFixed(1);
+    }
+    
+    // Raw large integer (from condenser_api) - needs conversion
     const negative = rep < 0;
     let reputation = Math.log10(Math.abs(rep));
     reputation = Math.max(reputation - 9, 0);
