@@ -8,13 +8,9 @@ export interface FeatureCardProps {
   iconGradient?: string;
   cardGradient?: string;
 }
-const FeatureCard = ({ icon, title, description, iconGradient, cardGradient }: FeatureCardProps) => (
+const FeatureCard = ({ icon, title, description, iconGradient }: FeatureCardProps) => (
   <div
-    className="p-8 rounded-2xl text-center flex flex-col items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
-    style={{ 
-      background: cardGradient || 'linear-gradient(135deg, rgba(255, 226, 210, 0.6) 0%, rgba(255, 255, 255, 0.9) 100%)',
-      boxShadow: '0 10px 30px rgba(237, 109, 40, 0.15)'
-    }}
+    className="p-8 rounded-2xl text-center flex flex-col items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative overflow-hidden group feature-card"
   >
     {/* Subtle background pattern */}
     <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
@@ -39,7 +35,7 @@ const FeatureCard = ({ icon, title, description, iconGradient, cardGradient }: F
     <h3 className="text-2xl font-bold mb-4 font-lexend relative z-10">
       <GradientText>{title}</GradientText>
     </h3>
-    <p className="font-lexend text-base leading-relaxed relative z-10" style={{ color: '#5E4A3F' }}>
+    <p className="font-lexend text-base leading-relaxed relative z-10" style={{ color: 'var(--text-muted)' }}>
       {description}
     </p>
   </div>

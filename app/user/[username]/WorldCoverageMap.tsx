@@ -371,8 +371,8 @@ function WorldMapVisualization({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   return (
-    <div className="relative bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-4 mb-4">
-      <div className="text-center text-xs font-medium text-gray-700 mb-3">
+    <div className="relative rounded-lg p-4 mb-4 user-coverage-map-bg">
+      <div className="text-center text-xs font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
         World Coverage Map
       </div>
       
@@ -438,7 +438,7 @@ function WorldMapVisualization({
         {/* Tooltip */}
         {tooltipContent && (
           <div 
-            className="absolute bg-gray-900 text-white px-3 py-1.5 rounded text-xs font-medium pointer-events-none z-50 whitespace-nowrap"
+            className="absolute px-3 py-1.5 rounded text-xs font-medium pointer-events-none z-50 whitespace-nowrap user-coverage-tooltip"
             style={{
               left: '50%',
               top: '10px',
@@ -454,11 +454,11 @@ function WorldMapVisualization({
       <div className="flex items-center justify-center space-x-6 mt-4 text-xs">
         <div className="flex items-center space-x-2">
           <div className="w-5 h-5 rounded" style={{ backgroundColor: '#FFA97B' }}></div>
-          <span className="text-gray-700 font-medium">Visited Countries</span>
+          <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Visited Countries</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-5 h-5 bg-gray-300 rounded"></div>
-          <span className="text-gray-700 font-medium">Not Visited</span>
+          <div className="w-5 h-5 rounded" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
+          <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Not Visited</span>
         </div>
       </div>
     </div>
@@ -558,11 +558,11 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
       {/* Coverage Stats Card - Click anywhere to expand */}
       <div 
         onClick={() => setIsExpanded(true)}
-        className="bg-white p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer flex flex-col h-full w-full border border-[#0000001A]"
-        style={{ fontFamily: 'var(--font-lexend)' }}
+        className="p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer flex flex-col h-full w-full user-coverage-card"
+        style={{ fontFamily: 'var(--font-lexend)', border: '1px solid var(--border-subtle)' }}
       >
         {/* World Coverage Title - Left aligned */}
-        <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium mb-3 sm:mb-4 md:mb-6" style={{ color: '#592102' }}>
+        <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium mb-3 sm:mb-4 md:mb-6" style={{ color: 'var(--text-primary)' }}>
           World Coverage
         </h3>
         
@@ -616,7 +616,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
         </div>
 
         {/* Text below circle - Centered */}
-        <div className="text-center mt-2 sm:mt-4" style={{ color: '#592102' }}>
+        <div className="text-center mt-2 sm:mt-4" style={{ color: 'var(--text-primary)' }}>
           <p className="text-[10px] sm:text-xs md:text-sm font-medium">of the world explored!</p>
           <p className="text-[10px] sm:text-xs md:text-sm font-medium">That's</p>
           <p 
@@ -635,11 +635,11 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
         {/* View Detailed Map Button */}
         <div className="mt-auto pt-3 sm:pt-4">
           <button 
-            className="w-full px-3 sm:px-4 py-3 sm:py-4 md:py-5 rounded-lg flex items-center justify-between font-medium text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-3 sm:py-4 md:py-5 rounded-lg flex items-center justify-between font-medium text-sm sm:text-base user-coverage-view-btn"
             style={{ backgroundColor: '#EDA82847', color: '#5C2609', minHeight: '48px' }}
           >
             <span>View detailed map</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#5C2609' }}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -649,14 +649,14 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
       {/* Expanded Modal */}
       {isExpanded && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-2 sm:p-4">
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="rounded-lg sm:rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col user-coverage-modal">
             {/* Modal Header */}
-            <div className="flex items-start justify-between p-4 sm:p-6 border-b border-gray-200">
+            <div className="flex items-start justify-between p-4 sm:p-6 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
               <div className="flex-1 pr-2">
-                <h3 className="text-lg sm:text-2xl font-bold" style={{ color: '#592102' }}>
+                <h3 className="text-lg sm:text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
                   {username.charAt(0).toUpperCase() + username.slice(1)}'s World Coverage
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                   <span className="font-semibold text-orange-600">{userPins.length}</span> pins across{' '}
                   <span className="font-semibold text-orange-600">{countryData.totalVisited}</span> countries
                   {' '}({actualCoveragePercentage}%)
@@ -664,7 +664,8 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
               </div>
               <button
                 onClick={() => setIsExpanded(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
+                className="transition-colors p-1.5 sm:p-2 rounded-lg flex-shrink-0 user-coverage-modal-close"
+                style={{ color: 'var(--text-muted)' }}
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -689,11 +690,11 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
               {/* All Countries List */}
               {countryData.countryList.length > 0 && (
                 <div className="mt-4 sm:mt-6">
-                  <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-gray-200">
-                    <h4 className="text-base sm:text-lg font-bold text-gray-900">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2 sm:pb-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <h4 className="text-base sm:text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                       All Visited Countries
                     </h4>
-                    <span className="text-xs sm:text-sm text-gray-600 bg-gray-100 px-2 sm:px-3 py-1 rounded-full font-semibold">
+                    <span className="text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full font-semibold user-coverage-count-badge" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--skeleton-bg)' }}>
                       {countryData.countryList.length}
                     </span>
                   </div>
@@ -701,13 +702,17 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
                     {countryData.countryList.map((country, index) => (
                       <div 
                         key={index} 
-                        className="flex items-center justify-between text-xs sm:text-sm p-2.5 sm:p-3 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 hover:border-orange-300 transition-all"
+                        className="flex items-center justify-between text-xs sm:text-sm p-2.5 sm:p-3 rounded-lg border transition-all user-coverage-country-item"
+                        style={{ 
+                          background: 'linear-gradient(to right, rgba(255, 237, 213, 0.5), rgba(254, 243, 199, 0.5))',
+                          borderColor: 'rgba(251, 146, 60, 0.3)'
+                        }}
                       >
                         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                           <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-orange-500 text-white text-xs font-bold flex-shrink-0">
                             {index + 1}
                           </div>
-                          <span className="font-medium text-gray-900 truncate">{country.name}</span>
+                          <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{country.name}</span>
                         </div>
                         <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
                           <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap">
@@ -722,11 +727,11 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
 
               {countryData.countryList.length === 0 && !loading && (
                 <div className="text-center py-8 sm:py-12">
-                  <svg className="w-16 h-16 sm:w-20 sm:h-20 mx-auto text-gray-300 mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-muted)' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-gray-500 text-base sm:text-lg">No countries visited yet</p>
-                  <p className="text-gray-400 text-xs sm:text-sm mt-2">Start exploring the world and add your first pin!</p>
+                  <p className="text-base sm:text-lg" style={{ color: 'var(--text-muted)' }}>No countries visited yet</p>
+                  <p className="text-xs sm:text-sm mt-2" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>Start exploring the world and add your first pin!</p>
                 </div>
               )}
             </div>

@@ -237,27 +237,27 @@ export function WorldCoverageSection({ coveragePercentage, username }: WorldCove
     );
 
     return (
-        <section className="py-8 bg-gray-50 border-t border-gray-200 font-lexend">
+        <section className="py-8 font-lexend transition-colors duration-300" style={{ backgroundColor: 'var(--section-bg)', borderTop: '1px solid var(--border-subtle)' }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-orange-100 rounded-lg">
+                        <div className="p-2 rounded-lg user-coverage-icon-bg">
                             <svg className="w-6 h-6 text-[#ED6D28]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-[#592102]">World Coverage</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>World Coverage</h2>
                     </div>
-                    <p className="text-gray-600 ml-1">
+                    <p className="ml-1" style={{ color: 'var(--text-secondary)' }}>
                         <span className="font-bold text-[#ED6D28]">{username.charAt(0).toUpperCase() + username.slice(1)}</span> has visited <span className="font-bold text-[#ED6D28]">{countryData.totalVisited}</span> countries, covering <span className="font-bold text-[#ED6D28]">{actualCoveragePercentage}%</span> of the world!
                     </p>
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Map Column */}
-                    <div className="w-full lg:w-2/3 bg-white rounded-2xl shadow-sm border border-gray-100 p-1 overflow-hidden">
-                        <div className="relative w-full h-[400px] sm:h-[500px] bg-gradient-to-br from-orange-50/50 to-amber-50/50 rounded-xl">
+                    <div className="w-full lg:w-2/3 rounded-2xl shadow-sm p-1 overflow-hidden user-coverage-map-card">
+                        <div className="relative w-full h-[400px] sm:h-[500px] rounded-xl user-coverage-map-bg">
                             {loading ? (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
@@ -321,7 +321,7 @@ export function WorldCoverageSection({ coveragePercentage, username }: WorldCove
                                     </ComposableMap>
                                     {/* Centered Tooltip if active */}
                                     {tooltipContent && (
-                                        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-900/90 text-white px-4 py-2 rounded-full text-sm font-medium pointer-events-none z-10 backdrop-blur-sm shadow-lg">
+                                        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full text-sm font-medium pointer-events-none z-10 backdrop-blur-sm shadow-lg user-coverage-tooltip">
                                             {tooltipContent}
                                         </div>
                                     )}
@@ -329,18 +329,18 @@ export function WorldCoverageSection({ coveragePercentage, username }: WorldCove
                             )}
 
                             {/* Legend Overlay */}
-                            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-gray-100 text-xs">
+                            <div className="absolute bottom-4 left-4 backdrop-blur-sm p-3 rounded-lg shadow-sm text-xs user-coverage-legend">
                                 <div className="flex items-center space-x-2 mb-2">
                                     <div className="w-3 h-3 rounded-full bg-[#E65100]"></div>
-                                    <span className="text-gray-700 font-medium">Selected</span>
+                                    <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Selected</span>
                                 </div>
                                 <div className="flex items-center space-x-2 mb-2">
                                     <div className="w-3 h-3 rounded-full bg-[#FFA97B]"></div>
-                                    <span className="text-gray-700 font-medium">Visited</span>
+                                    <span className="font-medium" style={{ color: 'var(--text-primary)' }}>Visited</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <div className="w-3 h-3 rounded-full bg-gray-200"></div>
-                                    <span className="text-gray-500">Not Visited</span>
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
+                                    <span style={{ color: 'var(--text-muted)' }}>Not Visited</span>
                                 </div>
                             </div>
                         </div>
@@ -350,29 +350,29 @@ export function WorldCoverageSection({ coveragePercentage, username }: WorldCove
                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
                         {/* Stats Cards */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center">
+                            <div className="p-5 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center user-coverage-stat-card">
                                 <div className="text-3xl font-bold text-[#ED6D28] mb-1">{userPins.length}</div>
-                                <div className="text-sm text-gray-500 font-medium">Total Pins</div>
+                                <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Total Pins</div>
                             </div>
-                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center">
+                            <div className="p-5 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center user-coverage-stat-card">
                                 <div className="text-3xl font-bold text-[#ED6D28] mb-1">{countryData.totalVisited}</div>
-                                <div className="text-sm text-gray-500 font-medium">Countries</div>
+                                <div className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Countries</div>
                             </div>
                         </div>
 
                         {/* Country List */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden max-h-[400px]">
-                            <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-                                <h3 className="font-bold text-gray-800">Visited Countries</h3>
+                        <div className="rounded-2xl shadow-sm flex flex-col overflow-hidden max-h-[400px] user-coverage-list-card">
+                            <div className="p-4 border-b user-coverage-list-header">
+                                <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>Visited Countries</h3>
                             </div>
                             <div className="overflow-y-auto p-2 space-y-2 custom-scrollbar">
                                 {countryData.countryList.length > 0 ? (
                                     countryData.countryList.map((country, index) => (
                                         <div
                                             key={index}
-                                            className={`flex items-center justify-between p-3 rounded-xl transition-colors cursor-pointer group ${selectedCountry === country.name
-                                                ? 'bg-orange-100 border border-orange-200'
-                                                : 'hover:bg-orange-50 border border-transparent'
+                                            className={`flex items-center justify-between p-3 rounded-xl transition-colors cursor-pointer group user-coverage-list-item ${selectedCountry === country.name
+                                                ? 'user-coverage-list-item-selected'
+                                                : ''
                                                 }`}
                                             onClick={() => setSelectedCountry(selectedCountry === country.name ? null : country.name)}
                                         >
@@ -385,19 +385,22 @@ export function WorldCoverageSection({ coveragePercentage, username }: WorldCove
                                                 </span>
                                                 <span className={`text-sm font-medium ${selectedCountry === country.name
                                                     ? 'text-[#E65100]'
-                                                    : 'text-gray-700 group-hover:text-gray-900'
-                                                    }`}>{country.name}</span>
+                                                    : ''
+                                                    }`} style={{ color: selectedCountry === country.name ? '#E65100' : 'var(--text-primary)' }}>{country.name}</span>
                                             </div>
                                             <span className={`text-xs font-semibold px-2 py-1 rounded-md transition-colors ${selectedCountry === country.name
                                                 ? 'bg-orange-200 text-orange-900'
-                                                : 'bg-gray-100 text-gray-600 group-hover:bg-orange-200 group-hover:text-orange-800'
-                                                }`}>
+                                                : ''
+                                                }`} style={{ 
+                                                backgroundColor: selectedCountry === country.name ? 'rgba(251, 146, 60, 0.2)' : 'var(--skeleton-bg)',
+                                                color: selectedCountry === country.name ? '#9a3412' : 'var(--text-muted)'
+                                            }}>
                                                 {country.pinCount} pins
                                             </span>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 p-8 text-center">
+                                    <div className="flex flex-col items-center justify-center h-full p-8 text-center" style={{ color: 'var(--text-muted)' }}>
                                         <div className="mb-2">Click around the map to explore!</div>
                                         <div className="text-xs">No countries visited yet</div>
                                     </div>

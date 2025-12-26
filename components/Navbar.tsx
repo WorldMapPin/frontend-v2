@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useAiohaSafe } from '@/hooks/use-aioha-safe'
+import { useTheme } from './ThemeProvider'
 
 interface NavbarProps {
   className?: string
@@ -17,6 +18,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { user, isReady, logout } = useAiohaSafe()
+  const { theme, toggleTheme } = useTheme()
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -51,9 +53,9 @@ export default function Navbar({ className = '' }: NavbarProps) {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 ${className}`}
+      className={`fixed top-0 w-full z-50 transition-colors duration-300 ${className}`}
       style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--navbar-bg)',
         boxShadow: '0px 4px 6px 0px #00000033'
       }}
       role="navigation"
@@ -73,13 +75,14 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 className="h-6 w-auto sm:h-8 md:h-10 transition-all duration-200"
               />
               <span
-                className="text-gray-900 text-lg sm:text-xl md:text-2xl"
+                className="text-lg sm:text-xl md:text-2xl"
                 style={{
                   fontFamily: 'Lexend',
                   fontWeight: 600,
                   fontStyle: 'normal',
                   lineHeight: '100%',
-                  letterSpacing: '-0.03em'
+                  letterSpacing: '-0.03em',
+                  color: 'var(--text-primary)'
                 }}
               >
                 World<span style={{ color: '#ED6D28' }}>Map</span>Pin
@@ -92,12 +95,29 @@ export default function Navbar({ className = '' }: NavbarProps) {
               {/* Dark mode toggle icon */}
               <button
                 type="button"
-                className="px-3 py-2 rounded-md transition-colors duration-200 flex items-center justify-center"
-                style={{ color: '#5C2609' }}
-                aria-label="Toggle dark mode"
+                onClick={toggleTheme}
+                className="px-3 py-2 rounded-md transition-all duration-300 flex items-center justify-center hover:bg-orange-50 dark:hover:bg-gray-800"
+                style={{ color: 'var(--text-primary)' }}
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
+                {theme === 'dark' ? (
+                  <svg
+                    className="h-6 w-6 transition-transform duration-300"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+              >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                ) : (
                 <svg
-                  className="h-6 w-6"
+                    className="h-6 w-6 transition-transform duration-300"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -110,17 +130,18 @@ export default function Navbar({ className = '' }: NavbarProps) {
                     d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
                   />
                 </svg>
+                )}
               </button>
               <Link
                 href="/map"
-                className="px-3 py-2 rounded-md text-lg transition-colors duration-200"
+                className="px-3 py-2 rounded-md text-lg transition-colors duration-200 hover:text-orange-500"
                 style={{
                   fontFamily: 'Lexend',
                   fontWeight: 500,
                   fontStyle: 'normal',
                   lineHeight: '100%',
                   letterSpacing: '-0.03em',
-                  color: '#5C2609'
+                  color: 'var(--text-primary)'
                 }}
                 suppressHydrationWarning={true}
               >
@@ -128,14 +149,14 @@ export default function Navbar({ className = '' }: NavbarProps) {
               </Link>
               <Link
                 href="/explore"
-                className="px-3 py-2 rounded-md text-lg transition-colors duration-200"
+                className="px-3 py-2 rounded-md text-lg transition-colors duration-200 hover:text-orange-500"
                 style={{
                   fontFamily: 'Lexend',
                   fontWeight: 500,
                   fontStyle: 'normal',
                   lineHeight: '100%',
                   letterSpacing: '-0.03em',
-                  color: '#5C2609'
+                  color: 'var(--text-primary)'
                 }}
                 suppressHydrationWarning={true}
               >
@@ -143,14 +164,14 @@ export default function Navbar({ className = '' }: NavbarProps) {
               </Link>
               <Link
                 href="/stats"
-                className="px-3 py-2 rounded-md text-lg transition-colors duration-200"
+                className="px-3 py-2 rounded-md text-lg transition-colors duration-200 hover:text-orange-500"
                 style={{
                   fontFamily: 'Lexend',
                   fontWeight: 500,
                   fontStyle: 'normal',
                   lineHeight: '100%',
                   letterSpacing: '-0.03em',
-                  color: '#5C2609'
+                  color: 'var(--text-primary)'
                 }}
                 suppressHydrationWarning={true}
               >
@@ -184,34 +205,40 @@ export default function Navbar({ className = '' }: NavbarProps) {
                     {/* User Dropdown Menu */}
                     {showUserMenu && (
                       <div
-                        className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50"
-                        style={{ border: '1px solid #ED6D28' }}
+                        className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-2 z-50 transition-colors duration-300"
+                        style={{ backgroundColor: 'var(--card-bg)', border: '1px solid #ED6D28' }}
                       >
                         <div className="px-4 py-2 border-b" style={{ borderColor: '#ED6D28' }}>
-                          <span className="text-sm font-semibold" style={{ fontFamily: 'Lexend', color: '#5C2609' }}>
+                          <span className="text-sm font-semibold" style={{ fontFamily: 'Lexend', color: 'var(--text-primary)' }}>
                             @{user}
                           </span>
                         </div>
                         <Link
                           href={`/user/${user}`}
-                          className="block px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
-                          style={{ fontFamily: 'Lexend', color: '#5C2609' }}
+                          className="block px-4 py-2 text-sm transition-colors"
+                          style={{ fontFamily: 'Lexend', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           onClick={() => setShowUserMenu(false)}
                         >
                           My Profile
                         </Link>
                         <Link
                           href={`/map/@${user}`}
-                          className="block px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
-                          style={{ fontFamily: 'Lexend', color: '#5C2609' }}
+                          className="block px-4 py-2 text-sm transition-colors"
+                          style={{ fontFamily: 'Lexend', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           onClick={() => setShowUserMenu(false)}
                         >
                           My Map
                         </Link>
                         <Link
                           href="/my-countries"
-                          className="block px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
-                          style={{ fontFamily: 'Lexend', color: '#5C2609' }}
+                          className="block px-4 py-2 text-sm transition-colors"
+                          style={{ fontFamily: 'Lexend', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           onClick={() => setShowUserMenu(false)}
                         >
                           My Countries
@@ -223,8 +250,10 @@ export default function Navbar({ className = '' }: NavbarProps) {
                             logout();
                             router.push('/');
                           }}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-orange-50 transition-colors"
-                          style={{ fontFamily: 'Lexend', color: '#ED6D28', fontWeight: 600 }}
+                          className="block w-full text-left px-4 py-2 text-sm transition-colors"
+                          style={{ fontFamily: 'Lexend', color: '#ED6D28', fontWeight: 600, backgroundColor: 'transparent' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
                           Logout
                         </button>
@@ -310,10 +339,10 @@ export default function Navbar({ className = '' }: NavbarProps) {
           id="mobile-menu"
           suppressHydrationWarning={true}
         >
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t" suppressHydrationWarning={true}>
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t transition-colors duration-300" style={{ backgroundColor: 'var(--navbar-bg)', borderColor: 'var(--card-border)' }} suppressHydrationWarning={true}>
             {/* User Info Section - Mobile */}
             {isReady && user && (
-              <div className="flex items-center space-x-3 px-3 py-3 mb-2 bg-orange-50 rounded-lg">
+              <div className="flex items-center space-x-3 px-3 py-3 mb-2 rounded-lg" style={{ backgroundColor: 'var(--hover-bg)' }}>
                 <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500">
                   <Image
                     src={`https://images.hive.blog/u/${user}/avatar`}
@@ -328,7 +357,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 </div>
                 <span
                   className="text-sm font-semibold"
-                  style={{ fontFamily: 'Lexend', color: '#5C2609' }}
+                  style={{ fontFamily: 'Lexend', color: 'var(--text-primary)' }}
                 >
                   @{user}
                 </span>
@@ -344,7 +373,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 fontStyle: 'normal',
                 lineHeight: '100%',
                 letterSpacing: '-0.03em',
-                color: '#5C2609'
+                color: 'var(--text-primary)'
               }}
               onClick={() => setIsMenuOpen(false)}
               suppressHydrationWarning={true}
@@ -360,7 +389,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 fontStyle: 'normal',
                 lineHeight: '100%',
                 letterSpacing: '-0.03em',
-                color: '#5C2609'
+                color: 'var(--text-primary)'
               }}
               onClick={() => setIsMenuOpen(false)}
               suppressHydrationWarning={true}
@@ -376,7 +405,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 fontStyle: 'normal',
                 lineHeight: '100%',
                 letterSpacing: '-0.03em',
-                color: '#5C2609'
+                color: 'var(--text-primary)'
               }}
               onClick={() => setIsMenuOpen(false)}
               suppressHydrationWarning={true}
@@ -392,7 +421,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 fontStyle: 'normal',
                 lineHeight: '100%',
                 letterSpacing: '-0.03em',
-                color: '#5C2609'
+                color: 'var(--text-primary)'
               }}
               onClick={() => setIsMenuOpen(false)}
               suppressHydrationWarning={true}
@@ -408,7 +437,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 fontStyle: 'normal',
                 lineHeight: '100%',
                 letterSpacing: '-0.03em',
-                color: '#5C2609'
+                color: 'var(--text-primary)'
               }}
               onClick={() => setIsMenuOpen(false)}
               suppressHydrationWarning={true}
@@ -428,7 +457,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                       style={{
                         fontFamily: 'Lexend',
                         fontWeight: 500,
-                        color: '#5C2609'
+                        color: 'var(--text-primary)'
                       }}
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -440,7 +469,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                       style={{
                         fontFamily: 'Lexend',
                         fontWeight: 500,
-                        color: '#5C2609'
+                        color: 'var(--text-primary)'
                       }}
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -452,7 +481,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                       style={{
                         fontFamily: 'Lexend',
                         fontWeight: 500,
-                        color: '#5C2609'
+                        color: 'var(--text-primary)'
                       }}
                       onClick={() => setIsMenuOpen(false)}
                     >

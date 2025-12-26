@@ -13,7 +13,7 @@ export default function TeamPage() {
     : teamMembers.filter(member => member.category.includes(selectedCategory));
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       {/* Hero Section */}
       <section className="bg-[linear-gradient(92.88deg,_#ED6D28_1.84%,_#FFA600_100%)] py-8 sm:py-12 lg:py-16 relative overflow-hidden border-[2px] border-[#5E210040] rounded-2xl sm:rounded-3xl mx-2 sm:mx-4 min-h-[300px] sm:min-h-[400px] lg:min-h-[488px] flex items-center">
         <div className="absolute inset-0">
@@ -36,9 +36,9 @@ export default function TeamPage() {
       </section>
 
       {/* Team Section */}
-      <section className="py-16 bg-[linear-gradient(180deg,_#FFFFFF_0%,_#FFF3DC_20.67%,_#FFF3DC_94.23%,_#FFFFFF_100%)]">
+      <section className="py-16 team-section-bg">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="font-lexend text-3xl sm:text-4xl font-semibold text-center mb-12">
+          <h2 className="font-lexend text-3xl sm:text-4xl font-semibold text-center mb-12" style={{ color: 'var(--text-primary)' }}>
             Meet the <span className="text-[#F47521]">Team</span>
           </h2>
 

@@ -185,15 +185,15 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
 
   if (loading) {
     return (
-      <section className="py-6 sm:py-8 md:py-12 bg-white">
+      <section className="py-6 sm:py-8 md:py-12 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4 sm:mb-6 md:mb-8">
             <div className="flex items-center gap-2 sm:gap-3">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#592102' }}>
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-primary)' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102', fontFamily: 'var(--font-lexend)' }}>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)' }}>
                 Pins
               </h2>
             </div>
@@ -206,16 +206,16 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
           {/* Loading Skeletons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mt-6 sm:mt-8">
             {[...Array(6)].map((_, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-                <div className="h-36 sm:h-44 md:h-48 bg-gray-300"></div>
+              <div key={index} className="rounded-lg shadow-md overflow-hidden animate-pulse" style={{ backgroundColor: 'var(--card-bg)' }}>
+                <div className="h-36 sm:h-44 md:h-48" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
                 <div className="p-3 sm:p-4">
-                  <div className="h-3 sm:h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 sm:h-4 bg-gray-300 rounded w-1/2 mb-3 sm:mb-4"></div>
+                  <div className="h-3 sm:h-4 rounded w-3/4 mb-2" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
+                  <div className="h-3 sm:h-4 rounded w-1/2 mb-3 sm:mb-4" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
                   <div className="flex gap-2 mb-3 sm:mb-4">
-                    <div className="h-5 sm:h-6 bg-gray-300 rounded w-14 sm:w-16"></div>
-                    <div className="h-5 sm:h-6 bg-gray-300 rounded w-14 sm:w-16"></div>
+                    <div className="h-5 sm:h-6 rounded w-14 sm:w-16" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
+                    <div className="h-5 sm:h-6 rounded w-14 sm:w-16" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
                   </div>
-                  <div className="h-7 sm:h-8 bg-gray-300 rounded"></div>
+                  <div className="h-7 sm:h-8 rounded" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
                 </div>
               </div>
             ))}
@@ -227,20 +227,20 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
 
   if (error) {
     return (
-      <section className="py-6 sm:py-8 md:py-12 bg-white">
+      <section className="py-6 sm:py-8 md:py-12 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4 sm:mb-6 md:mb-8">
             <div className="flex items-center gap-2 sm:gap-3">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#592102' }}>
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-primary)' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102', fontFamily: 'var(--font-lexend)' }}>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)' }}>
                 Pins
               </h2>
             </div>
           </div>
-          <div className="text-center text-red-600 bg-red-50 p-6 rounded-lg">
+          <div className="text-center p-6 rounded-lg user-posts-error" style={{ color: 'var(--text-primary)' }}>
             <p>{error}</p>
           </div>
         </div>
@@ -250,24 +250,24 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
 
   if (posts.length === 0 && !loading) {
     return (
-      <section className="py-6 sm:py-8 md:py-12 bg-white">
+      <section className="py-6 sm:py-8 md:py-12 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4 sm:mb-6 md:mb-8">
             <div className="flex items-center gap-2 sm:gap-3">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#592102' }}>
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-primary)' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102', fontFamily: 'var(--font-lexend)' }}>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)' }}>
                 Pins
               </h2>
             </div>
           </div>
           <div className="text-center py-8 sm:py-12">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
+            <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4" style={{ color: 'var(--text-primary)' }}>
               No Posts Found
             </h3>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-sm sm:text-base" style={{ color: 'var(--text-muted)' }}>
               @{username} hasn't shared any travel posts yet.
             </p>
           </div>
@@ -277,16 +277,16 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
   }
 
   return (
-    <section className="py-6 sm:py-8 md:py-12 bg-white">
+    <section className="py-6 sm:py-8 md:py-12 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-4 sm:mb-6 md:mb-8">
           <div className="flex items-center gap-2 sm:gap-3">
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#592102' }}>
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-primary)' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102', fontFamily: 'var(--font-lexend)' }}>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)' }}>
               Pins
             </h2>
           </div>
@@ -295,7 +295,7 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
         {/* Posts Grid */}
         {posts.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-sm sm:text-base text-gray-600">No posts available</p>
+            <p className="text-sm sm:text-base" style={{ color: 'var(--text-muted)' }}>No posts available</p>
           </div>
         ) : (
           <>
@@ -331,7 +331,7 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
                     </>
                   )}
                 </button>
-                <p className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3">
+                <p className="text-xs sm:text-sm mt-2 sm:mt-3" style={{ color: 'var(--text-muted)' }}>
                   {allBasicPosts.length - posts.length} more {allBasicPosts.length - posts.length === 1 ? 'post' : 'posts'} to explore
                 </p>
               </div>

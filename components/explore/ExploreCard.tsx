@@ -21,7 +21,7 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
 
   return (
     <Link href={`/read/${post.slug}`}>
-      <div className="group bg-white rounded-xl sm:rounded-2xl hover:shadow-xl transition-all duration-300 overflow-visible cursor-pointer flex flex-col relative h-full" style={{ boxShadow: '0px 4px 4px 0px #00000040' }}>
+      <div className="group rounded-xl sm:rounded-2xl hover:shadow-xl transition-all duration-300 overflow-visible cursor-pointer flex flex-col relative h-full" style={{ backgroundColor: 'var(--card-bg)', boxShadow: '0px 4px 4px 0px var(--shadow-color)' }}>
         {/* Cover Image with Overlay Content */}
         <div className="relative w-full bg-gradient-to-br from-orange-400 to-amber-500 overflow-hidden rounded-t-xl sm:rounded-t-2xl h-[180px] sm:h-[220px] lg:h-[249.6px]">
           {/* Top Gradient Overlay for better text visibility */}
@@ -164,7 +164,7 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
 
         <div className="p-3 sm:p-4 pb-3 sm:pb-4 flex flex-col flex-1">
 
-          <h3 className="text-base sm:text-lg font-medium mt-1 sm:mt-2 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'var(--font-lexend)', color: '#592102' }}>
+          <h3 className="text-base sm:text-lg font-medium mt-1 sm:mt-2 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] group-hover:text-orange-500 transition-colors" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
             {post.title}
           </h3>
 

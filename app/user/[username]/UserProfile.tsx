@@ -119,10 +119,10 @@ export function UserProfile({ username }: UserProfileProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-sm">Loading profile...</p>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Loading profile...</p>
         </div>
       </div>
     );
@@ -130,10 +130,10 @@ export function UserProfile({ username }: UserProfileProps) {
 
   if (!profileData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">User Not Found</h1>
-          <p className="text-gray-600">The user @{username} could not be found.</p>
+          <h1 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>User Not Found</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>The user @{username} could not be found.</p>
         </div>
       </div>
     );
@@ -141,13 +141,13 @@ export function UserProfile({ username }: UserProfileProps) {
 
   if (!profileData.exists) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">User Not Found</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>User Not Found</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>
             The user @{username} could not be found on the Hive blockchain.
           </p>
-          <p className="text-gray-500 mt-2 text-sm">
+          <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
             Please check the username spelling and try again.
           </p>
         </div>
@@ -156,15 +156,12 @@ export function UserProfile({ username }: UserProfileProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       {/* Main Profile Section */}
       <div className={`transition-all duration-300 ${isMinimized ? 'h-0 overflow-hidden' : ''}`}>
         {/* Hero Section */}
         <section
-          className="relative py-4 sm:py-7 lg:py-11 font-lexend"
-          style={{
-            background: 'linear-gradient(0deg, rgba(255, 166, 0, 0.14) 0%, rgba(237, 168, 40, 0.042) 111.74%)'
-          }}
+          className="relative py-4 sm:py-7 lg:py-11 font-lexend user-profile-hero"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Minimize Button - Hidden on mobile */}
@@ -201,20 +198,20 @@ export function UserProfile({ username }: UserProfileProps) {
                     <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#ED6D28] mb-1 sm:mb-2">
                       {profileData.name}
                     </h1>
-                    <p className="text-sm sm:text-base lg:text-lg text-[#45220B] font-medium">
+                    <p className="text-sm sm:text-base lg:text-lg text-[#45220B] font-medium user-profile-username">
                       @{username}
                     </p>
                   </div>
 
                   <div className="space-y-3 sm:space-y-4">
-                    <p className="text-xs sm:text-sm lg:text-base text-[#45220B] leading-relaxed max-w-lg mx-auto sm:mx-0">
+                    <p className="text-xs sm:text-sm lg:text-base text-[#45220B] leading-relaxed max-w-lg mx-auto sm:mx-0 user-profile-about">
                       {profileData.about}
                     </p>
 
                     {profileData.location && (
                       <div className="space-y-1.5 sm:space-y-2.5">
-                        <p className="text-xs sm:text-sm lg:text-base text-[#45220B] italic flex items-center justify-center sm:justify-start">
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 flex-shrink-0" fill="none" stroke="#45220B" viewBox="0 0 24 24">
+                        <p className="text-xs sm:text-sm lg:text-base text-[#45220B] italic flex items-center justify-center sm:justify-start user-profile-location">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 flex-shrink-0 user-profile-location-icon" fill="none" stroke="#45220B" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
@@ -239,25 +236,25 @@ export function UserProfile({ username }: UserProfileProps) {
                 {/* Pins - rounded top on desktop, rounded left on mobile */}
                 <div className="bg-[#EDA82847] px-3 sm:px-4 md:px-6 py-2.5 sm:py-[14px] md:py-[18px] rounded-l-[12px] sm:rounded-none sm:rounded-tl-[17px] sm:rounded-tr-[17px] border-[2px] border-[#EDA82899] flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-1 sm:gap-[34px] md:gap-[42px] flex-1 sm:flex-none sm:min-w-[240px] md:min-w-[288px]">
                   <div className="flex items-center gap-1 sm:gap-2">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#5C2609] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#5C2609] flex-shrink-0 user-profile-pins-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10c0 5.523-9 12-9 12S3 15.523 3 10a9 9 0 1118 0z" />
                       <circle cx="12" cy="10" r="3" strokeWidth={2} />
                     </svg>
-                    <span className="text-[11px] sm:text-[15px] md:text-[17px] text-[#5C2609] font-bold">Pins</span>
+                    <span className="text-[11px] sm:text-[15px] md:text-[17px] text-[#5C2609] font-bold user-profile-pins-label">Pins</span>
                   </div>
-                  <span className="text-[24px] sm:text-[32px] md:text-[45px] font-bold text-[#5C2609]">{profileData.pinCount}</span>
+                  <span className="text-[24px] sm:text-[32px] md:text-[45px] font-bold text-[#5C2609] user-profile-pins-count">{profileData.pinCount}</span>
                 </div>
 
                 {/* Rank - rounded bottom on desktop, rounded right on mobile */}
                 {(profileData.rank !== undefined && profileData.rank !== null) && (
                   <div className="bg-[#B6000026] px-3 sm:px-4 md:px-6 py-2.5 sm:py-[14px] md:py-[18px] rounded-r-[12px] sm:rounded-r-none sm:rounded-b-[17px] border-[2px] border-[#B6000026] flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-1 sm:gap-[34px] md:gap-[42px] flex-1 sm:flex-none sm:min-w-[240px] md:min-w-[288px]">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#5C0909] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#5C0909] flex-shrink-0 user-profile-rank-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
-                      <span className="text-[11px] sm:text-[15px] md:text-[17px] text-[#5C0909] font-bold">Rank</span>
+                      <span className="text-[11px] sm:text-[15px] md:text-[17px] text-[#5C0909] font-bold user-profile-rank-label">Rank</span>
                     </div>
-                    <span className="text-[24px] sm:text-[32px] md:text-[45px] font-bold text-[#5C0909]">{profileData.rank}</span>
+                    <span className="text-[24px] sm:text-[32px] md:text-[45px] font-bold text-[#5C0909] user-profile-rank-count">{profileData.rank}</span>
                   </div>
                 )}
               </div>
@@ -269,10 +266,9 @@ export function UserProfile({ username }: UserProfileProps) {
       {/* Minimized Profile Bar - Hidden on mobile */}
       {isMinimized && (
         <div
-          className="hidden sm:block fixed top-16 left-0 right-0 z-50"
+          className="hidden sm:block fixed top-16 left-0 right-0 z-50 user-profile-hero"
           style={{
-            background: 'linear-gradient(0deg, rgba(255, 166, 0, 0.14) 0%, rgba(237, 168, 40, 0.042) 111.74%)',
-            borderBottom: '1px solid #0000001A',
+            borderBottom: '1px solid var(--border-subtle)',
             fontFamily: 'var(--font-lexend)'
           }}
         >
@@ -286,22 +282,22 @@ export function UserProfile({ username }: UserProfileProps) {
                 />
                 <div>
                   <h2 className="font-bold text-[#ED6D28] text-base">{profileData.name}</h2>
-                  <p className="text-sm text-[#45220B]">@{username}</p>
+                  <p className="text-sm user-profile-username">@{username}</p>
                 </div>
-                <div className="hidden md:flex items-center gap-4 ml-4 pl-4 border-l border-[#0000001A]">
+                <div className="hidden md:flex items-center gap-4 ml-4 pl-4 border-l" style={{ borderColor: 'var(--border-subtle)' }}>
                   <div className="flex items-center gap-1.5">
-                    <svg className="w-4 h-4 text-[#5C2609]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-primary)' }}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10c0 5.523-9 12-9 12S3 15.523 3 10a9 9 0 1118 0z" />
                       <circle cx="12" cy="10" r="3" strokeWidth={2} />
                     </svg>
-                    <span className="text-sm font-semibold text-[#5C2609]">{profileData.pinCount} Pins</span>
+                    <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{profileData.pinCount} Pins</span>
                   </div>
                   {(profileData.rank !== undefined && profileData.rank !== null) && (
                     <div className="flex items-center gap-1.5">
-                      <svg className="w-4 h-4 text-[#5C0909]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-primary)' }}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
-                      <span className="text-sm font-semibold text-[#5C0909]">Rank #{profileData.rank}</span>
+                      <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Rank #{profileData.rank}</span>
                     </div>
                   )}
                 </div>
@@ -326,7 +322,7 @@ export function UserProfile({ username }: UserProfileProps) {
 
       {/* User Map Section */}
       <section className={`${isMinimized ? 'sm:pt-20' : ''}`} style={{ fontFamily: 'var(--font-lexend)' }}>
-        <div className="bg-white border-t border-gray-200">
+        <div style={{ backgroundColor: 'var(--card-bg)', borderTop: '1px solid var(--border-subtle)' }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Map Header */}
             <div className="py-3 sm:py-4 md:py-6">
@@ -334,14 +330,14 @@ export function UserProfile({ username }: UserProfileProps) {
                 <div className="text-center sm:text-left">
                   <div
                     className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-full"
-                    style={{ color: '#592102', background: 'transparent' }}
+                    style={{ color: 'var(--text-primary)', background: 'transparent' }}
                   >
                     <svg
                       className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      style={{ color: '#592102' }}
+                      style={{ color: 'var(--text-primary)' }}
                     >
                       <path
                         strokeLinecap="round"
@@ -351,7 +347,7 @@ export function UserProfile({ username }: UserProfileProps) {
                       />
                       <circle cx="12" cy="10" r="3" strokeWidth={2} />
                     </svg>
-                    <h2 className="text-lg sm:text-2xl md:text-3xl font-bold" style={{ color: '#592102' }}>
+                    <h2 className="text-lg sm:text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
                       Travel Map
                     </h2>
                   </div>
@@ -361,7 +357,7 @@ export function UserProfile({ username }: UserProfileProps) {
 
             <div className="py-4 sm:py-6 lg:py-8">
               {/* Map Container - Explicit height to ensure it doesn't collapse */}
-              <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] border border-[#0000001A] rounded-xl sm:rounded-2xl overflow-hidden bg-[#FDF8F3] relative">
+              <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] rounded-xl sm:rounded-2xl overflow-hidden relative" style={{ border: '1px solid var(--border-subtle)', backgroundColor: 'var(--section-bg-alt)' }}>
                 <UserMapComponent
                   username={username}
                   initialPins={userPins}

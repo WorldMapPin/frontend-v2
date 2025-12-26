@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Lexend, Poppins } from "next/font/google";
 import "./globals.css";
-import { Navbar, Footer } from "../components";
+import { Navbar, Footer, ThemeProvider } from "../components";
 import AiohaProviderWrapper from "../components/AiohaProvider";
 
 const geistSans = Geist({
@@ -43,6 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${lexend.variable} ${poppins.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
+        <ThemeProvider>
         <AiohaProviderWrapper>
           <Navbar />
 
@@ -52,6 +53,7 @@ export default function RootLayout({
 
           <Footer />
         </AiohaProviderWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

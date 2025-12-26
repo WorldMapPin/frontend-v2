@@ -201,23 +201,20 @@ export default function PostReaderPage() {
 
   if (loading) {
     return (
-      <div className="relative min-h-screen overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-white" />
-        
+      <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="relative z-10">
         <div className="w-full px-4 sm:w-[90%] md:w-[85%] lg:w-[70%] mx-auto sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-12">
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="rounded-lg shadow-md overflow-hidden" style={{ backgroundColor: 'var(--card-bg)' }}>
             {/* Loading Skeleton */}
             <div className="animate-pulse">
-              <div className="h-48 sm:h-64 md:h-80 lg:h-96 bg-gray-300"></div>
+              <div className="h-48 sm:h-64 md:h-80 lg:h-96" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
               <div className="p-4 sm:p-6 lg:p-8">
-                <div className="h-6 sm:h-8 bg-gray-300 rounded w-3/4 mb-3 sm:mb-4"></div>
-                <div className="h-4 bg-gray-300 rounded w-1/2 mb-4 sm:mb-6"></div>
+                <div className="h-6 sm:h-8 rounded w-3/4 mb-3 sm:mb-4" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
+                <div className="h-4 rounded w-1/2 mb-4 sm:mb-6" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
                 <div className="space-y-2 sm:space-y-3">
-                  <div className="h-4 bg-gray-300 rounded"></div>
-                  <div className="h-4 bg-gray-300 rounded"></div>
-                  <div className="h-4 bg-gray-300 rounded w-5/6"></div>
+                  <div className="h-4 rounded" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
+                  <div className="h-4 rounded" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
+                  <div className="h-4 rounded w-5/6" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
                 </div>
               </div>
             </div>
@@ -230,18 +227,15 @@ export default function PostReaderPage() {
 
   if (error || !post) {
     return (
-      <div className="relative min-h-screen overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-white" />
-        
+      <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="relative z-10">
         <div className="w-full px-4 sm:w-[90%] md:w-[85%] lg:w-[70%] mx-auto sm:px-6 lg:px-8 py-8 sm:py-12">
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 lg:p-8 text-center">
+          <div className="rounded-lg shadow-md p-4 sm:p-6 lg:p-8 text-center" style={{ backgroundColor: 'var(--card-bg)' }}>
             <svg className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mx-auto mb-3 sm:mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Error Loading Post</h2>
-            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">{error || 'Post not found'}</p>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Error Loading Post</h2>
+            <p className="text-sm sm:text-base mb-4 sm:mb-6" style={{ color: 'var(--text-secondary)' }}>{error || 'Post not found'}</p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <button
                 onClick={() => router.back()}
@@ -251,7 +245,7 @@ export default function PostReaderPage() {
               </button>
               <button
                 onClick={() => window.location.reload()}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg transition-colors text-sm sm:text-base"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Retry
               </button>
@@ -264,10 +258,7 @@ export default function PostReaderPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-white" />
-      
+    <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       <div className="relative z-10">
       <div className="w-full px-4 sm:w-[90%] md:w-[85%] lg:w-[70%] mx-auto sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <article>
@@ -535,7 +526,7 @@ export default function PostReaderPage() {
               className="text-2xl sm:text-3xl lg:text-4xl font-medium mb-4 sm:mb-6 lg:mb-8"
               style={{
                 fontFamily: 'Lexend',
-                color: '#592102'
+                color: 'var(--text-primary)'
               }}
             >
               {post.title}
@@ -578,10 +569,10 @@ export default function PostReaderPage() {
 
             {/* Body Markdown */}
             <div
-              className="prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-img:rounded-lg prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-headings:text-[#592102] prose-p:leading-relaxed markdown-content"
+              className="prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-img:rounded-lg prose-a:text-orange-500 prose-a:no-underline hover:prose-a:underline prose-p:leading-relaxed markdown-content post-content"
               style={{
                 fontFamily: 'Lexend',
-                color: '#371300'
+                color: 'var(--foreground)'
               }}
               dangerouslySetInnerHTML={{ __html: processedHtml }}
             />

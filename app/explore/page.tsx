@@ -9,9 +9,10 @@ import { usePostPaginator, useInfiniteScroll } from '@/hooks/use-post-paginator'
 function SkeletonCard({ index }: { index: number }) {
   return (
     <div 
-      className="bg-white rounded-xl sm:rounded-2xl overflow-visible flex flex-col relative h-full animate-pulse"
+      className="rounded-xl sm:rounded-2xl overflow-visible flex flex-col relative h-full animate-pulse"
       style={{ 
-        boxShadow: '0px 4px 4px 0px #00000020',
+        backgroundColor: 'var(--card-bg)',
+        boxShadow: '0px 4px 4px 0px var(--shadow-color)',
         animationDelay: `${index * 100}ms`
       }}
     >
@@ -47,15 +48,15 @@ function SkeletonCard({ index }: { index: number }) {
       {/* Content skeleton */}
       <div className="p-3 sm:p-4 pb-3 sm:pb-4 flex flex-col flex-1 pt-5">
         <div className="space-y-2 mt-2">
-          <div className="h-4 bg-gray-200 rounded w-full" />
-          <div className="h-4 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 rounded w-full" style={{ backgroundColor: 'var(--skeleton-bg)' }} />
+          <div className="h-4 rounded w-3/4" style={{ backgroundColor: 'var(--skeleton-bg)' }} />
         </div>
         
         {/* Tags skeleton */}
         <div className="mt-auto pt-3 flex gap-2">
-          <div className="h-4 bg-blue-100 rounded w-14" />
-          <div className="h-4 bg-blue-100 rounded w-16" />
-          <div className="h-4 bg-blue-100 rounded w-12" />
+          <div className="h-4 rounded w-14" style={{ backgroundColor: 'var(--skeleton-bg)' }} />
+          <div className="h-4 rounded w-16" style={{ backgroundColor: 'var(--skeleton-bg)' }} />
+          <div className="h-4 rounded w-12" style={{ backgroundColor: 'var(--skeleton-bg)' }} />
         </div>
       </div>
     </div>
@@ -102,8 +103,7 @@ export default function ExplorePage() {
   // Error state
   if (error && !loading && posts.length === 0) {
     return (
-      <div className="relative min-h-screen overflow-hidden">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%)' }} />
+      <div className="relative min-h-screen overflow-hidden explore-page-bg">
         <div className="relative z-10">
           <ExploreHeader sortType={sortType} onSortChange={changeSortType} />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -113,10 +113,10 @@ export default function ExplorePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'var(--font-lexend)' }}>
+              <h2 className="text-xl font-semibold mb-2" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
                 Unable to load posts
               </h2>
-              <p className="text-gray-500 mb-6 text-sm">{error}</p>
+              <p className="mb-6 text-sm" style={{ color: 'var(--text-secondary)' }}>{error}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium"
@@ -135,9 +135,7 @@ export default function ExplorePage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%)' }} />
+    <div className="relative min-h-screen overflow-hidden explore-page-bg">
 
       {/* Shimmer animation styles */}
       <style jsx global>{`
@@ -215,9 +213,9 @@ export default function ExplorePage() {
               {/* Subtle loading indicator at the bottom */}
               {loadingMore && (
                 <div className="mt-6 flex justify-center">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-orange-100">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 backdrop-blur-sm rounded-full shadow-sm" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', borderWidth: '1px' }}>
                     <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-lexend)' }}>
+                    <span className="text-sm" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-secondary)' }}>
                       Loading more
                     </span>
                   </div>
@@ -227,17 +225,17 @@ export default function ExplorePage() {
               {/* End of Posts */}
               {!hasMore && posts.length > 0 && !loadingMore && (
                 <div className="mt-10 flex justify-center">
-                  <div className="inline-flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-100">
+                  <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl" style={{ backgroundColor: 'var(--section-bg)', borderColor: 'var(--border-color)', borderWidth: '1px' }}>
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-700" style={{ fontFamily: 'var(--font-lexend)' }}>
+                      <p className="text-sm font-medium" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
                         You&apos;ve explored all {totalLoaded} posts
                       </p>
-                      <p className="text-xs text-gray-400">Check back later for new adventures!</p>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Check back later for new adventures!</p>
                     </div>
                   </div>
                 </div>

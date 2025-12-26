@@ -32,7 +32,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="relative overflow-hidden bg-white">
+    <div className="relative overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       {/* Split Screen Layout */}
       <div className="flex flex-col lg:flex-row">
         
@@ -93,15 +93,15 @@ export default function SignupPage() {
         </div>
 
         {/* Right Side - Signup Form */}
-        <div className="lg:w-1/2 flex items-center justify-center py-12 px-8 lg:py-16 lg:px-16 bg-gradient-to-br from-orange-50 to-white">
+        <div className="lg:w-1/2 flex items-center justify-center py-12 px-8 lg:py-16 lg:px-16 signup-form-bg">
           <div className="w-full max-w-md">
             
             {/* Header */}
             <div className="mb-8 sm:mb-10">
-              <h2 className="font-lexend text-3xl sm:text-4xl font-bold mb-3" style={{ color: '#592102' }}>
+              <h2 className="font-lexend text-3xl sm:text-4xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
                 Get Started
               </h2>
-              <p className="font-lexend text-base sm:text-lg" style={{ color: '#6F5B50' }}>
+              <p className="font-lexend text-base sm:text-lg" style={{ color: 'var(--text-secondary)' }}>
                 Connect your wallet to begin your journey
               </p>
             </div>
@@ -130,7 +130,7 @@ export default function SignupPage() {
 
             {/* New to Hive */}
             <div className="text-center mb-10">
-              <p className="font-lexend text-sm" style={{ color: '#6F5B50' }}>
+              <p className="font-lexend text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Don't have a Hive account?{' '}
                 <a
                   href="https://signup.hive.io"
@@ -147,7 +147,7 @@ export default function SignupPage() {
 
             {/* Features Grid */}
             <div className="space-y-4 sm:space-y-6 mb-8 sm:mb-10">
-              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 bg-white rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
+              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow signup-feature-card">
                 <div 
                   className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
                   style={{ background: 'linear-gradient(135deg, #ED6D28 0%, #FFA600 100%)' }}
@@ -157,16 +157,16 @@ export default function SignupPage() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-lexend text-base sm:text-lg font-bold mb-1" style={{ color: '#592102' }}>
+                  <h3 className="font-lexend text-base sm:text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
                     Permanent Ownership
                   </h3>
-                  <p className="font-lexend text-sm" style={{ color: '#6F5B50' }}>
+                  <p className="font-lexend text-sm" style={{ color: 'var(--text-secondary)' }}>
                     Your content is stored on the blockchain, forever yours
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 bg-white rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
+              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow signup-feature-card">
                 <div 
                   className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
                   style={{ background: 'linear-gradient(135deg, #ED6D28 0%, #FFA600 100%)' }}
@@ -176,16 +176,16 @@ export default function SignupPage() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-lexend text-base sm:text-lg font-bold mb-1" style={{ color: '#592102' }}>
+                  <h3 className="font-lexend text-base sm:text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
                     Earn Crypto Rewards
                   </h3>
-                  <p className="font-lexend text-sm" style={{ color: '#6F5B50' }}>
+                  <p className="font-lexend text-sm" style={{ color: 'var(--text-secondary)' }}>
                     Get rewarded in cryptocurrency for quality travel content
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 bg-white rounded-xl shadow-sm border border-orange-100 hover:shadow-md transition-shadow">
+              <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow signup-feature-card">
                 <div 
                   className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
                   style={{ background: 'linear-gradient(135deg, #ED6D28 0%, #FFA600 100%)' }}
@@ -195,10 +195,10 @@ export default function SignupPage() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-lexend text-base sm:text-lg font-bold mb-1" style={{ color: '#592102' }}>
+                  <h3 className="font-lexend text-base sm:text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
                     Global Community
                   </h3>
-                  <p className="font-lexend text-sm" style={{ color: '#6F5B50' }}>
+                  <p className="font-lexend text-sm" style={{ color: 'var(--text-secondary)' }}>
                     Connect with passionate travelers from around the world
                   </p>
                 </div>
@@ -206,29 +206,29 @@ export default function SignupPage() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="mt-10 pt-8 border-t border-orange-200">
+            <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--border-color)' }}>
               <div className="flex items-center justify-center gap-6 mb-6">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="font-lexend text-xs font-medium" style={{ color: '#6F5B50' }}>
+                  <span className="font-lexend text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                     Secure
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="font-lexend text-xs font-medium" style={{ color: '#6F5B50' }}>
+                  <span className="font-lexend text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                     Decentralized
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="font-lexend text-xs font-medium" style={{ color: '#6F5B50' }}>
+                  <span className="font-lexend text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                     Free to Join
                   </span>
                 </div>
               </div>
               
-              <p className="font-lexend text-xs text-center" style={{ color: '#6F5B50' }}>
+              <p className="font-lexend text-xs text-center" style={{ color: 'var(--text-muted)' }}>
                 Powered by Hive Blockchain • Your keys, your content
               </p>
             </div>

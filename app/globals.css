@@ -20,6 +20,47 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card-bg: #ffffff;
+  --card-border: #fed7aa;
+  --text-primary: #592102;
+  --text-secondary: #6F5B50;
+  --text-muted: #5E4A3F;
+  --text-light: #8B3A3A;
+  --navbar-bg: #ffffff;
+  --footer-bg: #ffffff;
+  --section-bg: #FFF9ED;
+  --section-bg-alt: #FFF7ED;
+  --hover-bg: #FFF7ED;
+  --border-color: #fed7aa;
+  --border-subtle: #f3e8dc;
+  --skeleton-bg: #f3f4f6;
+  --skeleton-shimmer: rgba(255, 255, 255, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --gradient-fade-start: rgba(255, 255, 255, 0.1);
+  --gradient-fade-end: rgba(255, 255, 255, 1);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card-bg: #161616;
+  --card-border: #2d2d2d;
+  --text-primary: #f5e6d3;
+  --text-secondary: #c9b8a8;
+  --text-muted: #a89888;
+  --text-light: #d4c4b4;
+  --navbar-bg: #45220B;
+  --footer-bg: #0a0a0a;
+  --section-bg: #111111;
+  --section-bg-alt: #141414;
+  --hover-bg: #1a1a1a;
+  --border-color: #2d2d2d;
+  --border-subtle: #222222;
+  --skeleton-bg: #1f1f1f;
+  --skeleton-shimmer: rgba(255, 255, 255, 0.05);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --gradient-fade-start: rgba(10, 10, 10, 0.1);
+  --gradient-fade-end: rgba(10, 10, 10, 1);
 }
 
 @theme inline {
@@ -30,19 +71,777 @@
   --font-lexend: 'Lexend', sans-serif;
 }
 
-/*
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-*/
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode aware sections */
+.hero-fade-gradient {
+  background: linear-gradient(180deg, transparent 0%, var(--gradient-fade-start) 20%, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.6) 65%, rgba(255, 255, 255, 0.85) 85%, var(--gradient-fade-end) 100%);
+  transition: background 0.3s ease;
+}
+
+.dark .hero-fade-gradient {
+  background: linear-gradient(180deg, transparent 0%, rgba(10, 10, 10, 0.1) 20%, rgba(10, 10, 10, 0.3) 40%, rgba(10, 10, 10, 0.6) 65%, rgba(10, 10, 10, 0.85) 85%, rgba(10, 10, 10, 1) 100%);
+}
+
+.web3-benefits-section {
+  background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,233,221,0.6) 14.42%, rgba(255,165,116,0.6) 73.56%, rgba(255,255,255,0.6) 99.52%);
+  transition: background 0.3s ease;
+}
+
+.dark .web3-benefits-section {
+  background: linear-gradient(180deg, rgba(10,10,10,0.9) 0%, rgba(50,30,20,0.4) 14.42%, rgba(80,40,20,0.3) 73.56%, rgba(10,10,10,0.9) 99.52%);
+}
+
+.final-cta-section {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF9F5 50%, #FFFFFF 100%);
+  transition: background 0.3s ease;
+}
+
+.dark .final-cta-section {
+  background: linear-gradient(180deg, #0a0a0a 0%, #151210 50%, #0a0a0a 100%);
+}
+
+/* Feature Card */
+.feature-card {
+  background: linear-gradient(135deg, rgba(255, 226, 210, 0.6) 0%, rgba(255, 255, 255, 0.9) 100%);
+  box-shadow: 0 10px 30px rgba(237, 109, 40, 0.15);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark .feature-card {
+  background: linear-gradient(135deg, rgba(40, 30, 20, 0.6) 0%, rgba(22, 22, 22, 0.95) 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Showcase Card */
+.showcase-card {
+  background: var(--card-bg);
+  transition: background 0.3s ease;
+}
+
+/* Benefit Item */
+.benefit-item {
+  background: rgba(237, 109, 40, 0.28);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: -2px 2px 5px 0px rgba(94, 33, 0, 0.25);
+  backdrop-filter: blur(7px);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.dark .benefit-item {
+  background: rgba(237, 109, 40, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -2px 2px 5px 0px rgba(0, 0, 0, 0.4);
+}
+
+/* Explore Page Background */
+.explore-page-bg {
+  background: linear-gradient(180deg, #FFF9ED 30.32%, #FFFFFF 100%);
+  transition: background 0.3s ease;
+}
+
+.dark .explore-page-bg {
+  background: linear-gradient(180deg, #0f0f0f 30.32%, #0a0a0a 100%);
+}
+
+/* Team Section Background */
+.team-section-bg {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF3DC 20.67%, #FFF3DC 94.23%, #FFFFFF 100%);
+  transition: background 0.3s ease;
+}
+
+.dark .team-section-bg {
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1510 20.67%, #1a1510 94.23%, #0a0a0a 100%);
+}
+
+/* Signup Form Background */
+.signup-form-bg {
+  background: linear-gradient(to bottom right, #fff7ed, #ffffff);
+  transition: background 0.3s ease;
+}
+
+.dark .signup-form-bg {
+  background: linear-gradient(to bottom right, #151210, #0a0a0a);
+}
+
+/* Signup Feature Card */
+.signup-feature-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Post Content Prose Styling */
+.post-content {
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-body: var(--foreground);
+  --tw-prose-links: #ED6D28;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6 {
+  color: var(--text-primary);
+}
+
+.dark .post-content {
+  --tw-prose-headings: #f5e6d3;
+  --tw-prose-body: #ededed;
+}
+
+/* User Profile Hero Section */
+.user-profile-hero {
+  background: linear-gradient(0deg, rgba(255, 166, 0, 0.14) 0%, rgba(237, 168, 40, 0.042) 111.74%);
+  transition: background 0.3s ease;
+}
+
+html[data-theme='dark'] .user-profile-hero,
+html.dark .user-profile-hero,
+.dark .user-profile-hero {
+  background: linear-gradient(0deg, rgba(255, 166, 0, 0.14) 0%, rgba(237, 168, 40, 0.042) 111.74%);
+}
+
+/* User Profile Hero Section Text Colors in Dark Theme */
+html[data-theme='dark'] .user-profile-username,
+html.dark .user-profile-username,
+.dark .user-profile-username {
+  color: #FFF5F0 !important;
+}
+
+html[data-theme='dark'] .user-profile-about,
+html.dark .user-profile-about,
+.dark .user-profile-about {
+  color: #FFF5F0 !important;
+}
+
+html[data-theme='dark'] .user-profile-location,
+html.dark .user-profile-location,
+.dark .user-profile-location {
+  color: #FFF5F0 !important;
+}
+
+html[data-theme='dark'] .user-profile-location-icon,
+html.dark .user-profile-location-icon,
+.dark .user-profile-location-icon {
+  stroke: #FFF5F0 !important;
+}
+
+/* User Profile Pins and Rank Rectangle Text/Icon Colors in Dark Theme */
+html[data-theme='dark'] .user-profile-pins-icon,
+html.dark .user-profile-pins-icon,
+.dark .user-profile-pins-icon,
+html[data-theme='dark'] .user-profile-pins-label,
+html.dark .user-profile-pins-label,
+.dark .user-profile-pins-label,
+html[data-theme='dark'] .user-profile-pins-count,
+html.dark .user-profile-pins-count,
+.dark .user-profile-pins-count {
+  color: #FFECE2 !important;
+}
+
+html[data-theme='dark'] .user-profile-rank-icon,
+html.dark .user-profile-rank-icon,
+.dark .user-profile-rank-icon,
+html[data-theme='dark'] .user-profile-rank-label,
+html.dark .user-profile-rank-label,
+.dark .user-profile-rank-label,
+html[data-theme='dark'] .user-profile-rank-count,
+html.dark .user-profile-rank-count,
+.dark .user-profile-rank-count {
+  color: #FFECE2 !important;
+}
+
+/* My Countries Page Styles */
+.my-countries-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 25px 50px -12px var(--shadow-color);
+}
+
+.my-countries-map-bg {
+  background: linear-gradient(to bottom right, #eff6ff, #fff7ed);
+  transition: background 0.3s ease;
+}
+
+html[data-theme='dark'] .my-countries-map-bg {
+  background: linear-gradient(to bottom right, #1a1a2e, #1a1510);
+}
+
+.my-countries-legend {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border-subtle);
+}
+
+html[data-theme='dark'] .my-countries-legend {
+  background-color: rgba(30, 30, 30, 0.9);
+}
+
+.my-countries-zoom-btn {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+}
+
+.my-countries-zoom-btn:hover {
+  background-color: var(--hover-bg);
+}
+
+.my-countries-list-header {
+  background-color: var(--section-bg-alt);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.my-countries-badge {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+}
+
+.my-countries-list-item:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Stats Page Styles */
+.stats-action-bar {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 25px 50px -12px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.stats-refresh-btn {
+  color: #92400E;
+  background-color: rgba(254, 243, 199, 0.5);
+}
+
+.stats-refresh-btn:hover {
+  background-color: #FEF3C7;
+}
+
+html[data-theme='dark'] .stats-refresh-btn {
+  color: #FFA600;
+  background-color: rgba(255, 166, 0, 0.1);
+}
+
+html[data-theme='dark'] .stats-refresh-btn:hover {
+  background-color: rgba(255, 166, 0, 0.2);
+}
+
+.stats-hive-btn {
+  color: #1E293B;
+  background-color: #f1f5f9;
+}
+
+.stats-hive-btn:hover {
+  background-color: #e2e8f0;
+}
+
+html[data-theme='dark'] .stats-hive-btn {
+  color: #e2e8f0;
+  background-color: rgba(100, 116, 139, 0.2);
+}
+
+html[data-theme='dark'] .stats-hive-btn:hover {
+  background-color: rgba(100, 116, 139, 0.3);
+}
+
+.stats-hive-loading {
+  background-color: rgba(239, 246, 255, 0.5);
+  border: 1px solid #bfdbfe;
+}
+
+html[data-theme='dark'] .stats-hive-loading {
+  background-color: rgba(30, 58, 138, 0.2);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.stats-hive-loading-icon {
+  background-color: #dbeafe;
+}
+
+html[data-theme='dark'] .stats-hive-loading-icon {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Stats Metric Cards */
+.stats-metric-card {
+  transition: all 0.3s ease;
+}
+
+.stats-metric-orange {
+  background-color: #FADEAA;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+html[data-theme='dark'] .stats-metric-orange {
+  background-color: rgba(251, 146, 60, 0.15);
+  border-color: rgba(251, 146, 60, 0.2);
+}
+
+.stats-metric-icon-orange {
+  background-color: rgba(237, 109, 40, 0.6);
+  color: #592102;
+}
+
+html[data-theme='dark'] .stats-metric-icon-orange {
+  background-color: rgba(237, 109, 40, 0.4);
+  color: #FFA600;
+}
+
+.stats-metric-label-orange {
+  color: #7F1B1B;
+}
+
+html[data-theme='dark'] .stats-metric-label-orange {
+  color: #FFA600;
+}
+
+.stats-metric-value-orange {
+  color: #592102;
+}
+
+html[data-theme='dark'] .stats-metric-value-orange {
+  color: #FFC145;
+}
+
+.stats-metric-sky {
+  background-color: rgba(137, 222, 248, 0.28);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+}
+
+html[data-theme='dark'] .stats-metric-sky {
+  background-color: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.2);
+}
+
+.stats-metric-icon-sky {
+  background-color: rgba(40, 204, 237, 0.6);
+  color: #005294;
+}
+
+html[data-theme='dark'] .stats-metric-icon-sky {
+  background-color: rgba(40, 204, 237, 0.3);
+  color: #38bdf8;
+}
+
+.stats-metric-label-sky {
+  color: #006CC4;
+}
+
+html[data-theme='dark'] .stats-metric-label-sky {
+  color: #7dd3fc;
+}
+
+.stats-metric-value-sky {
+  color: #005294;
+}
+
+html[data-theme='dark'] .stats-metric-value-sky {
+  color: #38bdf8;
+}
+
+.stats-metric-purple {
+  background-color: rgba(187, 137, 248, 0.28);
+  border: 1px solid rgba(192, 132, 252, 0.5);
+}
+
+html[data-theme='dark'] .stats-metric-purple {
+  background-color: rgba(192, 132, 252, 0.1);
+  border-color: rgba(192, 132, 252, 0.2);
+}
+
+.stats-metric-icon-purple {
+  background-color: rgba(207, 40, 237, 0.4);
+  color: #150259;
+}
+
+html[data-theme='dark'] .stats-metric-icon-purple {
+  background-color: rgba(192, 132, 252, 0.3);
+  color: #c084fc;
+}
+
+.stats-metric-label-purple {
+  color: #521B7F;
+}
+
+html[data-theme='dark'] .stats-metric-label-purple {
+  color: #d8b4fe;
+}
+
+.stats-metric-value-purple {
+  color: #150259;
+}
+
+html[data-theme='dark'] .stats-metric-value-purple {
+  color: #c084fc;
+}
+
+.stats-metric-green {
+  background-color: rgba(150, 248, 137, 0.28);
+  border: 1px solid rgba(74, 222, 128, 0.5);
+}
+
+html[data-theme='dark'] .stats-metric-green {
+  background-color: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.2);
+}
+
+.stats-metric-icon-green {
+  background-color: rgba(56, 237, 40, 0.6);
+  color: #0C5902;
+}
+
+html[data-theme='dark'] .stats-metric-icon-green {
+  background-color: rgba(74, 222, 128, 0.3);
+  color: #4ade80;
+}
+
+.stats-metric-label-green {
+  color: #237F1B;
+}
+
+html[data-theme='dark'] .stats-metric-label-green {
+  color: #86efac;
+}
+
+.stats-metric-value-green {
+  color: #0C5902;
+}
+
+html[data-theme='dark'] .stats-metric-value-green {
+  color: #4ade80;
+}
+
+.stats-metric-cyan {
+  background-color: rgba(137, 234, 248, 0.28);
+  border: 1px solid rgba(34, 211, 238, 0.5);
+}
+
+html[data-theme='dark'] .stats-metric-cyan {
+  background-color: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.2);
+}
+
+.stats-metric-icon-cyan {
+  background-color: rgba(40, 237, 234, 0.6);
+  color: #025259;
+}
+
+html[data-theme='dark'] .stats-metric-icon-cyan {
+  background-color: rgba(34, 211, 238, 0.3);
+  color: #22d3ee;
+}
+
+.stats-metric-label-cyan {
+  color: #1B717F;
+}
+
+html[data-theme='dark'] .stats-metric-label-cyan {
+  color: #67e8f9;
+}
+
+.stats-metric-value-cyan {
+  color: #025259;
+}
+
+html[data-theme='dark'] .stats-metric-value-cyan {
+  color: #22d3ee;
+}
+
+.stats-metric-sublabel-cyan {
+  color: rgba(27, 113, 127, 0.7);
+}
+
+html[data-theme='dark'] .stats-metric-sublabel-cyan {
+  color: rgba(103, 232, 249, 0.7);
+}
+
+/* Stats Card */
+.stats-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 25px 50px -12px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+/* Stats Tab Container */
+.stats-tab-container {
+  background-color: #FEF3C7;
+}
+
+html[data-theme='dark'] .stats-tab-container {
+  background-color: rgba(251, 146, 60, 0.15);
+}
+
+.stats-tab-active {
+  background-color: var(--card-bg);
+  color: #F97316;
+  box-shadow: 0 4px 6px -1px var(--shadow-color);
+}
+
+.stats-tab-inactive {
+  color: rgba(133, 77, 14, 0.6);
+}
+
+html[data-theme='dark'] .stats-tab-inactive {
+  color: rgba(251, 146, 60, 0.6);
+}
+
+html[data-theme='dark'] .stats-tab-inactive:hover {
+  color: #FFA600;
+}
+
+/* Stats Tag Card */
+.stats-tag-card {
+  background-color: #FFF7ED;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  transition: all 0.3s ease;
+}
+
+html[data-theme='dark'] .stats-tag-card {
+  background-color: rgba(251, 146, 60, 0.1);
+  border-color: rgba(251, 146, 60, 0.2);
+}
+
+/* Stats Post Card */
+.stats-post-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.3s ease;
+}
+
+/* Stats User Item */
+.stats-user-item {
+  background-color: rgba(249, 250, 251, 0.5);
+  border: 1px solid var(--border-subtle);
+}
+
+html[data-theme='dark'] .stats-user-item {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.stats-user-item:hover {
+  background-color: #fff7ed;
+}
+
+html[data-theme='dark'] .stats-user-item:hover {
+  background-color: rgba(251, 146, 60, 0.1);
+}
+
+.stats-user-icon-bg {
+  background-color: #f3f4f6;
+}
+
+html[data-theme='dark'] .stats-user-icon-bg {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Stats Info Card */
+.stats-info-card {
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  transition: all 0.3s ease;
+}
+
+html[data-theme='dark'] .stats-info-card {
+  background-color: rgba(20, 20, 20, 0.5);
+  border-color: rgba(251, 146, 60, 0.15);
+}
+
+.stats-info-icon-bg {
+  background-color: #ffedd5;
+}
+
+html[data-theme='dark'] .stats-info-icon-bg {
+  background-color: rgba(251, 146, 60, 0.2);
+}
+
+/* Stats Map Tooltip */
+.stats-map-tooltip {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .stats-map-tooltip {
+  background-color: #0f0f0f;
+  border-color: #404040;
+}
+
+/* Wallet Connect Modal Styles */
+.wallet-modal-backdrop {
+  background-color: rgba(17, 24, 39, 0.6);
+}
+
+html[data-theme='dark'] .wallet-modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.wallet-modal-container {
+  background-color: var(--card-bg);
+}
+
+.wallet-user-card {
+  background-color: #fff7ed;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+html[data-theme='dark'] .wallet-user-card {
+  background-color: rgba(251, 146, 60, 0.1);
+  border-color: rgba(251, 146, 60, 0.2);
+}
+
+.wallet-active-badge {
+  background-color: rgba(74, 222, 128, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+html[data-theme='dark'] .wallet-active-badge {
+  background-color: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.25);
+}
+
+.wallet-logout-btn {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.wallet-logout-btn:hover {
+  background-color: #fee2e2;
+}
+
+html[data-theme='dark'] .wallet-logout-btn {
+  background-color: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+html[data-theme='dark'] .wallet-logout-btn:hover {
+  background-color: rgba(220, 38, 38, 0.25);
+}
+
+.wallet-continue-btn {
+  background-color: #111827;
+  color: #ffffff;
+  box-shadow: 0 10px 15px -3px rgba(17, 24, 39, 0.1);
+}
+
+.wallet-continue-btn:hover {
+  background-color: #1f2937;
+}
+
+html[data-theme='dark'] .wallet-continue-btn {
+  background-color: #f97316;
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .wallet-continue-btn:hover {
+  background-color: #ea580c;
+}
+
+.wallet-input {
+  background-color: #f9fafb;
+  border: 2px solid #f3f4f6;
+  color: var(--text-primary);
+}
+
+.wallet-input::placeholder {
+  color: #9ca3af;
+}
+
+.wallet-input:focus {
+  background-color: var(--card-bg);
+}
+
+html[data-theme='dark'] .wallet-input {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme='dark'] .wallet-input::placeholder {
+  color: #6b7280;
+}
+
+html[data-theme='dark'] .wallet-input:focus {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.wallet-error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+html[data-theme='dark'] .wallet-error {
+  background-color: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.3);
+  color: #f87171;
+}
+
+.wallet-provider-btn {
+  background-color: var(--card-bg);
+  border-color: var(--border-subtle);
+}
+
+.wallet-provider-btn:disabled:hover {
+  border-color: var(--border-subtle);
+}
+
+.wallet-provider-arrow {
+  background-color: var(--skeleton-bg);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+/* Home Page Gradient Text (Dark Mode Only) */
+.home-gradient-text {
+  /* Light mode: use normal text color */
+  transition: color 0.3s ease;
+}
+
+html.dark .home-gradient-text,
+.dark .home-gradient-text,
+html[data-theme='dark'] .home-gradient-text {
+  background: linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Navbar Text Color in Dark Theme */
+html.dark nav,
+.dark nav,
+html[data-theme='dark'] nav {
+  color: #FFEDE3 !important;
+}
+
+html.dark nav a,
+.dark nav a,
+html[data-theme='dark'] nav a,
+html.dark nav span,
+.dark nav span,
+html[data-theme='dark'] nav span,
+html.dark nav button,
+.dark nav button,
+html[data-theme='dark'] nav button {
+  color: #FFEDE3 !important;
+}
+
+/* Preserve logo "Map" orange color in dark theme */
+html.dark nav span span[style*="#ED6D28"],
+.dark nav span span[style*="#ED6D28"],
+html[data-theme='dark'] nav span span[style*="#ED6D28"] {
+  color: #ED6D28 !important;
 }
 
 /* Animated gradient background for rank badge */
@@ -1027,4 +1826,160 @@ body {
 .markdown-content div.pull-left {
   float: left;
   margin-right: 1rem;
+}
+
+/* User Profile Components Dark Theme Styles */
+
+/* User Posts Error Message */
+.user-posts-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+html.dark .user-posts-error,
+.dark .user-posts-error,
+html[data-theme='dark'] .user-posts-error {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+/* World Coverage Section */
+.user-coverage-icon-bg {
+  background-color: rgba(255, 237, 213, 1);
+}
+
+html.dark .user-coverage-icon-bg,
+.dark .user-coverage-icon-bg,
+html[data-theme='dark'] .user-coverage-icon-bg {
+  background-color: rgba(255, 237, 213, 0.2);
+}
+
+.user-coverage-map-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+}
+
+.user-coverage-map-bg {
+  background: linear-gradient(to bottom right, rgba(255, 237, 213, 0.5), rgba(254, 243, 199, 0.5));
+}
+
+html.dark .user-coverage-map-bg,
+.dark .user-coverage-map-bg,
+html[data-theme='dark'] .user-coverage-map-bg {
+  background: linear-gradient(to bottom right, rgba(255, 237, 213, 0.15), rgba(254, 243, 199, 0.15));
+}
+
+.user-coverage-tooltip {
+  background-color: rgba(17, 24, 39, 0.9);
+  color: white;
+}
+
+html.dark .user-coverage-tooltip,
+.dark .user-coverage-tooltip,
+html[data-theme='dark'] .user-coverage-tooltip {
+  background-color: rgba(17, 24, 39, 0.95);
+  color: white;
+}
+
+.user-coverage-legend {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-subtle);
+}
+
+html.dark .user-coverage-legend,
+.dark .user-coverage-legend,
+html[data-theme='dark'] .user-coverage-legend {
+  background-color: rgba(30, 30, 30, 0.9);
+  border: 1px solid var(--border-subtle);
+}
+
+.user-coverage-stat-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+}
+
+.user-coverage-list-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+}
+
+.user-coverage-list-header {
+  background-color: var(--section-bg);
+  border-color: var(--border-subtle);
+}
+
+.user-coverage-list-item {
+  background-color: transparent;
+  border: 1px solid transparent;
+}
+
+.user-coverage-list-item:hover {
+  background-color: rgba(255, 237, 213, 0.3);
+}
+
+html.dark .user-coverage-list-item:hover,
+.dark .user-coverage-list-item:hover,
+html[data-theme='dark'] .user-coverage-list-item:hover {
+  background-color: rgba(255, 237, 213, 0.15);
+}
+
+.user-coverage-list-item-selected {
+  background-color: rgba(255, 237, 213, 0.5) !important;
+  border-color: rgba(251, 146, 60, 0.3) !important;
+}
+
+html.dark .user-coverage-list-item-selected,
+.dark .user-coverage-list-item-selected,
+html[data-theme='dark'] .user-coverage-list-item-selected {
+  background-color: rgba(255, 237, 213, 0.2) !important;
+  border-color: rgba(251, 146, 60, 0.4) !important;
+}
+
+/* User Map Component */
+.user-map-loading-overlay {
+  background-color: rgba(249, 250, 251, 0.8);
+}
+
+html.dark .user-map-loading-overlay,
+.dark .user-map-loading-overlay,
+html[data-theme='dark'] .user-map-loading-overlay {
+  background-color: rgba(30, 30, 30, 0.8);
+}
+
+.user-map-infowindow {
+  background-color: var(--card-bg);
+}
+
+.user-map-close-btn:hover {
+  background-color: var(--section-bg);
+}
+
+.user-map-stats-overlay {
+  background-color: var(--card-bg);
+}
+
+/* World Coverage Map */
+.user-coverage-card {
+  background-color: var(--card-bg);
+}
+
+.user-coverage-view-btn:hover {
+  background-color: rgba(237, 168, 40, 0.6);
+}
+
+.user-coverage-modal {
+  background-color: var(--card-bg);
+}
+
+.user-coverage-modal-close:hover {
+  background-color: var(--section-bg);
+}
+
+.user-coverage-count-badge {
+  background-color: var(--skeleton-bg);
+  color: var(--text-muted);
+}
+
+.user-coverage-country-item:hover {
+  border-color: rgba(251, 146, 60, 0.5) !important;
 }

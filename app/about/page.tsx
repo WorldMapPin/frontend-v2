@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen p-4 md:p-6 lg:p-8 max-w-[1850px] mx-auto" style={{ backgroundColor: '#FFFFFF' }}>
+    <div className="min-h-screen p-4 md:p-6 lg:p-8 max-w-[1850px] mx-auto transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       {/* Hero Section */}
       <div className="bg-[linear-gradient(92.88deg,_#ED6D28_1.84%,_#FFA600_100%)] rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 text-center mb-4 sm:mb-6 md:mb-8 min-h-[400px] sm:min-h-[500px] md:min-h-[610px] flex flex-col justify-center border-[2px] border-[#5E210040]">
       <p className="font-lexend text-[#FFFFFF] text-xl md:text-lg mb-4">

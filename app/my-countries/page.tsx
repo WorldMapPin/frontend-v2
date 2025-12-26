@@ -200,7 +200,7 @@ export default function MyCountriesPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white">
+            <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
                 <Navbar />
                 <div className="flex items-center justify-center h-[calc(100vh-64px)]">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
@@ -211,11 +211,11 @@ export default function MyCountriesPage() {
 
     if (!user && isReady) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
                 <Navbar />
                 <div className="max-w-7xl mx-auto px-4 py-20 text-center font-lexend">
-                    <h1 className="text-3xl font-bold text-[#592102] mb-4">My Countries</h1>
-                    <p className="text-gray-600 mb-8">Please login to see your world map coverage.</p>
+                    <h1 className="text-3xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>My Countries</h1>
+                    <p className="mb-8" style={{ color: 'var(--text-secondary)' }}>Please login to see your world map coverage.</p>
                     <a href="/signup" className="px-8 py-3 bg-orange-500 text-white rounded-full font-bold hover:bg-orange-600 transition-colors">
                         Login / Sign Up
                     </a>
@@ -225,7 +225,7 @@ export default function MyCountriesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#FDF8F3] font-lexend pb-12">
+        <div className="min-h-screen font-lexend pb-12 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
             <Navbar />
 
             <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-20">
@@ -288,8 +288,8 @@ export default function MyCountriesPage() {
                     {/* Left Column: Map and Stats */}
                     <div className="lg:col-span-8 space-y-8">
                         {/* Map Container */}
-                        <div className="bg-white rounded-3xl shadow-xl shadow-orange-950/5 border border-orange-100 overflow-hidden relative group">
-                            <div className="relative w-full h-[400px] sm:h-[550px] bg-gradient-to-br from-blue-50 to-orange-50">
+                        <div className="rounded-3xl shadow-xl overflow-hidden relative group my-countries-card">
+                            <div className="relative w-full h-[400px] sm:h-[550px] my-countries-map-bg">
                                 <ComposableMap
                                     projection="geoMercator"
                                     projectionConfig={{
@@ -341,14 +341,14 @@ export default function MyCountriesPage() {
                                 <div className="absolute top-6 right-6 flex flex-col gap-2 z-20">
                                     <button
                                         onClick={() => setZoom(z => Math.min(z * 1.5, 8))}
-                                        className="w-10 h-10 bg-white rounded-xl shadow-lg border border-orange-100 flex items-center justify-center text-orange-600 hover:bg-orange-50 transition-all font-bold text-xl"
+                                        className="w-10 h-10 rounded-xl shadow-lg flex items-center justify-center text-orange-600 transition-all font-bold text-xl my-countries-zoom-btn"
                                         title="Zoom In"
                                     >
                                         +
                                     </button>
                                     <button
                                         onClick={() => setZoom(z => Math.max(z / 1.5, 1))}
-                                        className="w-10 h-10 bg-white rounded-xl shadow-lg border border-orange-100 flex items-center justify-center text-orange-600 hover:bg-orange-50 transition-all font-bold text-xl"
+                                        className="w-10 h-10 rounded-xl shadow-lg flex items-center justify-center text-orange-600 transition-all font-bold text-xl my-countries-zoom-btn"
                                         title="Zoom Out"
                                     >
                                         −
@@ -362,22 +362,22 @@ export default function MyCountriesPage() {
                                 )}
 
                                 {/* Legend */}
-                                <div className="absolute bottom-6 left-6 bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-orange-100 text-xs flex flex-col gap-2">
+                                <div className="absolute bottom-6 left-6 backdrop-blur-md p-4 rounded-2xl shadow-sm text-xs flex flex-col gap-2 my-countries-legend">
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-[#FFA97B]"></div>
-                                        <span className="text-gray-700 font-semibold">Visited</span>
+                                        <span style={{ color: 'var(--text-primary)' }} className="font-semibold">Visited</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-gray-200"></div>
-                                        <span className="text-gray-500 font-medium">Not Visited</span>
+                                        <span style={{ color: 'var(--text-muted)' }} className="font-medium">Not Visited</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Stats Card - "In Total" like the screenshots */}
-                        <div className="bg-white rounded-3xl p-8 shadow-xl shadow-orange-950/5 border border-orange-100 relative overflow-hidden">
-                            <h2 className="text-xl font-bold text-gray-800 mb-8 flex items-center gap-2">
+                        <div className="rounded-3xl p-8 shadow-xl relative overflow-hidden my-countries-card">
+                            <h2 className="text-xl font-bold mb-8 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                                 <span className="w-2 h-6 bg-orange-500 rounded-full"></span>
                                 In Total
                             </h2>
@@ -386,13 +386,13 @@ export default function MyCountriesPage() {
                                     <div className="text-5xl font-black text-orange-500 mb-1">
                                         {coveragePercentage}%
                                     </div>
-                                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">World</div>
+                                    <div className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>World</div>
                                 </div>
                                 <div className="flex justify-center">
                                     <div className="relative w-24 h-24">
                                         <svg className="w-full h-full" viewBox="0 0 36 36">
                                             <path
-                                                className="text-gray-100"
+                                                style={{ color: 'var(--border-subtle)' }}
                                                 strokeDasharray="100, 100"
                                                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                                 fill="none"
@@ -415,7 +415,7 @@ export default function MyCountriesPage() {
                                     <div className="text-5xl font-black text-orange-500 mb-1">
                                         {countryData.totalVisited}
                                     </div>
-                                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">Countries</div>
+                                    <div className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Countries</div>
                                 </div>
                             </div>
                         </div>
@@ -423,10 +423,10 @@ export default function MyCountriesPage() {
 
                     {/* Right Column: List of Countries */}
                     <div className="lg:col-span-4 flex flex-col gap-6">
-                        <div className="bg-white rounded-3xl shadow-xl shadow-orange-950/5 border border-orange-100 flex flex-col overflow-hidden h-[730px]">
-                            <div className="p-6 border-b border-orange-50 bg-orange-50/30 flex justify-between items-center">
-                                <h3 className="text-lg font-bold text-[#592102]">Countries Visited</h3>
-                                <span className="bg-white text-orange-600 px-3 py-1 rounded-full text-xs font-bold border border-orange-100">
+                        <div className="rounded-3xl shadow-xl flex flex-col overflow-hidden h-[730px] my-countries-card">
+                            <div className="p-6 flex justify-between items-center my-countries-list-header">
+                                <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Countries Visited</h3>
+                                <span className="text-orange-600 px-3 py-1 rounded-full text-xs font-bold my-countries-badge">
                                     {countryData.countryList.length} total
                                 </span>
                             </div>
@@ -436,7 +436,7 @@ export default function MyCountriesPage() {
                                         key={index}
                                         className={`group flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer ${selectedCountry === country.name
                                             ? 'bg-orange-600 text-white shadow-lg shadow-orange-200'
-                                            : 'hover:bg-orange-50 border border-transparent'
+                                            : 'my-countries-list-item border border-transparent'
                                             }`}
                                         onClick={() => setSelectedCountry(selectedCountry === country.name ? null : country.name)}
                                     >
@@ -451,11 +451,11 @@ export default function MyCountriesPage() {
                                                     }}
                                                 />
                                             ) : (
-                                                <div className="w-8 h-6 bg-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">
+                                                <div className="w-8 h-6 rounded flex items-center justify-center text-[10px]" style={{ backgroundColor: 'var(--skeleton-bg)', color: 'var(--text-muted)' }}>
                                                     ?
                                                 </div>
                                             )}
-                                            <span className="font-bold text-sm tracking-tight">{country.name}</span>
+                                            <span className="font-bold text-sm tracking-tight" style={{ color: selectedCountry === country.name ? 'white' : 'var(--text-primary)' }}>{country.name}</span>
                                         </div>
                                         <div className={`text-xs font-bold px-3 py-1 rounded-full ${selectedCountry === country.name
                                             ? 'bg-white/20 text-white'
@@ -466,12 +466,12 @@ export default function MyCountriesPage() {
                                     </div>
                                 ))}
                                 {countryData.countryList.length === 0 && (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 py-12 px-6 text-center">
+                                    <div className="flex flex-col items-center justify-center h-full py-12 px-6 text-center" style={{ color: 'var(--text-muted)' }}>
                                         <svg className="w-16 h-16 mb-4 text-orange-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                         <p className="text-sm font-medium">No countries visited yet.</p>
-                                        <p className="text-xs text-gray-300 mt-1">Add some pins to your map to see your progress!</p>
+                                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Add some pins to your map to see your progress!</p>
                                     </div>
                                 )}
                             </div>

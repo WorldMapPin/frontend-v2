@@ -52,22 +52,22 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
 
   if (loading) {
     return (
-      <section className={`py-8 sm:py-12 ${className}`}>
+      <section className={`py-8 sm:py-12 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8" style={{ fontFamily: 'var(--font-lexend)', color: '#592102' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 home-gradient-text" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
             Today's Featured Travel Posts
           </h2>
           
           {/* Loading skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-xl sm:rounded-2xl overflow-hidden animate-pulse" style={{ boxShadow: '0px 4px 4px 0px #00000040' }}>
+              <div key={i} className="rounded-xl sm:rounded-2xl overflow-hidden animate-pulse" style={{ backgroundColor: 'var(--card-bg)', boxShadow: '0px 4px 4px 0px var(--shadow-color)' }}>
                 <div className="h-[180px] sm:h-[220px] lg:h-[249.6px] bg-gradient-to-br from-orange-400 to-amber-500">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
                 </div>
                 <div className="p-4">
-                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 rounded mb-2" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
+                  <div className="h-4 rounded w-3/4" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
                 </div>
               </div>
             ))}
@@ -79,27 +79,27 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
 
   if (error) {
     return (
-      <section className={`py-8 sm:py-12 ${className}`}>
+      <section className={`py-8 sm:py-12 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8" style={{ fontFamily: 'var(--font-lexend)', color: '#592102' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 home-gradient-text" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
             Today's Featured Travel Posts
           </h2>
           
           <div className="text-center py-12">
             <div className="mb-4">
-              <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-16 h-16 mx-auto" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2" style={{ fontFamily: 'var(--font-lexend)' }}>
+            <h3 className="text-lg font-medium mb-2" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
               Unable to load featured posts
             </h3>
-            <p className="text-gray-600 mb-4" style={{ fontFamily: 'var(--font-lexend)' }}>
+            <p className="mb-4" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-secondary)' }}>
               {error}
             </p>
             <button
               onClick={handleRetry}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
               style={{ fontFamily: 'var(--font-lexend)' }}
             >
               Try Again
@@ -112,22 +112,22 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
 
   if (posts.length === 0) {
     return (
-      <section className={`py-8 sm:py-12 ${className}`}>
+      <section className={`py-8 sm:py-12 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8" style={{ fontFamily: 'var(--font-lexend)', color: '#592102' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 home-gradient-text" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
             Today's Featured Travel Posts
           </h2>
           
           <div className="text-center py-12">
             <div className="mb-4">
-              <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-16 h-16 mx-auto" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2" style={{ fontFamily: 'var(--font-lexend)' }}>
+            <h3 className="text-lg font-medium mb-2" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
               No featured posts available
             </h3>
-            <p className="text-gray-600" style={{ fontFamily: 'var(--font-lexend)' }}>
+            <p style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-secondary)' }}>
               Check back later for today's curated travel content.
             </p>
           </div>
@@ -137,14 +137,14 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
   }
 
   return (
-    <section className={`py-8 sm:py-12 ${className}`}>
+    <section className={`py-8 sm:py-12 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8" style={{ fontFamily: 'var(--font-lexend)', color: '#592102' }}>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
           Today's Featured Travel Posts
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post, index) => (
+          {posts.map((post) => (
             <div key={`${post.author}-${post.permlink}`}>
               <ExploreCard post={post} hideAvatar={false} />
             </div>

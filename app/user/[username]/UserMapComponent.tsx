@@ -133,14 +133,15 @@ function UserMapContent({ username, initialPins, isExpanded, onLoad, currentZoom
       {/* Info Window */}
       {infowindowData && (
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-50 p-4 overflow-hidden">
-          <div className="bg-white rounded-lg shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center p-4 sm:p-6 border-b flex-shrink-0">
-              <h3 className="text-lg sm:text-xl font-semibold">
+          <div className="rounded-lg shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col user-map-infowindow">
+            <div className="flex justify-between items-center p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
+              <h3 className="text-lg sm:text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {infowindowData.features.length} {infowindowData.features.length === 1 ? 'Pin' : 'Pins'}
               </h3>
               <button
                 onClick={() => setInfowindowData(null)}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
+                className="transition-colors p-2 rounded-lg user-map-close-btn"
+                style={{ color: 'var(--text-muted)' }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -155,12 +156,12 @@ function UserMapContent({ username, initialPins, isExpanded, onLoad, currentZoom
       )}
 
       {/* Map Stats Overlay - Smaller on mobile */}
-      <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 bg-white rounded-lg shadow-lg p-2 sm:p-4 z-10">
+      <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 rounded-lg shadow-lg p-2 sm:p-4 z-10 user-map-stats-overlay">
         <div className="text-center">
           <div className="text-lg sm:text-2xl font-bold text-amber-600">
             {geojson?.features?.length || 0}
           </div>
-          <div className="text-xs sm:text-sm text-gray-600">Pins</div>
+          <div className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>Pins</div>
         </div>
       </div>
     </>
@@ -183,10 +184,10 @@ export function UserMapComponent({ username, initialPins, isExpanded }: UserMapC
 
   if (!API_KEY) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+      <div className="w-full h-full flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--section-bg-alt)' }}>
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Map Unavailable</h3>
-          <p className="text-gray-600">Google Maps API key not configured</p>
+          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Map Unavailable</h3>
+          <p style={{ color: 'var(--text-muted)' }}>Google Maps API key not configured</p>
         </div>
       </div>
     );
@@ -194,12 +195,12 @@ export function UserMapComponent({ username, initialPins, isExpanded }: UserMapC
 
   return (
     <APIProvider apiKey={API_KEY} version={'beta'}>
-      <div className="w-full h-full min-h-[400px] relative bg-gray-50 rounded-xl overflow-hidden">
+      <div className="w-full h-full min-h-[400px] relative rounded-xl overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--section-bg-alt)' }}>
         {loading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-50/80 backdrop-blur-sm">
+          <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-sm user-map-loading-overlay">
             <div className="flex flex-col items-center gap-3">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500"></div>
-              <p className="text-xs font-bold text-amber-900/40 tracking-widest uppercase">Initializing Map...</p>
+              <p className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>Initializing Map...</p>
             </div>
           </div>
         )}

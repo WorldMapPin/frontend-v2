@@ -96,7 +96,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="w-full min-h-screen bg-white">
+    <main className="w-full min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       {/* HERO SECTION */}
       <section
         className="w-full min-h-[520px] sm:min-h-[560px] md:min-h-[600px] lg:min-h-[690px] relative overflow-hidden flex items-center justify-center"
@@ -143,19 +143,16 @@ export default function Home() {
         </div>
         {/* Fade-away gradient */}
         <div
-          className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none"
-          style={{
-            background: 'linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.6) 65%, rgba(255, 255, 255, 0.85) 85%, rgba(255, 255, 255, 1) 100%)'
-          }}
+          className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none hero-fade-gradient"
         />
       </section>
 
       {/* MAP PREVIEW SECTION */}
-      <section className="w-full bg-white py-12 lg:py-20">
+      <section className="w-full py-12 lg:py-20 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             {/* Left Column: Map Image */}
-            <div className="relative w-full aspect-[4/3] bg-[#F4F1EE] rounded-2xl overflow-hidden border-4 border-[#FDF6E3] shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-500 cursor-pointer">
+            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-500 cursor-pointer" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
               <Link href="/map">
                 <img
                   src="/images/map-preview.png"
@@ -168,12 +165,12 @@ export default function Home() {
 
             {/* Right Column: Text Content */}
             <div className="flex flex-col items-center justify-center text-center space-y-6">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-lexend text-[#8B3A3A] leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-lexend leading-tight home-gradient-text" style={{ color: 'var(--text-light)' }}>
                 Explore the World
                 <br />
                 One Pin at a Time
               </h2>
-              <p className="text-lg sm:text-xl font-lexend text-[#8B3A3A]/80 max-w-lg">
+              <p className="text-lg sm:text-xl font-lexend max-w-lg home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
                 Navigate our interactive global map to discover hidden gems and travel stories from our community. From bustling cities to remote landscapes, visualize the journey of travelers worldwide.
               </p>
             </div>
@@ -182,16 +179,16 @@ export default function Home() {
       </section>
 
       {/* TRAVEL DIGEST SECTION */}
-      <TravelDigestSection className="bg-gradient-to-b from-white to-orange-50/20" />
+      <TravelDigestSection className="transition-colors duration-300" />
 
       {/* FEATURES SECTION */}
-      <section className="w-full bg-gradient-to-b from-white to-orange-50/30 py-12 lg:py-20">
+      <section className="w-full py-12 lg:py-20 transition-colors duration-300" style={{ backgroundColor: 'var(--section-bg)' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-3 font-lexend">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-3 font-lexend home-gradient-text">
               <GradientText>Powerful Features for Travelers</GradientText>
             </h2>
-            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto" style={{ color: '#6F5B50' }}>
+            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               Everything you need to document and share your adventures with the world
             </p>
           </div>
@@ -205,13 +202,13 @@ export default function Home() {
       </section>
 
       {/* COMMUNITY SHOWCASE SECTION */}
-      <section className="w-full bg-white py-12 lg:py-20">
+      <section className="w-full py-12 lg:py-20 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-3 font-lexend">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-3 font-lexend home-gradient-text">
               <GradientText>Join Our Community</GradientText>
             </h2>
-            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto" style={{ color: '#6F5B50' }}>
+            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               See what makes WorldMapPin special for travelers around the globe
             </p>
           </div>
@@ -226,15 +223,14 @@ export default function Home() {
 
       {/* WEB3 BENEFITS SECTION */}
       <section
-        className="w-full py-12 lg:py-20 relative overflow-hidden"
-        style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,233,221,0.6) 14.42%, rgba(255,165,116,0.6) 73.56%, rgba(255,255,255,0.6) 99.52%)' }}
+        className="w-full py-12 lg:py-20 relative overflow-hidden web3-benefits-section"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-5xl font-bold font-lexend mb-3" style={{ color: '#592102' }}>
+            <h2 className="text-3xl sm:text-5xl font-bold font-lexend mb-3" style={{ color: 'var(--text-primary)' }}>
               Why Choose Web3?
             </h2>
-            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto" style={{ color: '#6F5B50' }}>
+            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
               Experience the future of travel content creation with blockchain technology
             </p>
           </div>
@@ -245,25 +241,22 @@ export default function Home() {
             ))}
           </div>
         </div>
-
-
       </section>
 
       {/* FINAL CTA SECTION */}
       <section
-        className="w-full py-24 lg:py-32 relative overflow-hidden font-lexend"
-        style={{ background: 'linear-gradient(180deg, #FFFFFF 0%, #FFF9F5 50%, #FFFFFF 100%)' }}
+        className="w-full py-24 lg:py-32 relative overflow-hidden font-lexend final-cta-section"
       >
         {/* Subtle decorative background elements */}
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-200/50 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-200/50 to-transparent" />
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-300/30 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-300/30 to-transparent" />
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 font-lexend tracking-tight leading-tight">
               <GradientText>Ready to Start Your Journey?</GradientText>
             </h2>
-            <p className="text-lg sm:text-xl mb-12 font-lexend leading-relaxed max-w-2xl mx-auto" style={{ color: '#6F5B50' }}>
+            <p className="text-lg sm:text-xl mb-12 font-lexend leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
               Every place has a story. Pin yours on the map.
               <br />
               Travel stories, mapped by the community.
@@ -281,7 +274,8 @@ export default function Home() {
               <a
                 href="/explore"
                 suppressHydrationWarning
-                className="inline-flex items-center justify-center bg-white text-[#ED6D28] font-bold px-8 py-3 rounded-lg text-base border-2 border-[#ED6D28] transition-all duration-300 font-lexend hover:shadow-xl hover:scale-105 active:scale-95 w-full sm:w-56 whitespace-nowrap"
+                className="inline-flex items-center justify-center font-bold px-8 py-3 rounded-lg text-base border-2 border-[#ED6D28] transition-all duration-300 font-lexend hover:shadow-xl hover:scale-105 active:scale-95 w-full sm:w-56 whitespace-nowrap"
+                style={{ backgroundColor: 'var(--card-bg)', color: '#ED6D28' }}
               >
                 Explore Stories
               </a>
