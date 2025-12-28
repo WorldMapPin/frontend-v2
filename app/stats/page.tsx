@@ -5,6 +5,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import { Line, Bar } from 'react-chartjs-2';
 import { fetchBasicPinStats, fetchPinStats, PinStats, CountryStats, UserStats } from '../../lib/statsApi';
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
+import { useTheme } from '@/components/ThemeProvider';
 import {
   MapPin,
   Globe,
@@ -178,8 +179,8 @@ function getCountryPinCount(
 }
 
 // Get color based on pin count
-function getCountryColor(pinCount: number, maxPins: number): string {
-  if (pinCount === 0) return '#d1d5db'; // gray-300 for countries with no pins
+function getCountryColor(pinCount: number, maxPins: number, isDark: boolean = false): string {
+  if (pinCount === 0) return isDark ? '#2d2d2d' : '#d1d5db'; // gray for countries with no pins
 
   // Color gradient from light orange to dark orange
   const intensity = Math.min(pinCount / maxPins, 1);
@@ -192,7 +193,7 @@ function getCountryColor(pinCount: number, maxPins: number): string {
 }
 
 // World Map Component for Countries
-function CountriesWorldMap({ countries }: { countries: CountryStats[] }) {
+function CountriesWorldMap({ countries, isDark = false }: { countries: CountryStats[], isDark?: boolean }) {
   const [tooltipContent, setTooltipContent] = useState('');
   const maxPins = Math.max(...countries.map(c => c.count), 1);
 
@@ -214,19 +215,19 @@ function CountriesWorldMap({ countries }: { countries: CountryStats[] }) {
                   const countryName = geo.properties.name;
                   const pinCount = getCountryPinCount(countryName, countries);
                   const hasData = isCountryInStats(countryName, countries);
-                  const fillColor = getCountryColor(pinCount, maxPins);
+                  const fillColor = getCountryColor(pinCount, maxPins, isDark);
 
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
                       fill={fillColor}
-                      stroke="#ffffff"
+                      stroke={isDark ? '#1a1a1a' : '#ffffff'}
                       strokeWidth={0.5}
                       style={{
                         default: { outline: 'none' },
                         hover: {
-                          fill: hasData ? '#B45309' : '#9ca3af',
+                          fill: hasData ? '#B45309' : (isDark ? '#404040' : '#9ca3af'),
                           outline: 'none',
                           cursor: 'pointer'
                         },
@@ -289,6 +290,8 @@ function CountriesWorldMap({ countries }: { countries: CountryStats[] }) {
 }
 
 export default function StatsPage() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [stats, setStats] = useState<PinStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -472,7 +475,7 @@ export default function StatsPage() {
     }
   };
 
-  // Chart configurations
+  // Chart configurations - theme aware
   const getChartOptions = (title: string) => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -485,10 +488,10 @@ export default function StatsPage() {
         display: false, // We have a custom legend or the title area handles it
       },
       tooltip: {
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        titleColor: '#1e293b',
-        bodyColor: '#475569',
-        borderColor: '#e2e8f0',
+        backgroundColor: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        titleColor: isDark ? '#F5E6D3' : '#1e293b',
+        bodyColor: isDark ? '#C9B8A8' : '#475569',
+        borderColor: isDark ? '#FFA600' : '#e2e8f0',
         borderWidth: 1,
         padding: 12,
         boxPadding: 4,
@@ -523,13 +526,13 @@ export default function StatsPage() {
             size: 11,
             weight: 'bold' as const,
           },
-          color: '#94a3b8',
+          color: isDark ? '#C9B8A8' : '#94a3b8',
         }
       },
       y: {
         beginAtZero: true,
         grid: {
-          color: '#f1f5f9',
+          color: isDark ? 'rgba(255, 255, 255, 0.1)' : '#f1f5f9',
         },
         border: {
           display: false,
@@ -540,7 +543,7 @@ export default function StatsPage() {
             size: 11,
             weight: 'bold' as const,
           },
-          color: '#94a3b8',
+          color: isDark ? '#C9B8A8' : '#94a3b8',
           padding: 10,
         },
       },
@@ -815,15 +818,15 @@ export default function StatsPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center stats-hive-loading-icon">
-                  <Database className="w-5 h-5 text-blue-600" />
+                  <Database className="w-5 h-5" style={{ color: isDark ? '#60A5FA' : '#2563EB' }} />
                 </div>
                 <div>
                   <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Fetching Hive blockchain data...</span>
-                  <p className="text-[10px] text-blue-500 font-bold tracking-tighter">{hiveProgressMessage}</p>
+                  <p className="text-[10px] font-bold tracking-tighter" style={{ color: isDark ? '#93C5FD' : '#3B82F6' }}>{hiveProgressMessage}</p>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-2xl font-bold text-blue-600">{Math.round(hiveProgress)}%</span>
+                <span className="text-2xl font-bold" style={{ color: isDark ? '#60A5FA' : '#2563EB' }}>{Math.round(hiveProgress)}%</span>
               </div>
             </div>
             <div className="w-full rounded-full h-3 overflow-hidden" style={{ backgroundColor: 'var(--skeleton-bg)' }}>
@@ -1005,7 +1008,7 @@ export default function StatsPage() {
               </div>
 
               {stats.countries.length > 0 && (
-                <CountriesWorldMap countries={stats.countries} />
+                <CountriesWorldMap countries={stats.countries} isDark={isDark} />
               )}
             </div>
 

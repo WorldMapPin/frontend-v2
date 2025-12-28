@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ExploreCard from '@/components/explore/ExploreCard';
+import GradientText from './GradientText';
 import { DigestFetchResult, ProcessedPost } from '@/types/post';
 import { transformDigestPosts } from '@/lib/travelDigest';
 
@@ -52,14 +53,19 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
 
   if (loading) {
     return (
-      <section className={`py-8 sm:py-12 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 home-gradient-text" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
-            Today's Featured Travel Posts
-          </h2>
+      <section className={`py-16 lg:py-24 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
+              <GradientText>Today's Featured Travel Posts</GradientText>
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
+              Handpicked stories from the WorldMapPin community, updated daily
+            </p>
+          </div>
           
           {/* Loading skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
             {[1, 2, 3].map((i) => (
               <div key={i} className="rounded-xl sm:rounded-2xl overflow-hidden animate-pulse" style={{ backgroundColor: 'var(--card-bg)', boxShadow: '0px 4px 4px 0px var(--shadow-color)' }}>
                 <div className="h-[180px] sm:h-[220px] lg:h-[249.6px] bg-gradient-to-br from-orange-400 to-amber-500">
@@ -79,11 +85,16 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
 
   if (error) {
     return (
-      <section className={`py-8 sm:py-12 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 home-gradient-text" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
-            Today's Featured Travel Posts
-          </h2>
+      <section className={`py-16 lg:py-24 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
+              <GradientText>Today's Featured Travel Posts</GradientText>
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
+              Handpicked stories from the WorldMapPin community, updated daily
+            </p>
+          </div>
           
           <div className="text-center py-12">
             <div className="mb-4">
@@ -112,11 +123,16 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
 
   if (posts.length === 0) {
     return (
-      <section className={`py-8 sm:py-12 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 home-gradient-text" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
-            Today's Featured Travel Posts
-          </h2>
+      <section className={`py-16 lg:py-24 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
+              <GradientText>Today's Featured Travel Posts</GradientText>
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
+              Handpicked stories from the WorldMapPin community, updated daily
+            </p>
+          </div>
           
           <div className="text-center py-12">
             <div className="mb-4">
@@ -137,13 +153,18 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
   }
 
   return (
-    <section className={`py-8 sm:py-12 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
-          Today's Featured Travel Posts
-        </h2>
+    <section className={`py-16 lg:py-24 ${className}`} style={{ backgroundColor: 'var(--background)' }}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 lg:mb-16">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
+            <GradientText>Today's Featured Travel Posts</GradientText>
+          </h2>
+          <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
+            Handpicked stories from the WorldMapPin community, updated daily
+          </p>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
           {posts.map((post) => (
             <div key={`${post.author}-${post.permlink}`}>
               <ExploreCard post={post} hideAvatar={false} />

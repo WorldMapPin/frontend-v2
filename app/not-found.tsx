@@ -4,27 +4,42 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       <div className="text-center max-w-md">
-        <h1 className="text-6xl font-bold text-gray-900 mb-4">
+        <h1 className="text-6xl font-bold mb-4 not-found-title" style={{ color: 'var(--text-primary)' }}>
           404
         </h1>
-        <h2 className="text-2xl font-semibold text-gray-700 mb-6">
+        <h2 className="text-2xl font-semibold mb-6 not-found-subtitle" style={{ color: 'var(--text-primary)' }}>
           Page Not Found
         </h2>
-        <p className="text-gray-600 mb-8">
+        <p className="mb-8 not-found-description" style={{ color: 'var(--text-secondary)' }}>
           Sorry, we couldn't find the page you're looking for. The page might have been moved, deleted, or you entered the wrong URL.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/"
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center gap-2 font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 hover:opacity-90"
+            style={{ 
+              backgroundColor: 'var(--foreground)', 
+              color: 'var(--background)'
+            }}
           >
             Go home
           </Link>
           <button
             onClick={() => window.history.back()}
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+            className="rounded-full border border-solid transition-colors flex items-center justify-center font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 hover:bg-opacity-50"
+            style={{ 
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-primary)',
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             Go back
           </button>

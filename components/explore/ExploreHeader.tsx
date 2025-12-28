@@ -148,14 +148,14 @@ export default function ExploreHeader({
                   rounded-full text-xs sm:text-sm font-medium
                   transition-all duration-200 ease-out
                   ${isActive 
-                    ? 'bg-orange-500 text-white shadow-md scale-105' 
-                    : 'bg-white text-gray-700 hover:bg-orange-50 hover:text-orange-600 shadow-sm border border-gray-200'
+                    ? 'bg-orange-500 text-white shadow-md scale-105 explore-filter-btn-active' 
+                    : 'bg-white text-gray-700 hover:bg-orange-50 hover:text-orange-600 shadow-sm border border-gray-200 explore-filter-btn'
                   }
                   ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}
                 `}
                 style={{ fontFamily: 'var(--font-lexend)' }}
               >
-                <span className={isActive ? 'text-white' : 'text-gray-500'}>
+                <span className={`explore-filter-btn-icon ${isActive ? 'text-white' : 'text-gray-500'}`}>
                   {option.icon}
                 </span>
                 <span>{option.label}</span>

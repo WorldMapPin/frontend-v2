@@ -148,9 +148,9 @@ export default function Home() {
       </section>
 
       {/* MAP PREVIEW SECTION */}
-      <section className="w-full py-12 lg:py-20 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+      <section className="w-full py-16 lg:py-24 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left Column: Map Image */}
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-500 cursor-pointer" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
               <Link href="/map">
@@ -164,13 +164,13 @@ export default function Home() {
             </div>
 
             {/* Right Column: Text Content */}
-            <div className="flex flex-col items-center justify-center text-center space-y-6">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-lexend leading-tight home-gradient-text" style={{ color: 'var(--text-light)' }}>
+            <div className="flex flex-col items-center lg:items-start justify-center text-center lg:text-left space-y-5">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-lexend leading-tight home-gradient-text" style={{ color: 'var(--text-light)' }}>
                 Explore the World
                 <br />
                 One Pin at a Time
               </h2>
-              <p className="text-lg sm:text-xl font-lexend max-w-lg home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
+              <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-md home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
                 Navigate our interactive global map to discover hidden gems and travel stories from our community. From bustling cities to remote landscapes, visualize the journey of travelers worldwide.
               </p>
             </div>
@@ -182,18 +182,18 @@ export default function Home() {
       <TravelDigestSection className="transition-colors duration-300" />
 
       {/* FEATURES SECTION */}
-      <section className="w-full py-12 lg:py-20 transition-colors duration-300" style={{ backgroundColor: 'var(--section-bg)' }}>
+      <section className="w-full py-16 lg:py-24 transition-colors duration-300" style={{ backgroundColor: 'var(--section-bg)' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-3 font-lexend home-gradient-text">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
               <GradientText>Powerful Features for Travelers</GradientText>
             </h2>
-            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               Everything you need to document and share your adventures with the world
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
             {features.map((feature, index) => (
               <FeatureCard key={index} {...feature} />
             ))}
@@ -202,18 +202,18 @@ export default function Home() {
       </section>
 
       {/* COMMUNITY SHOWCASE SECTION */}
-      <section className="w-full py-12 lg:py-20 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+      <section className="w-full py-16 lg:py-24 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-3 font-lexend home-gradient-text">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
               <GradientText>Join Our Community</GradientText>
             </h2>
-            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               See what makes WorldMapPin special for travelers around the globe
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
             {showcases.map((showcase, index) => (
               <ShowcaseCard key={index} {...showcase} />
             ))}
@@ -223,19 +223,19 @@ export default function Home() {
 
       {/* WEB3 BENEFITS SECTION */}
       <section
-        className="w-full py-12 lg:py-20 relative overflow-hidden web3-benefits-section"
+        className="w-full py-16 lg:py-24 relative overflow-hidden web3-benefits-section"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-5xl font-bold font-lexend mb-3" style={{ color: 'var(--text-primary)' }}>
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-lexend mb-4" style={{ color: 'var(--text-primary)' }}>
               Why Choose Web3?
             </h2>
-            <p className="text-lg sm:text-xl font-lexend max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
               Experience the future of travel content creation with blockchain technology
             </p>
           </div>
 
-          <div className="max-w-3xl mx-auto space-y-6">
+          <div className="max-w-3xl mx-auto space-y-4 lg:space-y-6">
             {benefits.map((benefit, index) => (
               <BenefitItem key={index} {...benefit} />
             ))}
@@ -245,18 +245,18 @@ export default function Home() {
 
       {/* FINAL CTA SECTION */}
       <section
-        className="w-full py-24 lg:py-32 relative overflow-hidden font-lexend final-cta-section"
+        className="w-full py-20 lg:py-28 relative overflow-hidden font-lexend final-cta-section"
       >
         {/* Subtle decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-300/30 to-transparent" />
         <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-300/30 to-transparent" />
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 font-lexend tracking-tight leading-tight">
               <GradientText>Ready to Start Your Journey?</GradientText>
             </h2>
-            <p className="text-lg sm:text-xl mb-12 font-lexend leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-base sm:text-lg lg:text-xl mb-10 font-lexend leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
               Every place has a story. Pin yours on the map.
               <br />
               Travel stories, mapped by the community.
@@ -266,7 +266,7 @@ export default function Home() {
               <a
                 href="/signup"
                 suppressHydrationWarning
-                className="inline-flex items-center justify-center text-white font-bold px-8 py-3 rounded-lg text-base transition-all duration-300 font-lexend hover:shadow-2xl hover:scale-105 active:scale-95 w-full sm:w-56 whitespace-nowrap"
+                className="inline-flex items-center justify-center text-white font-bold px-8 py-3.5 rounded-lg text-base transition-all duration-300 font-lexend hover:shadow-2xl hover:scale-105 active:scale-95 w-full sm:w-52 whitespace-nowrap"
                 style={{ background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)' }}
               >
                 Join the Community
@@ -274,7 +274,7 @@ export default function Home() {
               <a
                 href="/explore"
                 suppressHydrationWarning
-                className="inline-flex items-center justify-center font-bold px-8 py-3 rounded-lg text-base border-2 border-[#ED6D28] transition-all duration-300 font-lexend hover:shadow-xl hover:scale-105 active:scale-95 w-full sm:w-56 whitespace-nowrap"
+                className="inline-flex items-center justify-center font-bold px-8 py-3.5 rounded-lg text-base border-2 border-[#ED6D28] transition-all duration-300 font-lexend hover:shadow-xl hover:scale-105 active:scale-95 w-full sm:w-52 whitespace-nowrap"
                 style={{ backgroundColor: 'var(--card-bg)', color: '#ED6D28' }}
               >
                 Explore Stories

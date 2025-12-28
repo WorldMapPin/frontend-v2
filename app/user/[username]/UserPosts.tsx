@@ -311,7 +311,7 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
                 <button
                   onClick={loadMorePosts}
                   disabled={loadingMore}
-                  className="inline-flex items-center gap-2 sm:gap-3 text-white font-semibold px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base md:text-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none disabled:cursor-not-allowed disabled:transform-none disabled:opacity-70"
+                  className="inline-flex items-center gap-2 sm:gap-3 text-white font-semibold px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base md:text-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none disabled:cursor-not-allowed disabled:transform-none disabled:opacity-70 user-posts-load-more-btn"
                   style={{
                     background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
                     boxShadow: '0px 1px 3px 1px #00000026, 0px 1px 2px 0px #0000004D'
