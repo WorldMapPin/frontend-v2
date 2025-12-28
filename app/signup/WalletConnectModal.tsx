@@ -11,6 +11,64 @@ interface WalletConnectModalProps {
     onLoginSuccess: (result: any) => void;
 }
 
+const walletProviders = [
+    {
+        provider: Providers.Keychain,
+        name: 'Hive Keychain',
+        description: 'Browser Extension',
+        icon: <Key size={22} />,
+        hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
+        iconBgClass: 'bg-gray-900',
+        arrowHoverClasses: 'group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500',
+    },
+    {
+        provider: Providers.HiveSigner,
+        name: 'HiveSigner',
+        description: 'Mobile & Web',
+        icon: <Wallet size={22} />,
+        hoverClasses: 'hover:border-[#E31337] hover:shadow-[#E31337]/10',
+        iconBgClass: 'bg-[#E31337]',
+        arrowHoverClasses: 'group-hover:bg-[#E31337] group-hover:text-white group-hover:border-[#E31337]',
+    },
+    {
+        provider: Providers.HiveAuth,
+        name: 'Hive Auth',
+        description: 'Mobile QR Solution',
+        icon: <AlertCircle size={22} />,
+        hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
+        iconBgClass: 'bg-orange-500',
+        arrowHoverClasses: 'group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500',
+    },
+    {
+        provider: Providers.MetaMaskSnap,
+        name: 'MetaMask Snap',
+        description: 'Ethereum Extension',
+        icon: <Box size={22} />,
+        hoverClasses: 'hover:border-[#F6851B] hover:shadow-[#F6851B]/10',
+        iconBgClass: 'bg-[#F6851B]',
+        arrowHoverClasses: 'group-hover:bg-[#F6851B] group-hover:text-white group-hover:border-[#F6851B]',
+    },
+    {
+        provider: Providers.Ledger,
+        name: 'Ledger',
+        description: 'Hardware Wallet',
+        icon: <Shield size={22} />,
+        hoverClasses: 'hover:border-[#4c4c4c] hover:shadow-gray-500/10',
+        iconBgClass: 'bg-gray-600',
+        arrowHoverClasses: 'group-hover:bg-gray-600 group-hover:text-white group-hover:border-gray-600',
+    },
+    {
+        provider: Providers.PeakVault,
+        name: 'PeakVault',
+        description: 'Extension Method',
+        icon: <Key size={22} />,
+        hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
+        iconBgClass: 'bg-[#8B3A3A]',
+        arrowHoverClasses: 'group-hover:bg-[#8B3A3A] group-hover:text-white group-hover:border-[#8B3A3A]',
+    },
+];
+
+
 export default function WalletConnectModal({ isOpen, onClose, onLoginSuccess }: WalletConnectModalProps) {
     const { aioha, user, logout } = useAiohaSafe();
     const [username, setUsername] = useState('');
@@ -82,7 +140,7 @@ export default function WalletConnectModal({ isOpen, onClose, onLoginSuccess }: 
                 }
             `}</style>
             <div
-                className="w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 wallet-modal-container"
+                className="w-full max-w-md md:max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 wallet-modal-container"
                 onClick={(e) => e.stopPropagation()}
             >
 
@@ -187,149 +245,43 @@ export default function WalletConnectModal({ isOpen, onClose, onLoginSuccess }: 
                             )}
 
                             {/* Providers */}
-                            {/* Providers Container */}
                             <div className="pt-2">
                                 <p className="text-xs font-bold uppercase tracking-wider font-lexend ml-1 mb-3" style={{ color: 'var(--text-muted)' }}>
                                     Select Method
                                 </p>
-
-                                {/* Scrollable area limited to 3 items */}
-                                <div className="space-y-3 max-h-[285px] overflow-y-auto no-scrollbar pr-1">
-
-                                    <button
-                                        onClick={() => handleLogin(Providers.Keychain)}
-                                        disabled={loading || !username}
-                                        className="w-full flex items-center justify-between p-4 border-2 hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/10 rounded-2xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none wallet-provider-btn"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
-                                                {/* Key Icon - Keychain */}
-                                                <Key size={22} />
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {walletProviders.map((p) => (
+                                        <button
+                                            key={p.name}
+                                            onClick={() => handleLogin(p.provider)}
+                                            disabled={loading || !username}
+                                            className={`w-full flex md:flex-col md:justify-center md:h-40 md:gap-2 items-center justify-between p-4 border-2 rounded-2xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none wallet-provider-btn ${p.hoverClasses} hover:shadow-lg`}
+                                        >
+                                            <div className="flex items-center gap-4 md:flex-col md:gap-2">
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform ${p.iconBgClass}`}>
+                                                    {p.icon}
+                                                </div>
+                                                <div className="text-left md:text-center">
+                                                    <div className="font-bold font-lexend text-base" style={{ color: 'var(--text-primary)' }}>{p.name}</div>
+                                                    <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.description}</div>
+                                                </div>
                                             </div>
-                                            <div className="text-left">
-                                                <div className="font-bold font-lexend text-base" style={{ color: 'var(--text-primary)' }}>Hive Keychain</div>
-                                                <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Browser Extension</div>
-                                            </div>
-                                        </div>
-                                        {loading ? (
-                                            <div className="w-10 h-10 flex items-center justify-center">
-                                                <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
-                                            </div>
-                                        ) : (
-                                            <div className="w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 transition-all wallet-provider-arrow">
-                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </div>
-                                        )}
-                                    </button>
-
-                                    <button
-                                        onClick={() => handleLogin(Providers.HiveSigner)}
-                                        disabled={loading || !username}
-                                        className="w-full flex items-center justify-between p-4 border-2 hover:border-[#E31337] hover:shadow-lg hover:shadow-[#E31337]/10 rounded-2xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none wallet-provider-btn"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-[#E31337] rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
-                                                <Wallet size={22} />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="font-bold font-lexend text-base" style={{ color: 'var(--text-primary)' }}>HiveSigner</div>
-                                                <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Mobile & Web</div>
-                                            </div>
-                                        </div>
-                                        <div className="w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-[#E31337] group-hover:text-white group-hover:border-[#E31337] transition-all wallet-provider-arrow">
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
-                                    </button>
-
-                                    <button
-                                        onClick={() => handleLogin(Providers.HiveAuth)}
-                                        disabled={loading || !username}
-                                        className="w-full flex items-center justify-between p-4 border-2 hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/10 rounded-2xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none wallet-provider-btn"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
-                                                <AlertCircle size={22} />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="font-bold font-lexend text-base" style={{ color: 'var(--text-primary)' }}>Hive Auth</div>
-                                                <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Mobile QR Solution</div>
-                                            </div>
-                                        </div>
-                                        <div className="w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 transition-all wallet-provider-arrow">
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
-                                    </button>
-
-                                    <button
-                                        onClick={() => handleLogin(Providers.MetaMaskSnap)}
-                                        disabled={loading || !username}
-                                        className="w-full flex items-center justify-between p-4 border-2 hover:border-[#F6851B] hover:shadow-lg hover:shadow-[#F6851B]/10 rounded-2xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none wallet-provider-btn"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-[#F6851B] rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
-                                                <Box size={22} />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="font-bold font-lexend text-base" style={{ color: 'var(--text-primary)' }}>MetaMask Snap</div>
-                                                <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Ethereum Extension</div>
-                                            </div>
-                                        </div>
-                                        <div className="w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-[#F6851B] group-hover:text-white group-hover:border-[#F6851B] transition-all wallet-provider-arrow">
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
-                                    </button>
-
-                                    <button
-                                        onClick={() => handleLogin(Providers.Ledger)}
-                                        disabled={loading || !username}
-                                        className="w-full flex items-center justify-between p-4 border-2 hover:border-[#4c4c4c] hover:shadow-lg hover:shadow-gray-500/10 rounded-2xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none wallet-provider-btn"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
-                                                <Shield size={22} />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="font-bold font-lexend text-base" style={{ color: 'var(--text-primary)' }}>Ledger</div>
-                                                <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Hardware Wallet</div>
-                                            </div>
-                                        </div>
-                                        <div className="w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-gray-600 group-hover:text-white group-hover:border-gray-600 transition-all wallet-provider-arrow">
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
-                                    </button>
-
-                                    <button
-                                        onClick={() => handleLogin(Providers.PeakVault)}
-                                        disabled={loading || !username}
-                                        className="w-full flex items-center justify-between p-4 border-2 hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/10 rounded-2xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none wallet-provider-btn"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-[#8B3A3A] rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
-                                                <Key size={22} />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="font-bold font-lexend text-base" style={{ color: 'var(--text-primary)' }}>PeakVault</div>
-                                                <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Extension Method</div>
-                                            </div>
-                                        </div>
-                                        <div className="w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-[#8B3A3A] group-hover:text-white group-hover:border-[#8B3A3A] transition-all wallet-provider-arrow">
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
-                                    </button>
+                                            {loading ? (
+                                                <div className="w-10 h-10 flex items-center justify-center">
+                                                    <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
+                                                </div>
+                                            ) : (
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all wallet-provider-arrow ${p.arrowHoverClasses} md:hidden`}>
+                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
+
 
                             <div className="pt-6 text-center mt-2">
                                 <a
