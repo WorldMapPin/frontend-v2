@@ -7,6 +7,7 @@ import { ProcessedPost } from '@/types/post';
 import { fetchPostWithRetry } from '@/utils/hivePosts';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import CommentsSection from '@/components/shared/CommentsSection';
 
 // Configure marked options
 marked.setOptions({
@@ -608,6 +609,9 @@ export default function PostReaderPage() {
                 </svg>
               </a>
             </div>
+
+            {/* Comments Section */}
+            <CommentsSection author={author} permlink={permlink} />
 
           </div>
         </article>

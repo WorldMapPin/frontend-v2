@@ -2356,3 +2356,134 @@ html[data-theme='dark'] .post-content h5,
 html[data-theme='dark'] .post-content h6 {
   color: #F5E6D3 !important;
 }
+
+/* ===== Comments Section Styles ===== */
+
+/* Comments Container */
+.comments-container {
+  background-color: var(--section-bg);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Comment Section Header */
+.comment-section-icon {
+  color: var(--comment-color);
+}
+
+.comment-section-title {
+  color: var(--text-primary);
+}
+
+.comment-count-badge {
+  background-color: var(--comment-bg);
+  color: var(--comment-color);
+  border: 1px solid var(--comment-border);
+}
+
+/* Comment Item Styles */
+.comment-avatar-border {
+  border-color: var(--border-subtle);
+}
+
+.comment-author-link {
+  color: #996027;
+}
+
+.dark .comment-author-link,
+html[data-theme='dark'] .comment-author-link {
+  color: #FFA600;
+}
+
+.comment-reputation {
+  background-color: var(--reputation-bg);
+  color: var(--reputation-color);
+  border: 1px solid var(--reputation-border);
+}
+
+.comment-date {
+  color: var(--text-muted);
+}
+
+.comment-body {
+  color: var(--foreground);
+}
+
+.comment-body a {
+  color: #ED6D28;
+}
+
+.comment-body a:hover {
+  text-decoration: underline;
+}
+
+.comment-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.comment-body blockquote {
+  border-left: 3px solid var(--border-color);
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.comment-body code {
+  background-color: var(--skeleton-bg);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.comment-votes {
+  color: var(--like-color);
+}
+
+.comment-payout {
+  color: #22c55e;
+}
+
+.dark .comment-payout,
+html[data-theme='dark'] .comment-payout {
+  color: #4ade80;
+}
+
+.comment-replies-btn {
+  color: var(--comment-color);
+}
+
+.comment-replies-border {
+  border-color: var(--border-subtle);
+}
+
+/* Comments Loading Skeleton */
+.comment-skeleton-bg {
+  background-color: var(--skeleton-bg);
+}
+
+/* Comments Error State */
+.comment-error-container {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.dark .comment-error-container,
+html[data-theme='dark'] .comment-error-container {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Comments Empty State */
+.comment-empty-icon {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.comment-empty-text {
+  color: var(--text-muted);
+}

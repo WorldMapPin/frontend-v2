@@ -58,7 +58,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
               <GradientText>Today's Featured Travel Posts</GradientText>
-            </h2>
+          </h2>
             <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               Handpicked stories from the WorldMapPin community, updated daily
             </p>
@@ -90,7 +90,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
               <GradientText>Today's Featured Travel Posts</GradientText>
-            </h2>
+          </h2>
             <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               Handpicked stories from the WorldMapPin community, updated daily
             </p>
@@ -128,7 +128,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
               <GradientText>Today's Featured Travel Posts</GradientText>
-            </h2>
+          </h2>
             <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               Handpicked stories from the WorldMapPin community, updated daily
             </p>
@@ -158,7 +158,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
         <div className="text-center mb-12 lg:mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
             <GradientText>Today's Featured Travel Posts</GradientText>
-          </h2>
+        </h2>
           <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
             Handpicked stories from the WorldMapPin community, updated daily
           </p>

@@ -133,3 +133,25 @@ export interface DigestFetchResult {
   error?: string;
   cached?: boolean;
 }
+
+// Hive Comment/Reply interfaces
+export interface HiveComment {
+  id: number;
+  author: string;
+  permlink: string;
+  parentAuthor: string;
+  parentPermlink: string;
+  body: string;
+  created: string;
+  createdRelative: string;
+  votes: number;
+  payout: string;
+  reputation: number;
+  children: number;
+  depth: number;
+}
+
+export interface HiveCommentsResponse {
+  comments: HiveComment[];
+  count: number;
+}
