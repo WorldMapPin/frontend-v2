@@ -2487,3 +2487,39 @@ html[data-theme='dark'] .comment-error-container {
 .comment-empty-text {
   color: var(--text-muted);
 }
+
+/* Comment Input Styles */
+.comment-login-prompt {
+  background-color: var(--section-bg);
+  border: 1px solid var(--border-color);
+}
+
+.comment-input {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--foreground);
+}
+
+.comment-input::placeholder {
+  color: var(--text-muted);
+}
+
+.comment-input:focus {
+  border-color: #ED6D28;
+}
+
+/* Reply Button */
+.comment-reply-btn {
+  color: var(--text-secondary);
+}
+
+/* Reply Input Container */
+.comment-reply-input-container {
+  background-color: var(--section-bg);
+  border: 1px solid var(--border-subtle);
+}
+
+.dark .comment-reply-input-container,
+html[data-theme='dark'] .comment-reply-input-container {
+  background-color: var(--section-bg-alt);
+}

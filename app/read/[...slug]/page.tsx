@@ -8,6 +8,7 @@ import { fetchPostWithRetry } from '@/utils/hivePosts';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import CommentsSection from '@/components/shared/CommentsSection';
+import PostVotingSection from '@/components/shared/PostVotingSection';
 
 // Configure marked options
 marked.setOptions({
@@ -609,6 +610,14 @@ export default function PostReaderPage() {
                 </svg>
               </a>
             </div>
+
+            {/* Post Voting Section */}
+            <PostVotingSection 
+              author={author} 
+              permlink={permlink} 
+              votes={post.votes ?? 0}
+              comments={post.comments ?? 0}
+            />
 
             {/* Comments Section */}
             <CommentsSection author={author} permlink={permlink} />

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { HiveComment } from '@/types/post';
+import { useHiveActions } from '@/hooks/use-hive-actions';
 
 // Configure marked for comment rendering
 marked.setOptions({
@@ -24,18 +25,27 @@ interface CommentsSectionProps {
 interface CommentItemProps {
   comment: HiveComment;
   onLoadReplies: (author: string, permlink: string) => Promise<HiveComment[]>;
+  onReplyPosted?: () => void;
 }
 
 /**
  * Single comment item component with nested replies support
  */
-function CommentItem({ comment, onLoadReplies }: CommentItemProps) {
+function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps) {
   const [showReplies, setShowReplies] = useState(false);
   const [replies, setReplies] = useState<HiveComment[]>([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
   const [expanded, setExpanded] = useState(true);
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [localVotes, setLocalVotes] = useState(comment.votes);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const [replySuccess, setReplySuccess] = useState(false);
+  
+  const { vote, comment: postComment, isVoting, isCommenting, isLoggedIn, user } = useHiveActions();
 
-  // Process markdown body
+  // Process markdown body - mobile friendly with image sizing
   const processedBody = useMemo(() => {
     if (!comment.body) return '';
     try {
@@ -71,18 +81,61 @@ function CommentItem({ comment, onLoadReplies }: CommentItemProps) {
     }
   };
 
+  // Handle vote on comment
+  const handleVote = async () => {
+    if (!isLoggedIn || isVoting) return;
+    
+    const weight = hasVoted ? 0 : 10000; // Toggle vote
+    const result = await vote(comment.author, comment.permlink, weight);
+    
+    if (result.success) {
+      if (hasVoted) {
+        setLocalVotes(prev => Math.max(0, prev - 1));
+        setHasVoted(false);
+      } else {
+        setLocalVotes(prev => prev + 1);
+        setHasVoted(true);
+      }
+    }
+  };
+
+  // Handle posting reply
+  const handlePostReply = async () => {
+    if (!replyText.trim() || isCommenting) return;
+    
+    const result = await postComment(comment.author, comment.permlink, replyText.trim());
+    
+    if (result.success) {
+      setReplySuccess(true);
+      setReplyText('');
+      setReplyError(null);
+      
+      // Refresh replies after delay
+      setTimeout(() => {
+        setShowReplyInput(false);
+        setReplySuccess(false);
+        // Reload replies to show new one
+        setReplies([]);
+        handleLoadReplies();
+        onReplyPosted?.();
+      }, 1500);
+    } else {
+      setReplyError(result.error || 'Failed to post reply');
+    }
+  };
+
   return (
     <div className="comment-item">
       {/* Comment Header */}
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2 sm:gap-3">
         {/* Collapse Toggle */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
+          className="mt-0.5 sm:mt-1 p-0.5 sm:p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
           aria-label={expanded ? 'Collapse comment' : 'Expand comment'}
         >
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? 'rotate-90' : ''}`}
+            className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-400 transition-transform ${expanded ? 'rotate-90' : ''}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -96,7 +149,7 @@ function CommentItem({ comment, onLoadReplies }: CommentItemProps) {
           <img
             src={`https://images.hive.blog/u/${comment.author}/avatar/small`}
             alt={`${comment.author}'s avatar`}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 comment-avatar-border"
+            className="w-7 h-7 sm:w-10 sm:h-10 rounded-full object-cover border-2 comment-avatar-border"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/images/default-avatar.svg';
@@ -105,19 +158,19 @@ function CommentItem({ comment, onLoadReplies }: CommentItemProps) {
         </Link>
 
         {/* Comment Content */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-hidden">
           {/* Author Info */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             <Link
               href={`/user/${comment.author}`}
-              className="font-semibold text-sm sm:text-base comment-author-link hover:underline"
+              className="font-semibold text-xs sm:text-base comment-author-link hover:underline truncate max-w-[120px] sm:max-w-none"
             >
               @{comment.author}
             </Link>
-            <span className="text-xs px-1.5 py-0.5 rounded-full font-medium comment-reputation">
+            <span className="text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded-full font-medium comment-reputation">
               {comment.reputation}
             </span>
-            <span className="text-xs comment-date">
+            <span className="text-[10px] sm:text-xs comment-date">
               {comment.createdRelative}
             </span>
           </div>
@@ -126,25 +179,52 @@ function CommentItem({ comment, onLoadReplies }: CommentItemProps) {
           {expanded && (
             <>
               <div
-                className="mt-2 text-sm sm:text-base comment-body prose prose-sm max-w-none"
+                className="mt-1.5 sm:mt-2 text-xs sm:text-base comment-body prose prose-sm max-w-none break-words"
                 dangerouslySetInnerHTML={{ __html: processedBody }}
               />
 
               {/* Comment Footer */}
-              <div className="flex items-center gap-3 mt-3">
-                {/* Votes */}
-                <div className="flex items-center gap-1 comment-votes">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-3 flex-wrap">
+                {/* Interactive Vote Button */}
+                <button
+                  onClick={handleVote}
+                  disabled={isVoting || !isLoggedIn}
+                  className={`flex items-center gap-0.5 sm:gap-1 comment-votes transition-all ${
+                    isLoggedIn ? 'cursor-pointer hover:scale-105' : 'cursor-default'
+                  } ${hasVoted ? 'text-pink-500' : ''}`}
+                  title={isLoggedIn ? (hasVoted ? 'Remove vote' : 'Upvote') : 'Log in to vote'}
+                >
+                  {isVoting ? (
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill={hasVoted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
-                  <span className="text-xs font-medium">{comment.votes}</span>
-                </div>
+                  )}
+                  <span className="text-[10px] sm:text-xs font-medium">{localVotes}</span>
+                </button>
 
                 {/* Payout */}
                 {comment.payout !== '0' && (
-                  <span className="text-xs font-medium comment-payout">
+                  <span className="text-[10px] sm:text-xs font-medium comment-payout">
                     {comment.payout}
                   </span>
+                )}
+
+                {/* Reply Button */}
+                {isLoggedIn && (
+                  <button
+                    onClick={() => setShowReplyInput(!showReplyInput)}
+                    className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium comment-reply-btn hover:text-orange-500 transition-colors"
+                  >
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                    <span className="hidden xs:inline">Reply</span>
+                  </button>
                 )}
 
                 {/* Load Replies Button */}
@@ -152,23 +232,23 @@ function CommentItem({ comment, onLoadReplies }: CommentItemProps) {
                   <button
                     onClick={handleLoadReplies}
                     disabled={loadingReplies}
-                    className="flex items-center gap-1 text-xs font-medium comment-replies-btn hover:underline disabled:opacity-50"
+                    className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium comment-replies-btn hover:underline disabled:opacity-50"
                   >
                     {loadingReplies ? (
                       <>
-                        <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        <span>Loading...</span>
+                        <span>...</span>
                       </>
                     ) : (
                       <>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                         <span>
-                          {showReplies ? 'Hide' : 'Show'} {comment.children} {comment.children === 1 ? 'reply' : 'replies'}
+                          {showReplies ? 'Hide' : ''} {comment.children} <span className="hidden sm:inline">{comment.children === 1 ? 'reply' : 'replies'}</span>
                         </span>
                       </>
                     )}
@@ -176,14 +256,79 @@ function CommentItem({ comment, onLoadReplies }: CommentItemProps) {
                 )}
               </div>
 
+              {/* Reply Input */}
+              {showReplyInput && (
+                <div className="mt-2 sm:mt-3 p-2 sm:p-3 rounded-lg comment-reply-input-container">
+                  {replySuccess ? (
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-green-600">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-xs sm:text-sm font-medium" style={{ fontFamily: 'Lexend' }}>Posted!</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <textarea
+                        value={replyText}
+                        onChange={(e) => {
+                          setReplyText(e.target.value);
+                          if (replyError) setReplyError(null);
+                        }}
+                        placeholder={`Reply to @${comment.author}...`}
+                        rows={2}
+                        disabled={isCommenting}
+                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 disabled:opacity-50"
+                        style={{ fontFamily: 'Lexend' }}
+                      />
+                      {replyError && (
+                        <p className="text-[10px] sm:text-xs text-red-500 truncate" style={{ fontFamily: 'Lexend' }}>{replyError}</p>
+                      )}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] sm:text-xs text-gray-400 truncate" style={{ fontFamily: 'Lexend' }}>as @{user}</span>
+                        <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowReplyInput(false);
+                              setReplyText('');
+                              setReplyError(null);
+                            }}
+                            className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                            style={{ fontFamily: 'Lexend' }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handlePostReply}
+                            disabled={isCommenting || !replyText.trim()}
+                            className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            style={{ fontFamily: 'Lexend' }}
+                          >
+                            {isCommenting ? (
+                              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                              </svg>
+                            ) : (
+                              <span>Reply</span>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Nested Replies */}
               {showReplies && replies.length > 0 && (
-                <div className="mt-4 ml-2 sm:ml-4 pl-3 sm:pl-4 border-l-2 comment-replies-border space-y-4">
+                <div className="mt-3 sm:mt-4 ml-1 sm:ml-4 pl-2 sm:pl-4 border-l-2 comment-replies-border space-y-3 sm:space-y-4">
                   {replies.map((reply) => (
                     <CommentItem
                       key={reply.id}
                       comment={reply}
                       onLoadReplies={onLoadReplies}
+                      onReplyPosted={onReplyPosted}
                     />
                   ))}
                 </div>
@@ -197,6 +342,164 @@ function CommentItem({ comment, onLoadReplies }: CommentItemProps) {
 }
 
 /**
+ * Comment input component for logged-in users
+ */
+function CommentInput({ 
+  author, 
+  permlink, 
+  onCommentPosted 
+}: { 
+  author: string; 
+  permlink: string; 
+  onCommentPosted: () => void;
+}) {
+  const { comment, isCommenting, isLoggedIn, user } = useHiveActions();
+  const [commentText, setCommentText] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim() || isCommenting) return;
+
+    const result = await comment(author, permlink, commentText.trim());
+    
+    if (result.success) {
+      setSuccess(true);
+      setCommentText('');
+      setError(null);
+      
+      // Refresh comments after a short delay
+      setTimeout(() => {
+        onCommentPosted();
+        setSuccess(false);
+      }, 1500);
+    } else {
+      setError(result.error || 'Failed to post comment');
+    }
+  }, [commentText, isCommenting, author, permlink, comment, onCommentPosted]);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg sm:rounded-xl comment-login-prompt">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-medium truncate" style={{ fontFamily: 'Lexend', color: 'var(--text-secondary)' }}>
+                Log in to join the conversation
+              </p>
+              <p className="text-[10px] sm:text-xs hidden sm:block" style={{ color: 'var(--text-muted)' }}>
+                Connect your Hive wallet to post comments
+              </p>
+            </div>
+          </div>
+          <Link 
+            href="/signup"
+            className="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all text-center"
+            style={{ fontFamily: 'Lexend' }}
+          >
+            Connect Wallet
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mb-4 sm:mb-6">
+      <div className="flex gap-2 sm:gap-3">
+        {/* User Avatar */}
+        <img
+          src={`https://images.hive.blog/u/${user}/avatar/small`}
+          alt={`${user}'s avatar`}
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 comment-avatar-border flex-shrink-0"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/images/default-avatar.svg';
+          }}
+        />
+        
+        {/* Input Area */}
+        <div className="flex-1 space-y-2 sm:space-y-3">
+          {success ? (
+            <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-green-50 border border-green-200 flex items-center gap-2 sm:gap-3">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-xs sm:text-sm font-medium text-green-600" style={{ fontFamily: 'Lexend' }}>
+                Comment posted!
+              </p>
+            </div>
+          ) : (
+            <>
+              <textarea
+                value={commentText}
+                onChange={(e) => {
+                  setCommentText(e.target.value);
+                  if (error) setError(null);
+                }}
+                placeholder="Write a comment..."
+                rows={2}
+                disabled={isCommenting}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-lg sm:rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all disabled:opacity-50 comment-input"
+                style={{ fontFamily: 'Lexend' }}
+              />
+              
+              {/* Error Message */}
+              {error && (
+                <div className="text-[10px] sm:text-xs text-red-500 flex items-center gap-1" style={{ fontFamily: 'Lexend' }}>
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="truncate">{error}</span>
+                </div>
+              )}
+              
+              {/* Action Row */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] sm:text-xs truncate" style={{ fontFamily: 'Lexend', color: 'var(--text-muted)' }}>
+                  as @{user}
+                </span>
+                <button
+                  type="submit"
+                  disabled={isCommenting || !commentText.trim()}
+                  className="px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 flex-shrink-0"
+                  style={{ fontFamily: 'Lexend' }}
+                >
+                  {isCommenting ? (
+                    <>
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      <span className="hidden sm:inline">Posting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                      <span>Post</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </form>
+  );
+}
+
+/**
  * Comments section component for post pages
  */
 export default function CommentsSection({ author, permlink }: CommentsSectionProps) {
@@ -204,6 +507,7 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch top-level comments
   useEffect(() => {
@@ -233,7 +537,12 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
     if (author && permlink) {
       fetchComments();
     }
-  }, [author, permlink]);
+  }, [author, permlink, refreshKey]);
+
+  // Handle comment posted - refresh comments
+  const handleCommentPosted = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
 
   // Handler for loading nested replies
   const handleLoadReplies = async (replyAuthor: string, replyPermlink: string): Promise<HiveComment[]> => {
@@ -250,16 +559,16 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
   };
 
   return (
-    <section className="mt-8 sm:mt-12 comments-section">
+    <section className="mt-6 sm:mt-12 comments-section">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-6">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 sm:gap-3 group"
+          className="flex items-center gap-1.5 sm:gap-3 group"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <svg
-              className={`w-5 h-5 sm:w-6 sm:h-6 comment-section-icon transition-transform ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
+              className={`w-4 h-4 sm:w-6 sm:h-6 comment-section-icon transition-transform ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -267,13 +576,13 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             <h2
-              className="text-lg sm:text-xl lg:text-2xl font-semibold comment-section-title"
+              className="text-base sm:text-xl lg:text-2xl font-semibold comment-section-title"
               style={{ fontFamily: 'Lexend' }}
             >
               Comments
             </h2>
           </div>
-          <span className="text-sm sm:text-base px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium comment-count-badge">
+          <span className="text-xs sm:text-base px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium comment-count-badge">
             {loading ? '...' : comments.length}
           </span>
         </button>
@@ -281,7 +590,14 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
 
       {/* Content */}
       {isExpanded && (
-        <div className="comments-container rounded-xl p-4 sm:p-6">
+        <div className="comments-container rounded-lg sm:rounded-xl p-3 sm:p-6">
+          {/* Comment Input for logged-in users */}
+          <CommentInput 
+            author={author} 
+            permlink={permlink} 
+            onCommentPosted={handleCommentPosted}
+          />
+          
           {/* Loading State */}
           {loading && (
             <div className="space-y-4">
@@ -333,6 +649,7 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
                   key={comment.id}
                   comment={comment}
                   onLoadReplies={handleLoadReplies}
+                  onReplyPosted={handleCommentPosted}
                 />
               ))}
             </div>
