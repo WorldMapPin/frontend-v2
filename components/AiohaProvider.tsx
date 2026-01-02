@@ -35,7 +35,8 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
   const [user, setUser] = useState<string | null>(null);
 
   const hiveSignerApp = 'v2.worldmappin.com';
-  const hiveSignerScopes = ['login'];
+  // Include all scopes needed for app functionality
+  const hiveSignerScopes = ['login', 'vote', 'comment'];
 
   useEffect(() => {
     // Mark as client-side

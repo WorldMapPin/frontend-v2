@@ -1,4 +1,4 @@
-
+'use client';
 
 import { Aioha, Providers } from '@aioha/aioha'
 
@@ -14,18 +14,22 @@ export const getAioha = (): Aioha => {
 export const initializeAioha = () => {
   const aioha = getAioha()
   
+  // Get the callback URL (only available in browser)
+  const callbackURL = typeof window !== 'undefined' 
+    ? `${window.location.origin}/hivesigner`
+    : 'https://v2.worldmappin.com/hivesigner';
+  
   // Configure Aioha with app-specific settings
   aioha.setup({
     hiveauth: {
       name: 'WorldMapPin',
       description: 'Share your travel adventures on the blockchain'
+    },
+    hivesigner: {
+      app: 'v2.worldmappin.com',
+      callbackURL: callbackURL,
+      scope: ['login', 'vote', 'comment']
     }
-    // HiveSigner can be added here if needed in the future
-    // hivesigner: {
-    //   app: 'worldmappin.app',
-    //   callbackURL: window.location.origin + '/hivesigner.html',
-    //   scope: ['login', 'vote', 'comment']
-    // }
   })
   
   return aioha
