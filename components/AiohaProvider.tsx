@@ -34,7 +34,7 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState<string | null>(null);
 
-  const hiveSignerApp = 'worldmappin.com'; // Max 16 characters for HiveSigner
+  const hiveSignerApp = 'worldmappin'; // 12 chars - app identifier (actual account is v2.worldmappin.com)
   // Include all scopes needed for app functionality
   const hiveSignerScopes = ['login', 'vote', 'comment'];
 
