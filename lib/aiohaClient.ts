@@ -26,7 +26,7 @@ export const initializeAioha = () => {
       description: 'Share your travel adventures on the blockchain'
     },
     hivesigner: {
-      app: 'worldmappin.app', // Max 16 characters for HiveSigner
+      app: 'worldmappin.com', // Max 16 characters for HiveSigner
       callbackURL: callbackURL,
       scope: ['login', 'vote', 'comment']
     }
