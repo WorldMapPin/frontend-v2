@@ -187,6 +187,98 @@ body {
   background: linear-gradient(180deg, #0a0a0a 0%, #1a1510 20.67%, #1a1510 94.23%, #0a0a0a 100%);
 }
 
+/* Team Member Card Dark Theme Styles */
+.dark .team-member-leadership,
+html[data-theme='dark'] .team-member-leadership {
+  background: #ED6D2847 !important;
+}
+
+.dark .team-member-regular,
+html[data-theme='dark'] .team-member-regular {
+  background: #EDA82847 !important;
+}
+
+/* First 4 members (Leadership) - Name stays #FFA600, Username is #FFEDE3, Role stays white */
+.dark .team-member-leadership .team-member-name,
+html[data-theme='dark'] .team-member-leadership .team-member-name {
+  color: #FFA600 !important;
+}
+
+.dark .team-member-leadership .team-member-username,
+html[data-theme='dark'] .team-member-leadership .team-member-username {
+  color: #FFEDE3 !important;
+}
+
+.dark .team-member-leadership .team-member-role,
+html[data-theme='dark'] .team-member-leadership .team-member-role {
+  color: #FFFFFF !important;
+}
+
+/* Regular members (not first 4) - Name, Username, and Role all #FFEDE3 */
+.dark .team-member-regular .team-member-name,
+html[data-theme='dark'] .team-member-regular .team-member-name {
+  color: #FFEDE3 !important;
+}
+
+.dark .team-member-regular .team-member-username,
+html[data-theme='dark'] .team-member-regular .team-member-username {
+  color: #FFEDE3 !important;
+}
+
+.dark .team-member-regular .team-member-role,
+html[data-theme='dark'] .team-member-regular .team-member-role {
+  color: #FFEDE3 !important;
+}
+
+.dark .team-member-arrow,
+html[data-theme='dark'] .team-member-arrow {
+  color: #FFFFFF !important;
+}
+
+.dark .team-member-arrow svg,
+html[data-theme='dark'] .team-member-arrow svg {
+  stroke: #FFFFFF !important;
+}
+
+/* About Page Dark Theme Styles - Last 3 Sections */
+.dark .about-section-dark,
+html[data-theme='dark'] .about-section-dark {
+  background: linear-gradient(92.88deg, rgba(255, 225, 209, 0.1) 1.84%, rgba(247, 220, 170, 0.1) 100%) !important;
+  border: 2px solid #FF590040 !important;
+}
+
+.dark .about-section-dark p,
+html[data-theme='dark'] .about-section-dark p,
+.dark .about-section-dark h2,
+html[data-theme='dark'] .about-section-dark h2,
+.dark .about-section-dark h2 span,
+html[data-theme='dark'] .about-section-dark h2 span,
+.dark .about-section-dark h1,
+html[data-theme='dark'] .about-section-dark h1,
+.dark .about-section-dark h3,
+html[data-theme='dark'] .about-section-dark h3,
+.dark .about-section-dark span,
+html[data-theme='dark'] .about-section-dark span {
+  color: #FFFFFF !important;
+}
+
+.dark .about-section-dark .about-highlight-word,
+html[data-theme='dark'] .about-section-dark .about-highlight-word {
+  color: #ED6D28 !important;
+}
+
+/* About Page Header - Blockchain text */
+.about-header-blockchain {
+  color: #FFE8BE;
+}
+
+.dark h1 .about-header-blockchain,
+html[data-theme='dark'] h1 .about-header-blockchain,
+.dark .about-header-blockchain,
+html[data-theme='dark'] .about-header-blockchain {
+  color: #592102 !important;
+}
+
 /* Signup Form Background */
 .signup-form-bg {
   background: linear-gradient(to bottom right, #fff7ed, #ffffff);

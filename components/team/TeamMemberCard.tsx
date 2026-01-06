@@ -56,14 +56,14 @@ export const TeamMemberCard: React.FC<TeamMemberProps> = ({
 
       {/* Member Info */}
       <Link href={profileUrl} target="_blank" rel="noopener noreferrer" className="block">
-      <div className={`${isLeadershipTeam ? 'bg-[#ED6D2847]' : 'bg-[rgba(237,168,40,0.28)]'} p-4 rounded-b-2xl relative`}>
+      <div className={`${isLeadershipTeam ? 'bg-[#ED6D2847] team-member-leadership' : 'bg-[rgba(237,168,40,0.28)] team-member-regular'} p-4 rounded-b-2xl relative h-[120px] flex flex-col`}>
         {/* Top Right Arrow */}
         <div className="absolute top-3 right-3">
-          <ChevronRight className="w-5 h-5 text-black transform rotate-[-45deg]" />
+          <ChevronRight className="w-5 h-5 text-black team-member-arrow transform rotate-[-45deg]" />
         </div>
-        <h3 className="font-lexend text-[20px] font-bold leading-[100%] tracking-[-0.02em] text-[#45220B] mb-1">{name}</h3>
-        <p className="font-lexend text-sm font-normal leading-[100%] tracking-[-0.02em] text-[#592102] mb-2">{username}</p>
-        <p className="var(--font-poppins) text-sm italic font-normal leading-[100%] tracking-[-0.01em] text-[#592102]">{role}</p>
+        <h3 className="font-lexend text-[20px] font-bold leading-[100%] tracking-[-0.02em] text-[#45220B] team-member-name mb-1">{name}</h3>
+        <p className="font-lexend text-sm font-normal leading-[100%] tracking-[-0.02em] text-[#592102] team-member-username mb-2">{username}</p>
+        <p className="var(--font-poppins) text-sm italic font-normal leading-[140%] tracking-[-0.01em] text-[#592102] team-member-role flex-1">{role}</p>
       </div>
       </Link>
     </div>
