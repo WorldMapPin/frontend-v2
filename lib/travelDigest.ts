@@ -35,35 +35,43 @@ export async function checkDigestExists(digestNumber: number): Promise<boolean> 
  * Find the latest available digest number
  * Starts from a known number and increments until 404
  */
-export async function findLatestDigestNumber(startNumber: number = 2777): Promise<number> {
-  let currentNumber = startNumber;
-  let maxAttempts = 10; // Prevent infinite loops
+export async function findLatestDigestNumber(startNumber?: number): Promise<number> {
   
-  // First, verify the start number exists
+  let currentNumber = startNumber || 2797;
+  let maxAttempts = 15; // Increase attempts for better search
+  
+  console.log(`Searching for latest digest starting from number: ${currentNumber}`);
+  
+  // First, verify the start number exists, if not go backwards
   const startExists = await checkDigestExists(currentNumber);
   if (!startExists) {
+    console.log(`Digest ${currentNumber} doesn't exist, searching backwards...`);
     // If start number doesn't exist, go backwards to find a valid one
-    while (currentNumber > startNumber - 10 && maxAttempts > 0) {
+    let backwardAttempts = 20; // Allow more backward search
+    while (currentNumber > 2780 && backwardAttempts > 0) {
       currentNumber--;
       const exists = await checkDigestExists(currentNumber);
       if (exists) {
+        console.log(`Found existing digest: ${currentNumber}`);
         break;
       }
-      maxAttempts--;
+      backwardAttempts--;
     }
   }
   
-  // Now find the highest available number
-  maxAttempts = 10; // Reset attempts
+  // Now find the highest available number by going forward
+  maxAttempts = 10; // Reset attempts for forward search
   while (maxAttempts > 0) {
     const nextExists = await checkDigestExists(currentNumber + 1);
     if (!nextExists) {
+      console.log(`Latest digest found: ${currentNumber}`);
       return currentNumber;
     }
     currentNumber++;
     maxAttempts--;
   }
   
+  console.log(`Reached max attempts, returning: ${currentNumber}`);
   return currentNumber;
 }
 
@@ -500,11 +508,10 @@ class DigestCache {
    * Estimate digest number based on date (rough calculation)
    */
   private estimateDigestNumber(date: Date): number {
-    // WorldMapPin started around digest 2777 on Dec 18, 2024
-    const baseDate = new Date('2024-12-18');
-    const baseDiges = 2777;
-    const daysDiff = Math.floor((date.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
-    return baseDiges + daysDiff;
+    // As of Jan 7, 2026, the latest digest is 2797
+    // Use this as a baseline for cache TTL decisions
+    const currentDigest = 2797;
+    return currentDigest;
   }
   
   /**

@@ -14,7 +14,6 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
   const [posts, setPosts] = useState<ProcessedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
 
   const fetchDigest = async () => {
     try {
@@ -47,7 +46,6 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
   }, []);
 
   const handleRetry = () => {
-    setRetryCount(prev => prev + 1);
     fetchDigest();
   };
 

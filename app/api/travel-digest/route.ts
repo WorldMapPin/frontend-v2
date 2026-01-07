@@ -3,7 +3,6 @@ import {
   findLatestDigestNumber, 
   fetchDigestWithRetry, 
   parseDigestHTML, 
-  transformDigestPosts,
   digestCache 
 } from '@/lib/travelDigest';
 import { TravelDigest, DigestFetchResult } from '@/types/post';
@@ -13,6 +12,14 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const requestedNumber = searchParams.get('number');
     const requestedDate = searchParams.get('date');
+    const skipCache = searchParams.get('skipCache') === 'true';
+    const clearCache = searchParams.get('clearCache') === 'true';
+    
+    // Clear cache if requested
+    if (clearCache) {
+      digestCache.clear();
+      console.log('Cache cleared');
+    }
     
     let digestNumber: number;
     
@@ -33,12 +40,15 @@ export async function GET(request: NextRequest) {
       );
     } else {
       // Find the latest digest
+      console.log('Finding latest digest number...');
       digestNumber = await findLatestDigestNumber();
+      console.log(`Latest digest number found: ${digestNumber}`);
     }
     
-    // Check cache first
-    const cachedDigest = digestCache.get(digestNumber);
+    // Check cache first (but skip cache if requested)
+    const cachedDigest = skipCache ? null : digestCache.get(digestNumber);
     if (cachedDigest) {
+      console.log(`Serving cached digest ${digestNumber}`);
       const result: DigestFetchResult = {
         success: true,
         digest: cachedDigest,
