@@ -71,12 +71,6 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                   Community Stories
                 </Link>
               </li>
-              <li>
-                <Link href="/stats" className="hover:text-orange-500 text-sm transition-colors flex items-center group" style={{ color: 'var(--text-secondary)' }}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Global Statistics
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -112,11 +106,6 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
             <span>© {currentYear} WorldMapPin</span>
             <span className="hidden md:inline" style={{ color: 'var(--border-color)' }}>|</span>
             <span style={{ color: 'var(--text-muted)' }}>Built for Travelers, by travelers.</span>
-          </div>
-          <div className="flex gap-8">
-            <Link href="/privacy" className="hover:text-orange-500 text-[11px] font-bold uppercase tracking-widest transition-colors" style={{ color: 'var(--text-muted)' }}>Privacy</Link>
-            <Link href="/terms" className="hover:text-orange-500 text-[11px] font-bold uppercase tracking-widest transition-colors" style={{ color: 'var(--text-muted)' }}>Terms</Link>
-            <Link href="/cookies" className="hover:text-orange-500 text-[11px] font-bold uppercase tracking-widest transition-colors" style={{ color: 'var(--text-muted)' }}>Cookies</Link>
           </div>
         </div>
       </div>
