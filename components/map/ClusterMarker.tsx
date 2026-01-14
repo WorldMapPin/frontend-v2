@@ -114,10 +114,11 @@ export const ClusterMarker = ({
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        fontWeight: 'bold',
-        fontSize: '12px',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+        fontWeight: '800',
+        fontFamily: 'var(--font-lexend)',
+        fontSize: '13px',
+        border: '2px solid white',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         cursor: 'pointer',
         touchAction: 'manipulation' // Improve touch responsiveness
       }}

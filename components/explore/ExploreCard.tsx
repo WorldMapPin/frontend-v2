@@ -8,9 +8,11 @@ import { ProcessedPost } from '@/types/post';
 interface ExploreCardProps {
   post: ProcessedPost;
   hideAvatar?: boolean;
+  showViewOnMap?: boolean;
+  onViewOnMap?: () => void;
 }
 
-export default function ExploreCard({ post, hideAvatar = false }: ExploreCardProps) {
+export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = false, onViewOnMap }: ExploreCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [useUnoptimized, setUseUnoptimized] = useState(false);
@@ -18,6 +20,14 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
 
 
   const profileImageUrl = `https://images.hive.blog/u/${post.author}/avatar`;
+
+  const handleViewOnMap = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onViewOnMap) {
+      onViewOnMap();
+    }
+  };
 
   return (
     <Link href={`/read/${post.slug}`}>
@@ -168,22 +178,38 @@ export default function ExploreCard({ post, hideAvatar = false }: ExploreCardPro
             {post.title}
           </h3>
 
-          {/* Tags */}
-          <div className="mt-auto">
-            {post.tags && post.tags.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {post.tags.slice(0, 3).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-semibold italic"
-                    style={{ fontFamily: 'var(--font-lexend)', color: '#2090EC' }}
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <div className="h-5 sm:h-6"></div>
+          {/* Tags and View on Map */}
+          <div className="mt-auto flex items-end justify-between gap-2">
+            <div className="flex-1 overflow-hidden">
+              {post.tags && post.tags.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {post.tags.slice(0, 3).map((tag, index) => (
+                    <span
+                      key={index}
+                      className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-semibold italic truncate max-w-[80px]"
+                      style={{ fontFamily: 'var(--font-lexend)', color: '#2090EC' }}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-5 sm:h-6"></div>
+              )}
+            </div>
+
+            {showViewOnMap && (
+              <button
+                onClick={handleViewOnMap}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 group/btn"
+                title="View on Map"
+              >
+                <svg className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="text-[10px] sm:text-xs font-bold" style={{ fontFamily: 'var(--font-lexend)' }}>Map</span>
+              </button>
             )}
           </div>
 

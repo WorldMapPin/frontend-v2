@@ -7,6 +7,7 @@
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -117,12 +118,12 @@ body {
 }
 
 .web3-benefits-section {
-  background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,233,221,0.6) 14.42%, rgba(255,165,116,0.6) 73.56%, rgba(255,255,255,0.6) 99.52%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 233, 221, 0.6) 14.42%, rgba(255, 165, 116, 0.6) 73.56%, rgba(255, 255, 255, 0.6) 99.52%);
   transition: background 0.3s ease;
 }
 
 .dark .web3-benefits-section {
-  background: linear-gradient(180deg, rgba(10,10,10,0.9) 0%, rgba(50,30,20,0.4) 14.42%, rgba(80,40,20,0.3) 73.56%, rgba(10,10,10,0.9) 99.52%);
+  background: linear-gradient(180deg, rgba(10, 10, 10, 0.9) 0%, rgba(50, 30, 20, 0.4) 14.42%, rgba(80, 40, 20, 0.3) 73.56%, rgba(10, 10, 10, 0.9) 99.52%);
 }
 
 .final-cta-section {
@@ -1087,9 +1088,12 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
 
 /* Animated gradient background for rank badge */
 @keyframes gradient {
-  0%, 100% {
+
+  0%,
+  100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
@@ -1107,36 +1111,48 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
 
 /* Original Marker Styles from Old Code */
 .custom-marker-clustering-map .marker {
-  box-sizing: initial; 
+  box-sizing: initial;
 }
 
 .custom-marker-clustering-map .marker.cluster {
-  width: 3rem; /* Google Maps default cluster size */
-  height: 3rem; /* Google Maps default cluster size */
+  width: 3rem;
+  /* Google Maps default cluster size */
+  height: 3rem;
+  /* Google Maps default cluster size */
   background: #FFB74D;
   opacity: 0.8;
-  display: flex; 
+  display: flex;
   align-items: center;
   justify-content: center;
   color: black;
   font-size: 14px;
-  font-weight: bold; /* Text weight */
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Subtle text shadow */
-  line-height: 40px; /* Center the text vertically */
+  font-weight: bold;
+  /* Text weight */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  /* Subtle text shadow */
+  line-height: 40px;
+  /* Center the text vertically */
   text-align: center;
-  overflow: hidden; /* Hide any overflow content */
-  border-radius: 50%; /* Rounded corners for a circular shape */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for 3D effect */
-  transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
+  overflow: hidden;
+  /* Hide any overflow content */
+  border-radius: 50%;
+  /* Rounded corners for a circular shape */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  /* Shadow for 3D effect */
+  transition: transform 0.2s, box-shadow 0.2s;
+  /* Smooth transition for hover effect */
 }
 
 .custom-marker-clustering-map .marker.cluster:hover {
-  transform: scale(1.1); /* Slightly enlarge on hover */
-  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5); /* Increase shadow on hover */
+  transform: scale(1.1);
+  /* Slightly enlarge on hover */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5);
+  /* Increase shadow on hover */
 }
 
 .custom-marker-clustering-map .marker.cluster span {
-  color: white; /* White color for text */
+  color: white;
+  /* White color for text */
   width: 100%;
   text-align: center;
 }
@@ -1173,6 +1189,7 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1184,6 +1201,7 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     transform: translateY(0);
     opacity: 1;
   }
+
   to {
     transform: translateY(100%);
     opacity: 0;
@@ -1201,7 +1219,8 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
 /* Button Click Animation */
 .view-location-btn.clicked {
   transform: scale(0.95);
-  background-color: #1d4ed8 !important; /* Darker blue when clicked */
+  background-color: #1d4ed8 !important;
+  /* Darker blue when clicked */
 }
 
 /* Location Highlight Styles - Only Pulsating Animation */
@@ -1212,8 +1231,10 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
   display: flex;
   /* align-items: center; */
   /* justify-content: center; */
-  pointer-events: none; /* Prevents blocking clicks on underlying markers */
-  z-index: 1; /* Lower z-index to stay behind other markers */
+  pointer-events: none;
+  /* Prevents blocking clicks on underlying markers */
+  z-index: 1;
+  /* Lower z-index to stay behind other markers */
 }
 
 .location-highlight .animate-ping {
@@ -1221,7 +1242,9 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
 }
 
 @keyframes ping {
-  75%, 100% {
+
+  75%,
+  100% {
     transform: scale(2);
     opacity: 0;
   }
@@ -1247,11 +1270,11 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
   .mobile-post-card {
     @apply mx-2;
   }
-  
+
   .mobile-feature-marker {
     @apply transform scale-90;
   }
-  
+
   .mobile-cluster-marker {
     @apply transform scale-90;
   }
@@ -1307,6 +1330,18 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     opacity: 0;
     transform: scale(0.95) translateY(-20px);
   }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -1317,11 +1352,16 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
   animation: fade-in 0.3s ease-out;
 }
 
+.animate-modal-in {
+  animation: modal-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Shimmer animation for image loading skeleton */
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -1369,6 +1409,7 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -1588,6 +1629,7 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     opacity: 0;
     transform: scale(0.9) translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -1600,6 +1642,7 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     opacity: 0;
     transform: scale(0.95) translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -1611,6 +1654,7 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+
   to {
     opacity: 0;
     transform: scale(0.95) translateY(-20px);
@@ -1632,38 +1676,38 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     top: 15px;
     right: 15px;
   }
-  
+
   .get-code-button {
     padding: 10px 16px;
     font-size: 13px;
   }
-  
+
   .code-mode-div {
     width: 95%;
     bottom: 60px;
     padding: 15px;
   }
-  
+
   .code-mode-header h3 {
     font-size: 16px;
   }
-  
+
   /* Mobile button adjustments - make buttons more compact */
   .mobile-control-buttons {
     gap: 0.5rem !important;
   }
-  
+
   .mobile-control-buttons button {
     min-width: 100px !important;
     padding: 0.5rem 0.75rem !important;
     font-size: 0.75rem !important;
   }
-  
+
   .mobile-control-buttons button svg {
     width: 0.875rem !important;
     height: 0.875rem !important;
   }
-  
+
   .mobile-control-buttons button span {
     font-size: 0.75rem !important;
   }
@@ -1675,25 +1719,25 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     min-width: 90px !important;
     padding: 0.4rem 0.6rem !important;
   }
-  
+
   .mobile-control-buttons button span {
     font-size: 0.7rem !important;
   }
-  
+
   /* Make filter banners more compact on very small screens */
   .filter-banner-mobile {
     padding: 0.5rem !important;
   }
-  
+
   .filter-banner-mobile p {
     font-size: 0.7rem !important;
   }
-  
+
   .code-description-input {
     height: 40px;
     font-size: 13px;
   }
-  
+
   .code-to-copy {
     font-size: 11px;
     padding: 12px;
@@ -1789,7 +1833,7 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
   color: #111827;
   border-left-width: 0.25rem;
   border-left-color: #e5e7eb;
-  quotes: "\201C""\201D""\2018""\2019";
+  quotes: "\201C" "\201D" "\2018" "\2019";
   margin-top: 1.6em;
   margin-bottom: 1.6em;
   padding-left: 1em;
@@ -2024,12 +2068,29 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
   color: #592102;
 }
 
-.markdown-content h1 { font-size: 2.25rem; }
-.markdown-content h2 { font-size: 1.875rem; }
-.markdown-content h3 { font-size: 1.5rem; }
-.markdown-content h4 { font-size: 1.25rem; }
-.markdown-content h5 { font-size: 1.125rem; }
-.markdown-content h6 { font-size: 1rem; }
+.markdown-content h1 {
+  font-size: 2.25rem;
+}
+
+.markdown-content h2 {
+  font-size: 1.875rem;
+}
+
+.markdown-content h3 {
+  font-size: 1.5rem;
+}
+
+.markdown-content h4 {
+  font-size: 1.25rem;
+}
+
+.markdown-content h5 {
+  font-size: 1.125rem;
+}
+
+.markdown-content h6 {
+  font-size: 1rem;
+}
 
 .markdown-content ul,
 .markdown-content ol {

@@ -1,13 +1,25 @@
+'use client';
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 
 interface FooterProps {
   className?: string
 }
 
 const Footer: React.FC<FooterProps> = ({ className = '' }) => {
+  const pathname = usePathname()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isMapPage = mounted && (pathname?.startsWith('/map') ?? false)
   const currentYear = new Date().getFullYear()
+
+  if (isMapPage) return null;
 
   return (
     <footer

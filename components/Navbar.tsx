@@ -7,6 +7,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useAiohaSafe } from '@/hooks/use-aioha-safe'
 import { useTheme } from './ThemeProvider'
 
+import MapNavbar from '@/components/map/MapNavbar'
+
 interface NavbarProps {
   className?: string
 }
@@ -19,6 +21,8 @@ export default function Navbar({ className = '' }: NavbarProps) {
   const router = useRouter()
   const { user, isReady, logout } = useAiohaSafe()
   const { theme, toggleTheme } = useTheme()
+
+  const isMapPage = pathname?.startsWith('/map') ?? false
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -36,7 +40,11 @@ export default function Navbar({ className = '' }: NavbarProps) {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [showUserMenu])
-  const isMapPage = pathname?.startsWith('/map') ?? false
+
+  if (isMapPage) {
+    return <MapNavbar />
+  }
+
   const containerClasses = ['w-full', 'px-4', 'sm:px-6', 'lg:px-8']
 
   if (!isMapPage) {
@@ -107,7 +115,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-              >
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -116,20 +124,20 @@ export default function Navbar({ className = '' }: NavbarProps) {
                     />
                   </svg>
                 ) : (
-                <svg
+                  <svg
                     className="h-6 w-6 transition-transform duration-300"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                  />
-                </svg>
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                    />
+                  </svg>
                 )}
               </button>
               <Link
@@ -162,21 +170,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               >
                 Explore
               </Link>
-              <Link
-                href="/stats"
-                className="px-3 py-2 rounded-md text-lg transition-colors duration-200 hover:text-orange-500"
-                style={{
-                  fontFamily: 'Lexend',
-                  fontWeight: 500,
-                  fontStyle: 'normal',
-                  lineHeight: '100%',
-                  letterSpacing: '-0.03em',
-                  color: 'var(--text-primary)'
-                }}
-                suppressHydrationWarning={true}
-              >
-                Stats
-              </Link>
+
 
               {/* Auth Section */}
               {isReady ? (
@@ -459,22 +453,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
             >
               Explore
             </Link>
-            <Link
-              href="/stats"
-              className="block px-3 py-2 rounded-md text-sm"
-              style={{
-                fontFamily: 'Lexend',
-                fontWeight: 500,
-                fontStyle: 'normal',
-                lineHeight: '100%',
-                letterSpacing: '-0.03em',
-                color: 'var(--text-primary)'
-              }}
-              onClick={() => setIsMenuOpen(false)}
-              suppressHydrationWarning={true}
-            >
-              Stats
-            </Link>
+
             <Link
               href="/roadmap"
               className="block px-3 py-2 rounded-md text-sm"

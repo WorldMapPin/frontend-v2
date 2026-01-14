@@ -80,38 +80,31 @@ export const FoodClusterMarker = ({
 
   // Default WorldMapPin cluster colors with food theme
   let backgroundColor: string;
-  let iconColor: string;
   let foodIcon: React.ReactNode;
   
   if (size < 10) {
     // Small clusters - Ice Cream
     backgroundColor = 'linear-gradient(135deg, #FFB8D1, #FF85A6)';
-    iconColor = '#ffffff';
     foodIcon = <span style={{ fontSize: iconSize + 'px' }}>🍦</span>;
   } else if (size < 50) {
     // Medium-small - Donut
     backgroundColor = 'linear-gradient(135deg, #FFD93D, #FFA726)';
-    iconColor = '#ffffff';
     foodIcon = <span style={{ fontSize: iconSize + 'px' }}>🍩</span>;
   } else if (size < 200) {
     // Medium - Cupcake
     backgroundColor = 'linear-gradient(135deg, #FF9999, #FF6B6B)';
-    iconColor = '#ffffff';
     foodIcon = <span style={{ fontSize: iconSize + 'px' }}>🧁</span>;
   } else if (size < 500) {
     // Medium-large - Pizza
     backgroundColor = 'linear-gradient(135deg, #FF8C42, #F57C00)';
-    iconColor = '#ffffff';
     foodIcon = <span style={{ fontSize: iconSize + 'px' }}>🍕</span>;
   } else if (size < 1000) {
     // Large - Cake
     backgroundColor = 'linear-gradient(135deg, #F57C00, #E64A19)';
-    iconColor = '#ffffff';
     foodIcon = <span style={{ fontSize: iconSize + 'px' }}>🎂</span>;
   } else {
     // Very large - Burger
     backgroundColor = 'linear-gradient(135deg, #FF3D00, #D32F2F)';
-    iconColor = '#ffffff';
     foodIcon = <span style={{ fontSize: iconSize + 'px' }}>🍔</span>;
   }
 
@@ -132,10 +125,11 @@ export const FoodClusterMarker = ({
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        fontWeight: 'bold',
+        fontWeight: '800',
+        fontFamily: 'var(--font-lexend)',
         fontSize: '11px',
-        border: '3px solid white',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+        border: '2px solid white',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         cursor: 'pointer',
         touchAction: 'manipulation',
         position: 'relative'

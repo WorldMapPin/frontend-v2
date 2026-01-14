@@ -6,21 +6,22 @@ import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-m
 import axios from 'axios';
 
 // Import components
-import { ClusteredMarkers } from './map/ClusteredMarkers';
-import { InfoWindowContent } from './map/InfoWindowContent';
-import { SpendHBDInfoWindow } from './map/community/SpendHBDInfoWindow';
-import { SpendHBDClusterInfo } from './map/community/SpendHBDClusterInfo';
-import { OldLoadingSpinner } from './map/OldLoadingSpinner';
-import { GetCodeButton } from './map/GetCodeButton';
-import { CodeModeInterface } from './map/CodeModeInterface';
-import { FloatingContextMenu } from './map/FloatingContextMenu';
-import FilterComponent from './map/FilterComponent';
-import CommunitySelector from './map/community/CommunitySelector';
+import { ClusteredMarkers } from '@/components/map/ClusteredMarkers';
+import { InfoWindowContent } from '@/components/map/InfoWindowContent';
+import { SpendHBDInfoWindow } from '@/components/map/community/SpendHBDInfoWindow';
+import { SpendHBDClusterInfo } from '@/components/map/community/SpendHBDClusterInfo';
+import { OldLoadingSpinner } from '@/components/map/OldLoadingSpinner';
+import { GetCodeButton } from '@/components/map/GetCodeButton';
+import { CodeModeInterface } from '@/components/map/CodeModeInterface';
+import { FloatingContextMenu } from '@/components/map/FloatingContextMenu';
+import FilterComponent from '@/components/map/FilterComponent';
+import CommunitySelector from '@/components/map/community/CommunitySelector';
+import MapFilterBar from '@/components/map/MapFilterBar';
 
 // Import journey components
-import SimpleJourneyEditor from './journey/SimpleJourneyEditor';
-import SimpleJourneyMap from './journey/SimpleJourneyMap';
-import UserPostsOnMap from './journey/UserPostsOnMap';
+import SimpleJourneyEditor from '@/components/journey/SimpleJourneyEditor';
+import SimpleJourneyMap from '@/components/journey/SimpleJourneyMap';
+import UserPostsOnMap from '@/components/journey/UserPostsOnMap';
 
 // Import utilities and types
 import { convertDatafromApitoGeojson } from '../utils/dataConversion';
@@ -29,9 +30,7 @@ import { Feature, Point } from 'geojson';
 import { initPerformanceCheck, getNetworkSpeed, isExtremelySlowConnection, isSlowConnection } from '../utils/performanceCheck';
 import { fetchCommunityPins, COMMUNITIES, getDefaultCommunity } from '../utils/communityApi';
 
-// Global variables for location and zoom
-export let setGlobalLocation: (location: google.maps.places.Place | undefined) => void;
-export let setGlobalZoom: (zoom: number | undefined) => void;
+// Global variables for zoom (local to this module)
 export let mapZoom = 2; // Start at zoom 2, skip 3
 
 // Simple map configuration
@@ -72,9 +71,6 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const [location, setLocation] = useState<google.maps.places.Place | undefined>(undefined);
   const [mylocationzoom, setMyLocationZoom] = useState<number | undefined>(undefined);
 
-  // Set global functions
-  setGlobalLocation = setLocation;
-  setGlobalZoom = setMyLocationZoom;
 
   // Function to zoom to specific coordinates
   const handleViewOnMap = (coordinates: [number, number]) => {
@@ -113,6 +109,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const [originalClusterFeatures, setOriginalClusterFeatures] = useState<Feature<Point>[] | null>(null);
   const [loadedCommunity, setLoadedCommunity] = useState<Community>(initialCommunity || getDefaultCommunity());
   const [showCommunityHeader, setShowCommunityHeader] = useState(false);
+  const [mapTypeId, setMapTypeId] = useState<string>(MAP_CONFIG.mapTypeId);
 
   // Journey states
   const [journeyState, setJourneyState] = useState<JourneyState>({
@@ -326,6 +323,15 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     setContextMenuVisible(false);
   };
 
+  // Handle starting journey from context menu
+  const handleStartJourney = () => {
+    if (pendingLocation) {
+      console.log('Starting journey at:', pendingLocation);
+      // Functionality to be implemented later
+    }
+    setContextMenuVisible(false);
+  };
+
   // Handle closing context menu
   const handleCloseContextMenu = () => {
     setContextMenuVisible(false);
@@ -472,6 +478,26 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     return () => window.removeEventListener('hide-user-posts-on-map', handleHideUserPosts);
   }, []);
 
+  // Map control functions
+  const handleZoomIn = () => {
+    if (mapInstanceRef.current) {
+      const currentZoom = mapInstanceRef.current.getZoom() || 2;
+      mapInstanceRef.current.setZoom(currentZoom + 1);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapInstanceRef.current) {
+      const currentZoom = mapInstanceRef.current.getZoom() || 2;
+      mapInstanceRef.current.setZoom(currentZoom - 1);
+    }
+  };
+
+  const handleToggleMapType = () => {
+    const nextType = mapTypeId === 'roadmap' ? 'hybrid' : 'roadmap';
+    setMapTypeId(nextType);
+  };
+
   // Simplified journey handling - no complex callbacks needed
 
   // Expose close function globally for smooth animations
@@ -550,11 +576,37 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     return { lat, lng };
   }, []);
 
-  // Expose global zoom functions for cluster markers
+  // Expose global zoom functions for cluster markers via events
   useEffect(() => {
-    (window as any).setGlobalLocation = setGlobalLocation;
-    (window as any).setGlobalZoom = setGlobalZoom;
-    console.log('Global zoom functions set up:', { setGlobalLocation, setGlobalZoom });
+    const handleSetLocation = (e: any) => {
+      const data = e.detail;
+      if (data) {
+        setLocation(data);
+      } else {
+        setLocation(undefined);
+      }
+    };
+
+    const handleSetZoom = (e: any) => {
+      const zoom = e.detail;
+      if (typeof zoom === 'number') {
+        setMyLocationZoom(zoom);
+      }
+    };
+
+    const handleToggleCodeModeEvent = () => {
+      toggleCodeMode();
+    };
+
+    window.addEventListener('map-set-location', handleSetLocation);
+    window.addEventListener('map-set-zoom', handleSetZoom);
+    window.addEventListener('map-toggle-code-mode', handleToggleCodeModeEvent);
+
+    return () => {
+      window.removeEventListener('map-set-location', handleSetLocation);
+      window.removeEventListener('map-set-zoom', handleSetZoom);
+      window.removeEventListener('map-toggle-code-mode', handleToggleCodeModeEvent);
+    };
   }, []);
 
   // Handle map idle
@@ -690,67 +742,10 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
   return (
     <APIProvider apiKey={API_KEY} version={'beta'}>
-      <div className="h-[calc(100vh-3rem)] sm:h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] w-full relative overflow-hidden">
+      <div className="h-[calc(100vh-3rem)] sm:h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] w-full relative overflow-hidden font-lexend">
         {/* Old Loading Spinner */}
         {loading && <OldLoadingSpinner message={`Loading ${selectedCommunity.name} pins...`} />}
 
-        {/* Control Buttons Container - Responsive Layout */}
-        <div className="mobile-control-buttons absolute top-20 right-4 z-30 flex flex-col gap-2 md:gap-2.5">
-          {/* Get Code Button */}
-          <button
-            onClick={toggleCodeMode}
-            className={`${codeMode
-                ? 'bg-red-500/90 hover:bg-red-600'
-                : 'bg-gradient-to-r from-purple-500/90 to-indigo-500/90 hover:from-purple-600 hover:to-indigo-600'
-              } backdrop-blur-md text-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-white/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]`}
-            title={codeMode ? "Exit Code Mode" : "Get Code"}
-          >
-            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {codeMode ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-              )}
-            </svg>
-            <span className="text-xs md:text-sm font-medium">{codeMode ? "Exit" : "Get Code"}</span>
-          </button>
-
-          {/* Community Selector Button */}
-          <button
-            onClick={() => setShowCommunitySelector(true)}
-            className="bg-orange-500/90 backdrop-blur-md hover:bg-orange-600 text-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-orange-200/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]"
-          >
-            <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span className="text-xs md:text-sm font-medium text-white truncate max-w-[70px] md:max-w-none">{selectedCommunity.name}</span>
-          </button>
-
-          {/* Journey Toggle Button */}
-          <button
-            onClick={() => setShowJourneyControls(!showJourneyControls)}
-            className="bg-purple-500/90 backdrop-blur-md hover:bg-purple-600 text-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-purple-200/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]"
-          >
-            <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7" />
-            </svg>
-            <span className="text-xs md:text-sm font-medium text-white">Journeys</span>
-          </button>
-
-          {/* Performance Indicator */}
-          {performanceResult && (
-            <div className="bg-white/90 backdrop-blur-md rounded-xl px-2.5 py-1.5 md:px-3 md:py-2 shadow-lg border border-white/20 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]">
-              <div className={`w-2 h-2 rounded-full ${performanceResult.isExtremelySlow ? 'bg-red-500 animate-pulse' :
-                  performanceResult.isSlow ? 'bg-yellow-500' : 'bg-green-500'
-                }`}></div>
-              <span className="text-xs font-medium text-gray-600">
-                {performanceResult.isExtremelySlow ? 'Slow' :
-                  performanceResult.isSlow ? 'Fair' : 'Fast'}
-              </span>
-            </div>
-          )}
-        </div>
 
         {/* Filter Banners */}
         {/* Username Filter Banner */}
@@ -870,16 +865,6 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           </div>
         )}
 
-        {/* Filter Button - Left Side */}
-        <button
-          onClick={() => setShowFilter(true)}
-          className="absolute top-20 left-4 z-30 bg-white/90 backdrop-blur-md hover:bg-gray-50 rounded-xl px-3 py-2 md:px-4 md:py-2.5 shadow-lg border border-white/20 transition-all duration-200 flex items-center justify-center space-x-1.5 md:space-x-2 min-w-[110px] md:min-w-[130px]"
-        >
-          <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-          </svg>
-          <span className="text-xs md:text-sm font-medium text-gray-700">Filter</span>
-        </button>
 
         {/* Code Mode Interface - Show when in code mode OR when marker is set from context menu */}
         {(codeMode || codeModeMarker) && (
@@ -895,16 +880,24 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           isVisible={contextMenuVisible}
           position={contextMenuPosition}
           onAddPin={handleAddPin}
+          onStartJourney={handleStartJourney}
           onClose={handleCloseContextMenu}
         />
 
-        {/* Filter Component */}
-        <FilterComponent
+        {/* New Map Filter Bar */}
+        <MapFilterBar
           onFilter={handleFilter}
           searchParams={searchParams}
-          onTagChange={handleTagChange}
-          isVisible={showFilter}
-          onClose={() => setShowFilter(false)}
+          onToggleJourneys={() => setShowJourneyControls(!showJourneyControls)}
+          showJourneys={showJourneyControls}
+          onToggleCodeMode={toggleCodeMode}
+          isCodeMode={codeMode}
+          onOpenCommunitySelector={() => setShowCommunitySelector(true)}
+          selectedCommunityName={selectedCommunity.name}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onToggleMapType={handleToggleMapType}
+          mapTypeId={mapTypeId}
         />
 
         {/* Community Selector Component */}
@@ -932,17 +925,17 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         <div ref={mapRef} className="map-wrapper">
           <Map
             mapId={MAP_CONFIG.mapId}
-            mapTypeId={MAP_CONFIG.mapTypeId}
+            mapTypeId={mapTypeId}
             defaultCenter={{ lat: 50, lng: 20 }}
             defaultZoom={2}
             minZoom={2}
             maxZoom={20}
-            zoomControl={true}
+            zoomControl={false}
             gestureHandling={'greedy'}
-            disableDefaultUI={false}
+            disableDefaultUI={true}
             isFractionalZoomEnabled={false}
-            fullscreenControl={true}
-            streetViewControl={true}
+            fullscreenControl={false}
+            streetViewControl={false}
             restriction={{
               latLngBounds: bounds,
               strictBounds: true,
@@ -1019,33 +1012,33 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
             {/* Post Popup - Responsive: Bottom Sheet (Mobile) / Centered Modal (Desktop) */}
             {infowindowData && (
-              <div className="absolute inset-0 z-40 pointer-events-none">
-                {/* Backdrop */}
+              <div className="absolute inset-0 z-[110] pointer-events-none">
+                {/* Backdrop with enhanced blur */}
                 <div
-                  className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
+                  className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-all duration-300 animate-fade-in"
                   onClick={closeTab}
                 ></div>
 
-                {/* Mobile: Bottom Sheet */}
-                <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden">
-                  <div className="mobile-post-popup bg-white/95 backdrop-blur-md rounded-t-3xl shadow-2xl transform transition-all duration-300 ease-out animate-slide-up border border-white/20">
-                    {/* Handle Bar */}
-                    <div className="flex justify-center pt-3 pb-2">
-                      <div className="w-12 h-1 bg-gray-400/60 rounded-full"></div>
+                {/* Mobile: Bottom Sheet - More rounded and polished */}
+                <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden z-10">
+                  <div className="mobile-post-popup bg-white/98 backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t border-white/40">
+                    {/* Handle Bar - Thicker and more modern */}
+                    <div className="flex justify-center pt-4 pb-2">
+                      <div className="w-10 h-1.5 bg-gray-200/80 rounded-full"></div>
                     </div>
 
-                    {/* Close Button */}
+                    {/* Close Button - More visible and styled */}
                     <button
-                      className="absolute top-4 right-4 w-8 h-8 bg-white/80 backdrop-blur-sm hover:bg-white/90 rounded-full flex items-center justify-center transition-colors duration-200 z-10 shadow-md border border-white/20"
+                      className="absolute top-5 right-5 w-9 h-9 bg-gray-100/80 backdrop-blur-sm hover:bg-gray-200/80 text-gray-500 rounded-full flex items-center justify-center transition-all duration-200 z-10 shadow-sm border border-white/20 active:scale-90"
                       onClick={closeTab}
                     >
-                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
 
                     {/* Content */}
-                    <div className="px-6 pb-6 max-h-[70vh] overflow-y-auto">
+                    <div className="px-5 pb-8 max-h-[80vh] overflow-y-auto custom-scrollbar">
                       {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
                         <SpendHBDClusterInfo
                           features={infowindowData.features}
@@ -1069,38 +1062,43 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                   </div>
                 </div>
 
-                {/* Desktop: Centered Modal - Matching Explore Page Width */}
-                <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-4">
-                  <div className="w-full max-w-7xl bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl transform transition-all duration-300 ease-out animate-fade-in border border-orange-100/50 overflow-hidden">
-                    {/* Header with Orange Accent */}
-                    <div className="relative bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100">
-                      <div className="px-8 py-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h2 className="text-2xl font-bold text-gray-900">Discover Posts</h2>
-                            <p className="text-sm text-gray-600 mt-1">
-                              {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} at this location
-                            </p>
-                          </div>
-
-                          {/* Close Button */}
-                          <button
-                            className="w-10 h-10 bg-white hover:bg-orange-50 rounded-full flex items-center justify-center transition-all duration-200 shadow-md border border-orange-100 group"
-                            onClick={closeTab}
-                          >
-                            <svg className="w-5 h-5 text-gray-600 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
+                {/* Desktop: Centered Modal - Premium Glassmorphism Design */}
+                <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-6 z-10">
+                  <div className="w-full max-w-7xl bg-white/95 backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border border-white/40 overflow-hidden flex flex-col max-h-[90vh]">
+                    {/* Header - Minimal and elegant */}
+                    <div className="relative flex items-center justify-between px-10 py-7 border-b border-gray-100/50">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center shadow-inner">
+                          <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012 2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-lexend)' }}>
+                            {loadedCommunity?.id === 'spendhbd' ? 'Business Details' : 'Discover Adventures'}
+                          </h2>
+                          <p className="text-sm text-gray-500 font-medium mt-0.5">
+                            {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} found at this location
+                          </p>
                         </div>
                       </div>
 
-                      {/* Decorative Line */}
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-amber-400 to-orange-400"></div>
+                      {/* Close Button - Premium Style */}
+                      <button
+                        className="w-12 h-12 bg-gray-50 hover:bg-orange-50 text-gray-400 hover:text-orange-500 rounded-2xl flex items-center justify-center transition-all duration-300 group border border-gray-100 hover:border-orange-100 active:scale-95"
+                        onClick={closeTab}
+                      >
+                        <svg className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+
+                      {/* Top Accent Line */}
+                      <div className="absolute top-0 left-10 right-10 h-1 bg-gradient-to-r from-transparent via-orange-500/20 to-transparent"></div>
                     </div>
 
-                    {/* Content - Scrollable with matching explore page padding */}
-                    <div className="px-8 py-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                    {/* Content - Scrollable with optimized padding */}
+                    <div className="px-10 py-8 overflow-y-auto custom-scrollbar flex-1 bg-gradient-to-b from-transparent to-gray-50/30">
                       {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
                         <SpendHBDClusterInfo
                           features={infowindowData.features}
@@ -1118,7 +1116,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                           isCluster={infowindowData.isCluster || false}
                         />
                       ) : (
-                        <InfoWindowContent features={infowindowData.features} />
+                        <InfoWindowContent features={infowindowData.features} hideHeader={true} />
                       )}
                     </div>
                   </div>

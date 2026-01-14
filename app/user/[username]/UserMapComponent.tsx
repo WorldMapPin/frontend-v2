@@ -132,24 +132,40 @@ function UserMapContent({ username, initialPins, isExpanded, onLoad, currentZoom
 
       {/* Info Window */}
       {infowindowData && (
-        <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-50 p-4 overflow-hidden">
-          <div className="rounded-lg shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col user-map-infowindow">
-            <div className="flex justify-between items-center p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
-              <h3 className="text-lg sm:text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {infowindowData.features.length} {infowindowData.features.length === 1 ? 'Pin' : 'Pins'}
-              </h3>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4 sm:p-6 overflow-hidden animate-fade-in">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-white/40 animate-modal-in">
+            <div className="flex justify-between items-center px-6 sm:px-10 py-5 sm:py-7 border-b border-gray-100/50 flex-shrink-0 relative">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-50 rounded-2xl flex items-center justify-center shadow-inner">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-lexend)' }}>
+                    Discover Adventures
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
+                    {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} found at this location
+                  </p>
+                </div>
+              </div>
+              
               <button
                 onClick={() => setInfowindowData(null)}
-                className="transition-colors p-2 rounded-lg user-map-close-btn"
-                style={{ color: 'var(--text-muted)' }}
+                className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 hover:bg-orange-50 text-gray-400 hover:text-orange-500 rounded-2xl flex items-center justify-center transition-all duration-300 group border border-gray-100 hover:border-orange-100 active:scale-95"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 transform group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+
+              {/* Top Accent Line */}
+              <div className="absolute top-0 left-6 sm:left-10 right-6 sm:right-10 h-1 bg-gradient-to-r from-transparent via-orange-500/20 to-transparent"></div>
             </div>
-            <div className="p-4 sm:p-6 overflow-y-auto flex-1">
-              <InfoWindowContent features={infowindowData.features} showRank={false} />
+            
+            <div className="p-6 sm:p-10 overflow-y-auto flex-1 custom-scrollbar bg-gradient-to-b from-transparent to-gray-50/30">
+              <InfoWindowContent features={infowindowData.features} showRank={false} hideHeader={true} />
             </div>
           </div>
         </div>

@@ -80,23 +80,18 @@ export const StoreClusterMarker = ({
 
   // Store cluster colors - different from single stores for better distinction
   let backgroundColor: string;
-  let iconColor: string;
+  let iconColor: string = '#ffffff';
   
   if (size < 10) {
     backgroundColor = 'linear-gradient(135deg, #06b6d4, #0891b2)'; // Cyan for small store clusters
-    iconColor = '#ffffff';
   } else if (size < 50) {
     backgroundColor = 'linear-gradient(135deg, #84cc16, #65a30d)'; // Lime for medium store clusters
-    iconColor = '#ffffff';
   } else if (size < 200) {
     backgroundColor = 'linear-gradient(135deg, #f97316, #ea580c)'; // Orange for large store clusters
-    iconColor = '#ffffff';
   } else if (size < 500) {
     backgroundColor = 'linear-gradient(135deg, #dc2626, #b91c1c)'; // Red for very large store clusters
-    iconColor = '#ffffff';
   } else {
     backgroundColor = 'linear-gradient(135deg, #9333ea, #7c3aed)'; // Violet for massive store clusters
-    iconColor = '#ffffff';
   }
 
   return (
@@ -116,10 +111,11 @@ export const StoreClusterMarker = ({
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        fontWeight: 'bold',
+        fontWeight: '800',
+        fontFamily: 'var(--font-lexend)',
         fontSize: '11px',
         border: '3px solid white',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         cursor: 'pointer',
         touchAction: 'manipulation',
         position: 'relative'
