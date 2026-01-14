@@ -179,7 +179,7 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
           {expanded && (
             <>
               <div
-                className="mt-1.5 sm:mt-2 text-xs sm:text-base comment-body prose prose-sm max-w-none break-words"
+                className="mt-1.5 sm:mt-2 text-xs sm:text-base comment-body prose prose-sm max-w-none break-words font-lexend"
                 dangerouslySetInnerHTML={{ __html: processedBody }}
               />
 
@@ -264,7 +264,7 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
                       <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className="text-xs sm:text-sm font-medium" style={{ fontFamily: 'Lexend' }}>Posted!</span>
+                      <span className="text-xs sm:text-sm font-medium font-lexend">Posted!</span>
                     </div>
                   ) : (
                     <div className="space-y-1.5 sm:space-y-2">
@@ -277,14 +277,13 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
                         placeholder={`Reply to @${comment.author}...`}
                         rows={2}
                         disabled={isCommenting}
-                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 disabled:opacity-50"
-                        style={{ fontFamily: 'Lexend' }}
+                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 disabled:opacity-50 font-lexend"
                       />
                       {replyError && (
-                        <p className="text-[10px] sm:text-xs text-red-500 truncate" style={{ fontFamily: 'Lexend' }}>{replyError}</p>
+                        <p className="text-[10px] sm:text-xs text-red-500 truncate font-lexend">{replyError}</p>
                       )}
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] sm:text-xs text-gray-400 truncate" style={{ fontFamily: 'Lexend' }}>as @{user}</span>
+                        <span className="text-[10px] sm:text-xs text-gray-400 truncate font-lexend">as @{user}</span>
                         <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
                           <button
                             type="button"
@@ -293,16 +292,14 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
                               setReplyText('');
                               setReplyError(null);
                             }}
-                            className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
-                            style={{ fontFamily: 'Lexend' }}
+                            className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors font-lexend"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={handlePostReply}
                             disabled={isCommenting || !replyText.trim()}
-                            className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                            style={{ fontFamily: 'Lexend' }}
+                            className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 font-lexend"
                           >
                             {isCommenting ? (
                               <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -390,18 +387,17 @@ function CommentInput({
               </svg>
             </div>
             <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-medium truncate" style={{ fontFamily: 'Lexend', color: 'var(--text-secondary)' }}>
+              <p className="text-xs sm:text-sm font-medium truncate font-lexend" style={{ color: 'var(--text-secondary)' }}>
                 Log in to join the conversation
               </p>
-              <p className="text-[10px] sm:text-xs hidden sm:block" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[10px] sm:text-xs hidden sm:block font-lexend" style={{ color: 'var(--text-muted)' }}>
                 Connect your Hive wallet to post comments
               </p>
             </div>
           </div>
           <Link 
             href="/signup"
-            className="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all text-center"
-            style={{ fontFamily: 'Lexend' }}
+            className="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all text-center font-lexend"
           >
             Connect Wallet
           </Link>
@@ -433,7 +429,7 @@ function CommentInput({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="text-xs sm:text-sm font-medium text-green-600" style={{ fontFamily: 'Lexend' }}>
+              <p className="text-xs sm:text-sm font-medium text-green-600 font-lexend">
                 Comment posted!
               </p>
             </div>
@@ -448,13 +444,12 @@ function CommentInput({
                 placeholder="Write a comment..."
                 rows={2}
                 disabled={isCommenting}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-lg sm:rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all disabled:opacity-50 comment-input"
-                style={{ fontFamily: 'Lexend' }}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-lg sm:rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all disabled:opacity-50 comment-input font-lexend"
               />
               
               {/* Error Message */}
               {error && (
-                <div className="text-[10px] sm:text-xs text-red-500 flex items-center gap-1" style={{ fontFamily: 'Lexend' }}>
+                <div className="text-[10px] sm:text-xs text-red-500 flex items-center gap-1 font-lexend">
                   <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -464,14 +459,13 @@ function CommentInput({
               
               {/* Action Row */}
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] sm:text-xs truncate" style={{ fontFamily: 'Lexend', color: 'var(--text-muted)' }}>
+                <span className="text-[10px] sm:text-xs truncate font-lexend" style={{ color: 'var(--text-muted)' }}>
                   as @{user}
                 </span>
                 <button
                   type="submit"
                   disabled={isCommenting || !commentText.trim()}
-                  className="px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 flex-shrink-0"
-                  style={{ fontFamily: 'Lexend' }}
+                  className="px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 flex-shrink-0 font-lexend"
                 >
                   {isCommenting ? (
                     <>
@@ -559,7 +553,7 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
   };
 
   return (
-    <section className="mt-6 sm:mt-12 comments-section">
+    <section className="mt-6 sm:mt-12 comments-section font-lexend">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 sm:mb-6">
         <button
@@ -575,10 +569,7 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <h2
-              className="text-base sm:text-xl lg:text-2xl font-semibold comment-section-title"
-              style={{ fontFamily: 'Lexend' }}
-            >
+            <h2 className="text-base sm:text-xl lg:text-2xl font-semibold comment-section-title">
               Comments
             </h2>
           </div>
@@ -635,7 +626,7 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              <p className="text-sm sm:text-base comment-empty-text" style={{ fontFamily: 'Lexend' }}>
+              <p className="text-sm sm:text-base comment-empty-text">
                 No comments yet. Be the first to comment!
               </p>
             </div>
@@ -658,5 +649,6 @@ export default function CommentsSection({ author, permlink }: CommentsSectionPro
       )}
     </section>
   );
+
 }
 
