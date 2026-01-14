@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ProcessedPost } from '@/types/post';
+import ProgressiveImage from '@/components/shared/ProgressiveImage';
 
 interface ExploreCardProps {
   post: ProcessedPost;
@@ -13,11 +14,7 @@ interface ExploreCardProps {
 }
 
 export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = false, onViewOnMap }: ExploreCardProps) {
-  const [imageError, setImageError] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
-  const [useUnoptimized, setUseUnoptimized] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-
 
   const profileImageUrl = `https://images.hive.blog/u/${post.author}/avatar`;
 
@@ -36,60 +33,17 @@ export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = 
         <div className="relative w-full bg-gradient-to-br from-orange-400 to-amber-500 overflow-hidden rounded-t-xl sm:rounded-t-2xl h-[180px] sm:h-[220px] lg:h-[249.6px]">
           {/* Top Gradient Overlay for better text visibility */}
           <div className="absolute top-0 left-0 right-0 h-20 sm:h-32 bg-gradient-to-b from-black/70 to-transparent z-[1] pointer-events-none"></div>
-          {post.coverImage && !imageError ? (
-            <>
-              {/* Loading Skeleton with smooth shimmer */}
-              <div 
-                className={`absolute inset-0 bg-gradient-to-br from-orange-200 via-orange-100 to-amber-100 transition-opacity duration-500 ${imageLoading ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-              >
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
-                </div>
-              </div>
-
-              {/* Main Image with smooth fade-in */}
-              {!useUnoptimized ? (
-                <Image
-                  src={post.coverImage}
-                  alt={post.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className={`object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
-                    imageLoading ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
-                  }`}
-                  loading="lazy"
-                  onLoad={() => setImageLoading(false)}
-                  onError={() => {
-                    if (!useUnoptimized) {
-                      setUseUnoptimized(true);
-                      setImageLoading(true);
-                    } else {
-                      setImageError(true);
-                      setImageLoading(false);
-                    }
-                  }}
-                  quality={75}
-                />
-              ) : (
-                <Image
-                  src={post.coverImage}
-                  alt={post.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className={`object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
-                    imageLoading ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
-                  }`}
-                  loading="lazy"
-                  onLoad={() => setImageLoading(false)}
-                  onError={() => {
-                    setImageError(true);
-                    setImageLoading(false);
-                  }}
-                  quality={75}
-                  unoptimized
-                />
-              )}
-            </>
+          {post.coverImage ? (
+            <ProgressiveImage
+              src={post.coverImage}
+              alt={post.title}
+              fill
+              mode="explore"
+              placeholder="blur"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="group-hover:scale-105 transition-transform duration-700 ease-out"
+              objectFit="cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-amber-500">
               <svg className="w-16 h-16 text-white opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">

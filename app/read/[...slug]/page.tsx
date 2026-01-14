@@ -9,6 +9,8 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import CommentsSection from '@/components/shared/CommentsSection';
 import PostVotingSection from '@/components/shared/PostVotingSection';
+import { optimizeImageForPost, IMAGE_SIZES } from '@/utils/imageOptimization';
+import ProgressiveImage from '@/components/shared/ProgressiveImage';
 
 // Configure marked options
 marked.setOptions({
@@ -153,7 +155,7 @@ export default function PostReaderPage() {
       const rawHtml = marked.parse(preprocessedMarkdown) as string;
       
       // Sanitize HTML but allow common formatting tags
-      const cleanHtml = DOMPurify.sanitize(rawHtml, {
+      let cleanHtml = DOMPurify.sanitize(rawHtml, {
         ALLOWED_TAGS: [
           'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
           'p', 'br', 'hr',
@@ -172,6 +174,19 @@ export default function PostReaderPage() {
         ],
         ALLOW_DATA_ATTR: false,
       });
+      
+      // Optimize all image URLs in the HTML using Hive ImageHoster with responsive sizes
+      cleanHtml = cleanHtml.replace(
+        /<img([^>]*)\ssrc=["']([^"']+)["']([^>]*)>/gi,
+        (match, before, src, after) => {
+          // Use optimized dimensions for post content images
+          const optimizedSrc = optimizeImageForPost(src, IMAGE_SIZES.postContent.width, IMAGE_SIZES.postContent.height);
+          // Ensure loading="lazy" is present for below-the-fold images
+          const hasLoading = /loading=["']/i.test(before + after);
+          const loadingAttr = hasLoading ? '' : ' loading="lazy"';
+          return `<img${before} src="${optimizedSrc}"${loadingAttr}${after}>`;
+        }
+      );
       
       return cleanHtml;
     } catch (err) {
@@ -270,18 +285,20 @@ export default function PostReaderPage() {
               className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96 bg-gradient-to-br from-blue-500 to-purple-600"
               style={{
                 boxShadow: '0px 1px 3px 1px #00000026, 0px 1px 2px 0px #0000004D',
-                borderRadius: '18px'
+                borderRadius: '18px',
+                overflow: 'hidden'
               }}
             >
-              <img
+              <ProgressiveImage
                 src={post.coverImage}
                 alt={post.title}
-                className="w-full h-full object-cover"
-                style={{ borderRadius: '18px' }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
+                fill
+                mode="post"
+                placeholder="blur"
+                priority={true}
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 85vw, 70vw"
+                className="rounded-[18px]"
+                objectFit="cover"
               />
               
               {/* Bottom gradient overlay */}
