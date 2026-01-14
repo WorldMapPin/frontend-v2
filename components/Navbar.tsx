@@ -85,7 +85,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               <span
                 className="text-lg sm:text-xl md:text-2xl"
                 style={{
-                  fontFamily: 'Lexend',
+                  fontFamily: 'var(--font-lexend)',
                   fontWeight: 600,
                   fontStyle: 'normal',
                   lineHeight: '100%',
@@ -144,7 +144,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 href="/map"
                 className="px-3 py-2 rounded-md text-lg transition-colors duration-200 hover:text-orange-500"
                 style={{
-                  fontFamily: 'Lexend',
+                  fontFamily: 'var(--font-lexend)',
                   fontWeight: 500,
                   fontStyle: 'normal',
                   lineHeight: '100%',
@@ -159,7 +159,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 href="/explore"
                 className="px-3 py-2 rounded-md text-lg transition-colors duration-200 hover:text-orange-500"
                 style={{
-                  fontFamily: 'Lexend',
+                  fontFamily: 'var(--font-lexend)',
                   fontWeight: 500,
                   fontStyle: 'normal',
                   lineHeight: '100%',
@@ -203,14 +203,14 @@ export default function Navbar({ className = '' }: NavbarProps) {
                         style={{ backgroundColor: 'var(--card-bg)', border: '1px solid #ED6D28' }}
                       >
                         <div className="px-4 py-2 border-b" style={{ borderColor: '#ED6D28' }}>
-                          <span className="text-sm font-semibold" style={{ fontFamily: 'Lexend', color: 'var(--text-primary)' }}>
+                          <span className="text-sm font-semibold" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
                             @{user}
                           </span>
                         </div>
                         <Link
                           href={`/user/${user}`}
                           className="block px-4 py-2 text-sm transition-colors"
-                          style={{ fontFamily: 'Lexend', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
+                          style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           onClick={() => setShowUserMenu(false)}
@@ -220,7 +220,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                         <Link
                           href={`/map/@${user}`}
                           className="block px-4 py-2 text-sm transition-colors"
-                          style={{ fontFamily: 'Lexend', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
+                          style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           onClick={() => setShowUserMenu(false)}
@@ -230,7 +230,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                         <Link
                           href="/my-countries"
                           className="block px-4 py-2 text-sm transition-colors"
-                          style={{ fontFamily: 'Lexend', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
+                          style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           onClick={() => setShowUserMenu(false)}
@@ -245,7 +245,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                             router.push('/');
                           }}
                           className="block w-full text-left px-4 py-2 text-sm transition-colors"
-                          style={{ fontFamily: 'Lexend', color: '#ED6D28', fontWeight: 600, backgroundColor: 'transparent' }}
+                          style={{ fontFamily: 'var(--font-lexend)', color: '#ED6D28', fontWeight: 600, backgroundColor: 'transparent' }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
@@ -260,7 +260,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                     href="/signup"
                     className="px-6 py-2 text-base font-semibold transition-all duration-200 hover:shadow-lg hover:scale-105"
                     style={{
-                      fontFamily: 'Lexend',
+                      fontFamily: 'var(--font-lexend)',
                       background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
                       color: '#FFFFFF',
                       borderRadius: '30px',
@@ -351,7 +351,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 </div>
                 <span
                   className="text-sm font-semibold"
-                  style={{ fontFamily: 'Lexend', color: 'var(--text-primary)' }}
+                  style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}
                 >
                   @{user}
                 </span>
@@ -363,7 +363,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               type="button"
               onClick={toggleTheme}
               className="flex items-center w-full px-3 py-2 rounded-md text-sm transition-all duration-300"
-              style={{ color: 'var(--text-primary)', fontFamily: 'Lexend', fontWeight: 500 }}
+              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)', fontWeight: 500 }}
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme === 'dark' ? (
@@ -409,7 +409,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               href="/"
               className="block px-3 py-2 rounded-md text-sm"
               style={{
-                fontFamily: 'Lexend',
+                fontFamily: 'var(--font-lexend)',
                 fontWeight: 500,
                 fontStyle: 'normal',
                 lineHeight: '100%',
@@ -425,7 +425,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               href="/map"
               className="block px-3 py-2 rounded-md text-sm"
               style={{
-                fontFamily: 'Lexend',
+                fontFamily: 'var(--font-lexend)',
                 fontWeight: 500,
                 fontStyle: 'normal',
                 lineHeight: '100%',
@@ -441,7 +441,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               href="/explore"
               className="block px-3 py-2 rounded-md text-sm"
               style={{
-                fontFamily: 'Lexend',
+                fontFamily: 'var(--font-lexend)',
                 fontWeight: 500,
                 fontStyle: 'normal',
                 lineHeight: '100%',
@@ -458,7 +458,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               href="/roadmap"
               className="block px-3 py-2 rounded-md text-sm"
               style={{
-                fontFamily: 'Lexend',
+                fontFamily: 'var(--font-lexend)',
                 fontWeight: 500,
                 fontStyle: 'normal',
                 lineHeight: '100%',
@@ -481,7 +481,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                       href={`/user/${user}`}
                       className="block px-3 py-2 rounded-md text-sm"
                       style={{
-                        fontFamily: 'Lexend',
+                        fontFamily: 'var(--font-lexend)',
                         fontWeight: 500,
                         color: 'var(--text-primary)'
                       }}
@@ -493,7 +493,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                       href={`/map/@${user}`}
                       className="block px-3 py-2 rounded-md text-sm"
                       style={{
-                        fontFamily: 'Lexend',
+                        fontFamily: 'var(--font-lexend)',
                         fontWeight: 500,
                         color: 'var(--text-primary)'
                       }}
@@ -505,7 +505,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                       href="/my-countries"
                       className="block px-3 py-2 rounded-md text-sm"
                       style={{
-                        fontFamily: 'Lexend',
+                        fontFamily: 'var(--font-lexend)',
                         fontWeight: 500,
                         color: 'var(--text-primary)'
                       }}
@@ -521,7 +521,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                       }}
                       className="block w-full text-left px-3 py-2 rounded-md text-sm"
                       style={{
-                        fontFamily: 'Lexend',
+                        fontFamily: 'var(--font-lexend)',
                         fontWeight: 600,
                         color: '#ED6D28'
                       }}
@@ -534,7 +534,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                     href="/signup"
                     className="block mx-3 my-2 px-4 py-3 text-center text-sm font-semibold"
                     style={{
-                      fontFamily: 'Lexend',
+                      fontFamily: 'var(--font-lexend)',
                       background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)',
                       color: '#FFFFFF',
                       borderRadius: '30px',

@@ -316,7 +316,7 @@ export default function PostReaderPage() {
                 <div
                   className="flex items-center gap-2 text-xs sm:text-sm"
                   style={{
-                    fontFamily: 'Lexend',
+                    fontFamily: 'var(--font-lexend)',
                     color: '#FFFFFF'
                   }}
                 >
@@ -328,7 +328,7 @@ export default function PostReaderPage() {
                 <span
                   className="font-bold text-lg sm:text-xl lg:text-2xl"
                   style={{
-                    fontFamily: 'Lexend',
+                    fontFamily: 'var(--font-lexend)',
                     color: '#8EDB1B'
                   }}
                 >
@@ -401,7 +401,7 @@ export default function PostReaderPage() {
                     href={`/user/${post.author}`}
                     className="text-sm font-semibold transition-colors truncate"
                     style={{
-                      fontFamily: 'Lexend',
+                      fontFamily: 'var(--font-lexend)',
                       color: '#996027'
                     }}
                   >
@@ -412,7 +412,7 @@ export default function PostReaderPage() {
                   <span
                     className="text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 read-page-reputation"
                     style={{
-                      fontFamily: 'Lexend',
+                      fontFamily: 'var(--font-lexend)',
                       backgroundColor: 'var(--reputation-bg)',
                       color: 'var(--reputation-color)',
                       border: '1px solid var(--reputation-border)'
@@ -428,7 +428,7 @@ export default function PostReaderPage() {
                   <div
                     className="flex items-center gap-0.5 px-1.5 py-0.5 read-page-like-badge"
                     style={{
-                      fontFamily: 'Lexend',
+                      fontFamily: 'var(--font-lexend)',
                       backgroundColor: 'var(--like-bg)',
                       border: '1.5px solid var(--like-border)',
                       borderRadius: '6px'
@@ -443,7 +443,7 @@ export default function PostReaderPage() {
                   <div
                     className="flex items-center gap-0.5 px-1.5 py-0.5 read-page-comment-badge"
                     style={{
-                      fontFamily: 'Lexend',
+                      fontFamily: 'var(--font-lexend)',
                       backgroundColor: 'var(--comment-bg)',
                       border: '1.5px solid var(--comment-border)',
                       borderRadius: '6px'
@@ -484,7 +484,7 @@ export default function PostReaderPage() {
                       href={`/user/${post.author}`}
                       className="text-xl lg:text-2xl font-semibold transition-colors"
                       style={{
-                        fontFamily: 'Lexend',
+                        fontFamily: 'var(--font-lexend)',
                         color: '#996027'
                       }}
                     >
@@ -493,7 +493,7 @@ export default function PostReaderPage() {
                     <span
                       className="text-sm px-3 py-1 rounded-full font-medium read-page-reputation"
                       style={{
-                        fontFamily: 'Lexend',
+                        fontFamily: 'var(--font-lexend)',
                         backgroundColor: 'var(--reputation-bg)',
                         color: 'var(--reputation-color)',
                         border: '1px solid var(--reputation-border)'
@@ -510,7 +510,7 @@ export default function PostReaderPage() {
                   <div
                     className="flex items-center gap-1 px-2.5 py-1 read-page-like-badge"
                     style={{
-                      fontFamily: 'Lexend',
+                      fontFamily: 'var(--font-lexend)',
                       backgroundColor: 'var(--like-bg)',
                       border: '1.5px solid var(--like-border)',
                       borderRadius: '8px'
@@ -525,7 +525,7 @@ export default function PostReaderPage() {
                   <div
                     className="flex items-center gap-1 px-2.5 py-1 read-page-comment-badge"
                     style={{
-                      fontFamily: 'Lexend',
+                      fontFamily: 'var(--font-lexend)',
                       backgroundColor: 'var(--comment-bg)',
                       border: '1.5px solid var(--comment-border)',
                       borderRadius: '8px'
@@ -544,7 +544,7 @@ export default function PostReaderPage() {
             <h1
               className="text-2xl sm:text-3xl lg:text-4xl font-medium mb-4 sm:mb-6 lg:mb-8 read-page-title"
               style={{
-                fontFamily: 'Lexend',
+                fontFamily: 'var(--font-lexend)',
                 color: 'var(--text-primary)'
               }}
             >
@@ -560,7 +560,7 @@ export default function PostReaderPage() {
                       key={index}
                       className="text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-colors read-page-tag"
                       style={{
-                        fontFamily: 'Lexend',
+                        fontFamily: 'var(--font-lexend)',
                         backgroundColor: 'var(--tag-bg, #DCF5FF)',
                         color: 'var(--tag-color, #006CC4)'
                       }}
@@ -573,7 +573,7 @@ export default function PostReaderPage() {
                       onClick={() => setShowAllTags(!showAllTags)}
                       className="text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-all hover:opacity-80 cursor-pointer read-page-tag-more"
                       style={{
-                        fontFamily: 'Lexend',
+                        fontFamily: 'var(--font-lexend)',
                         backgroundColor: 'var(--tag-more-bg)',
                         color: 'var(--tag-more-color)',
                         border: '1px solid var(--tag-more-border)'
@@ -590,7 +590,7 @@ export default function PostReaderPage() {
             <div
               className="prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-img:rounded-lg prose-a:text-orange-500 prose-a:no-underline hover:prose-a:underline prose-p:leading-relaxed markdown-content post-content"
               style={{
-                fontFamily: 'Lexend',
+                fontFamily: 'var(--font-lexend)',
                 color: 'var(--foreground)'
               }}
               dangerouslySetInnerHTML={{ __html: processedHtml }}
@@ -604,7 +604,7 @@ export default function PostReaderPage() {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 cursor-pointer transition-all hover:opacity-90 hover:scale-105 read-page-open-platform-btn"
                 style={{
-                  fontFamily: 'Lexend',
+                  fontFamily: 'var(--font-lexend)',
                   background: post.canonicalUrl.includes('inleo.io') 
                     ? 'linear-gradient(92.88deg, #FFD700 1.84%, #FF8C00 100%)'
                     : post.canonicalUrl.includes('ecency.com')

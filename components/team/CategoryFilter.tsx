@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface CategoryFilterProps {
   categories: string[];
@@ -13,16 +13,17 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   selectedCategory,
   onCategoryChange
 }) => {
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToCategory = (category: string) => {
     const container = scrollContainerRef.current;
-    const button = container?.querySelector(`button[data-category="${category}"]`);
-    
-    if (container && button) {
+    if (!container) return;
+
+    const button = container.querySelector(`[data-category="${category}"]`) as HTMLElement;
+    if (button) {
       const containerWidth = container.offsetWidth;
-      const buttonLeft = (button as HTMLElement).offsetLeft;
-      const buttonWidth = (button as HTMLElement).offsetWidth;
+      const buttonLeft = button.offsetLeft;
+      const buttonWidth = button.offsetWidth;
       const scrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
       
       container.scrollTo({
@@ -32,31 +33,31 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
     }
   };
 
-  const handleCategoryClick = (category: string) => {
-    onCategoryChange(category);
-    scrollToCategory(category);
-  };
+  useEffect(() => {
+    scrollToCategory(selectedCategory);
+  }, [selectedCategory]);
 
   return (
-    <div className="mb-8 sm:mb-10 lg:mb-12 relative">
-      <div className="bg-[linear-gradient(92.88deg,_#ED6D28_1.84%,_#FFA600_100%)] rounded-2xl sm:rounded-3xl p-2 relative">
-        {/* Gradient Overlays */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#ED6D28] to-transparent pointer-events-none sm:hidden" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#FFA600] to-transparent pointer-events-none sm:hidden" />
-        
+    <div className="w-full max-w-4xl mx-auto mb-8 sm:mb-10 px-2 sm:px-0">
+      <div className="bg-[linear-gradient(92.88deg,_#ED6D28_1.84%,_#FFA600_100%)] rounded-xl sm:rounded-3xl p-1.5 sm:p-2 relative shadow-lg">
         {/* Scrollable Container */}
-        <div className="flex overflow-x-auto hide-scrollbar sm:flex-nowrap sm:justify-between items-center" ref={scrollContainerRef}>
-          <div className="flex space-x-2 px-2 sm:justify-between w-full">
+        <div 
+          ref={scrollContainerRef}
+          className="flex overflow-x-auto hide-scrollbar items-center snap-x snap-mandatory"
+        >
+          <div className="flex space-x-1 sm:space-x-2 px-1 w-full sm:justify-between">
             {categories.map((category) => (
               <button
                 key={category}
                 data-category={category}
-                onClick={() => handleCategoryClick(category)}
-                className={`h-[44px] sm:h-[48px] rounded-lg font-lexend font-medium transition-all flex-shrink-0 flex items-center justify-center text-base sm:text-lg px-6 sm:px-4 ${
-                  selectedCategory === category
-                    ? 'bg-[#B85518] text-white'
-                    : 'text-white hover:bg-[#B85518]/50'
-                }`}
+                onClick={() => onCategoryChange(category)}
+                className={`
+                  h-[38px] sm:h-[48px] rounded-lg sm:rounded-xl font-lexend font-bold transition-all flex-shrink-0 flex items-center justify-center text-xs sm:text-base px-4 sm:px-6 snap-center
+                  ${selectedCategory === category
+                    ? 'bg-white text-orange-600 shadow-sm'
+                    : 'text-white hover:bg-white/10'
+                  }
+                `}
               >
                 {category}
               </button>
@@ -65,26 +66,24 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
         </div>
       </div>
 
-      {/* Scroll Position Indicators */}
-      <div className="flex justify-center space-x-1 mt-2 sm:hidden">
+      {/* Mobile Scroll Indicators */}
+      <div className="flex justify-center space-x-1.5 mt-3 sm:hidden">
         {categories.map((category) => (
           <div
             key={category}
             className={`h-1 rounded-full transition-all duration-300 ${
               selectedCategory === category
-                ? 'w-4 bg-[#B85518]'
-                : 'w-1 bg-[#B85518]/30'
+                ? 'w-4 bg-orange-500'
+                : 'w-1 bg-orange-200'
             }`}
           />
         ))}
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
-          scroll-behavior: smooth;
-          -webkit-overflow-scrolling: touch;
         }
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
