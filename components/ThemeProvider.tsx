@@ -15,13 +15,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light')
   const [mounted, setMounted] = useState(false)
 
-  // Load theme from localStorage on mount
+  // Load theme from localStorage on mount, or detect system preference
   useEffect(() => {
     setMounted(true)
     const savedTheme = localStorage.getItem('worldmappin-theme') as Theme | null
     if (savedTheme) {
       setTheme(savedTheme)
       document.documentElement.classList.toggle('dark', savedTheme === 'dark')
+    } else {
+      // Detect system preference on first visit
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      const initialTheme: Theme = prefersDark ? 'dark' : 'light'
+      setTheme(initialTheme)
+      document.documentElement.classList.toggle('dark', initialTheme === 'dark')
     }
   }, [])
 

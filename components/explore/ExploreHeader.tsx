@@ -160,7 +160,7 @@ export default function ExploreHeader({
                 </span>
                 <span>{option.label}</span>
                 {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
                 )}
               </button>
             );
