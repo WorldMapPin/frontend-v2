@@ -1027,6 +1027,15 @@ html[data-theme='dark'] .wallet-provider-arrow {
   color: #C9B8A8 !important;
 }
 
+.wallet-provider-btn .bg-white {
+  background-color: #ffffff !important;
+}
+
+.dark .wallet-provider-btn .bg-gray-800,
+html[data-theme='dark'] .wallet-provider-btn .bg-gray-800 {
+  background-color: #1f2937 !important;
+}
+
 /* Wallet Modal Content Area Dark Theme */
 .dark .wallet-modal-container p[style*="var(--text-muted)"],
 html[data-theme='dark'] .wallet-modal-container p[style*="var(--text-muted)"] {

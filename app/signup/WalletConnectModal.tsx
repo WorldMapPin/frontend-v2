@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Providers, KeyTypes } from '@aioha/aioha';
 import { useAiohaSafe } from '@/hooks/use-aioha-safe';
-import { X, Wallet, Key, Globe, AlertCircle, Loader2, LogOut, User, CheckCircle2, Box, Shield } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
+import { X, Globe, AlertCircle, Loader2, LogOut, User, CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface WalletConnectModalProps {
     isOpen: boolean;
@@ -11,69 +13,123 @@ interface WalletConnectModalProps {
     onLoginSuccess: (result: any) => void;
 }
 
-const walletProviders = [
-    {
-        provider: Providers.Keychain,
-        name: 'Hive Keychain',
-        description: 'Browser Extension',
-        icon: <Key size={22} />,
-        hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
-        iconBgClass: 'bg-gray-900',
-        arrowHoverClasses: 'group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500',
-    },
-    {
-        provider: Providers.HiveSigner,
-        name: 'HiveSigner',
-        description: 'Mobile & Web',
-        icon: <Wallet size={22} />,
-        hoverClasses: 'hover:border-[#E31337] hover:shadow-[#E31337]/10',
-        iconBgClass: 'bg-[#E31337]',
-        arrowHoverClasses: 'group-hover:bg-[#E31337] group-hover:text-white group-hover:border-[#E31337]',
-    },
-    {
-        provider: Providers.HiveAuth,
-        name: 'Hive Auth',
-        description: 'Mobile QR Solution',
-        icon: <AlertCircle size={22} />,
-        hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
-        iconBgClass: 'bg-orange-500',
-        arrowHoverClasses: 'group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500',
-    },
-    {
-        provider: Providers.MetaMaskSnap,
-        name: 'MetaMask Snap',
-        description: 'Ethereum Extension',
-        icon: <Box size={22} />,
-        hoverClasses: 'hover:border-[#F6851B] hover:shadow-[#F6851B]/10',
-        iconBgClass: 'bg-[#F6851B]',
-        arrowHoverClasses: 'group-hover:bg-[#F6851B] group-hover:text-white group-hover:border-[#F6851B]',
-    },
-    {
-        provider: Providers.Ledger,
-        name: 'Ledger',
-        description: 'Hardware Wallet',
-        icon: <Shield size={22} />,
-        hoverClasses: 'hover:border-[#4c4c4c] hover:shadow-gray-500/10',
-        iconBgClass: 'bg-gray-600',
-        arrowHoverClasses: 'group-hover:bg-gray-600 group-hover:text-white group-hover:border-gray-600',
-    },
-    {
-        provider: Providers.PeakVault,
-        name: 'PeakVault',
-        description: 'Extension Method',
-        icon: <Key size={22} />,
-        hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
-        iconBgClass: 'bg-[#8B3A3A]',
-        arrowHoverClasses: 'group-hover:bg-[#8B3A3A] group-hover:text-white group-hover:border-[#8B3A3A]',
-    },
-];
+// Provider icon component that uses Aioha's official icons with dark theme support
+const ProviderIcon = ({ provider, className = "w-6 h-6" }: { provider: Providers; className?: string }) => {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
+    const iconMap: Partial<Record<Providers, { light: string; dark?: string }>> = {
+        [Providers.Keychain]: { light: '/icons/providers/keychain.svg' },
+        [Providers.HiveSigner]: { light: '/icons/providers/hivesigner.svg' },
+        [Providers.HiveAuth]: { 
+            light: '/icons/providers/hiveauth-light.svg',
+            dark: '/icons/providers/hiveauth-dark.svg'
+        },
+        [Providers.MetaMaskSnap]: { light: '/icons/providers/metamask.svg' },
+        [Providers.Ledger]: { 
+            light: '/icons/providers/ledger-light.svg',
+            dark: '/icons/providers/ledger-dark.svg'
+        },
+        [Providers.PeakVault]: { light: '/icons/providers/peakvault.svg' },
+    };
+
+    const iconConfig = iconMap[provider];
+    
+    if (!iconConfig) {
+        return null;
+    }
+
+    // Use dark variant ONLY when theme is dark, otherwise always use light
+    const iconPath = (isDark && iconConfig.dark) ? iconConfig.dark : iconConfig.light;
+
+    return (
+        <Image
+            src={iconPath}
+            alt={`${provider} icon`}
+            width={22}
+            height={22}
+            className={className}
+            unoptimized
+        />
+    );
+};
 
 export default function WalletConnectModal({ isOpen, onClose, onLoginSuccess }: WalletConnectModalProps) {
     const { aioha, user, logout } = useAiohaSafe();
+    const { theme } = useTheme();
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const isDark = theme === 'dark';
+
+    // Define wallet providers inside component so icons update when theme changes
+    // Use theme-aware background class
+    const iconBgClass = isDark ? 'bg-gray-800' : 'bg-white';
+    
+    const walletProviders: Array<{
+        provider: Providers;
+        name: string;
+        description: string;
+        icon: React.ReactElement;
+        hoverClasses: string;
+        iconBgClass: string;
+        arrowHoverClasses: string;
+    }> = [
+        {
+            provider: Providers.Keychain,
+            name: 'Hive Keychain',
+            description: 'Browser Extension',
+            icon: <ProviderIcon provider={Providers.Keychain} />,
+            hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
+            iconBgClass: iconBgClass,
+            arrowHoverClasses: 'group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500',
+        },
+        {
+            provider: Providers.HiveSigner,
+            name: 'HiveSigner',
+            description: 'Mobile & Web',
+            icon: <ProviderIcon provider={Providers.HiveSigner} />,
+            hoverClasses: 'hover:border-[#E31337] hover:shadow-[#E31337]/10',
+            iconBgClass: iconBgClass,
+            arrowHoverClasses: 'group-hover:bg-[#E31337] group-hover:text-white group-hover:border-[#E31337]',
+        },
+        {
+            provider: Providers.HiveAuth,
+            name: 'Hive Auth',
+            description: 'Mobile QR Solution',
+            icon: <ProviderIcon provider={Providers.HiveAuth} />,
+            hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
+            iconBgClass: iconBgClass,
+            arrowHoverClasses: 'group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500',
+        },
+        {
+            provider: Providers.MetaMaskSnap,
+            name: 'MetaMask Snap',
+            description: 'Ethereum Extension',
+            icon: <ProviderIcon provider={Providers.MetaMaskSnap} />,
+            hoverClasses: 'hover:border-[#F6851B] hover:shadow-[#F6851B]/10',
+            iconBgClass: iconBgClass,
+            arrowHoverClasses: 'group-hover:bg-[#F6851B] group-hover:text-white group-hover:border-[#F6851B]',
+        },
+        {
+            provider: Providers.Ledger,
+            name: 'Ledger',
+            description: 'Hardware Wallet',
+            icon: <ProviderIcon provider={Providers.Ledger} />,
+            hoverClasses: 'hover:border-[#4c4c4c] hover:shadow-gray-500/10',
+            iconBgClass: iconBgClass,
+            arrowHoverClasses: 'group-hover:bg-gray-600 group-hover:text-white group-hover:border-gray-600',
+        },
+        {
+            provider: Providers.PeakVault,
+            name: 'PeakVault',
+            description: 'Extension Method',
+            icon: <ProviderIcon provider={Providers.PeakVault} />,
+            hoverClasses: 'hover:border-orange-500 hover:shadow-orange-500/10',
+            iconBgClass: iconBgClass,
+            arrowHoverClasses: 'group-hover:bg-[#8B3A3A] group-hover:text-white group-hover:border-[#8B3A3A]',
+        },
+    ];
 
     if (!isOpen) return null;
 
@@ -258,7 +314,7 @@ export default function WalletConnectModal({ isOpen, onClose, onLoginSuccess }: 
                                             className={`w-full flex md:flex-col md:justify-center md:h-40 md:gap-2 items-center justify-between p-4 border-2 rounded-2xl transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none wallet-provider-btn ${p.hoverClasses} hover:shadow-lg`}
                                         >
                                             <div className="flex items-center gap-4 md:flex-col md:gap-2">
-                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform ${p.iconBgClass}`}>
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform ${p.iconBgClass} p-2`}>
                                                     {p.icon}
                                                 </div>
                                                 <div className="text-left md:text-center">
