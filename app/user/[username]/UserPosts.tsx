@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { fetchUserPostsWithCoords } from '../../../lib/worldmappinApi';
 import { fetchPosts, fetchPostsProgressive } from '@/utils/hivePosts';
 import { ProcessedPost, CuratedPost } from '@/types/post';
 import ExploreCard from '@/components/explore/ExploreCard';
+import { Search, X, ChevronDown, ArrowUpDown, Clock, TrendingUp, Calendar } from 'lucide-react';
 
 interface UserPostsProps {
   username: string;
@@ -13,6 +14,15 @@ interface UserPostsProps {
 
 const POSTS_PER_PAGE = 12;
 
+type SortOption = 'newest' | 'oldest' | 'popular' | 'payout';
+
+const SORT_OPTIONS: { value: SortOption; label: string; icon: React.ReactNode }[] = [
+  { value: 'newest', label: 'Newest', icon: <Clock className="w-4 h-4" /> },
+  { value: 'oldest', label: 'Oldest', icon: <Calendar className="w-4 h-4" /> },
+  { value: 'popular', label: 'Most Popular', icon: <TrendingUp className="w-4 h-4" /> },
+  { value: 'payout', label: 'Highest Payout', icon: <ArrowUpDown className="w-4 h-4" /> },
+];
+
 export function UserPosts({ username, initialPins }: UserPostsProps) {
   const [posts, setPosts] = useState<ProcessedPost[]>([]);
   const [allBasicPosts, setAllBasicPosts] = useState<any[]>([]);
@@ -20,6 +30,58 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Search and sort state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+
+  // Filter and sort posts
+  const filteredAndSortedPosts = useMemo(() => {
+    let result = [...posts];
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(post =>
+        post.title.toLowerCase().includes(query) ||
+        post.tags.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+
+    // Sort posts
+    result.sort((a, b) => {
+      switch (sortOption) {
+        case 'newest':
+          const dateA = new Date(a.created).getTime();
+          const dateB = new Date(b.created).getTime();
+          // Handle invalid dates
+          if (isNaN(dateA) && isNaN(dateB)) return 0;
+          if (isNaN(dateA)) return 1; // Invalid dates go to end
+          if (isNaN(dateB)) return -1;
+          return dateB - dateA;
+        case 'oldest':
+          const dateA2 = new Date(a.created).getTime();
+          const dateB2 = new Date(b.created).getTime();
+          // Handle invalid dates
+          if (isNaN(dateA2) && isNaN(dateB2)) return 0;
+          if (isNaN(dateA2)) return 1; // Invalid dates go to end
+          if (isNaN(dateB2)) return -1;
+          return dateA2 - dateB2;
+        case 'popular':
+          return b.votes - a.votes;
+        case 'payout':
+          // Parse payout value - handle formats like "$2.14", "2.14 HBD", "2.14 USD", etc.
+          const payoutA = parseFloat(a.payout.replace(/[$,]/g, '').replace(/ HBD| USD/gi, '').trim()) || 0;
+          const payoutB = parseFloat(b.payout.replace(/[$,]/g, '').replace(/ HBD| USD/gi, '').trim()) || 0;
+          return payoutB - payoutA;
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [posts, searchQuery, sortOption]);
 
   // Load initial posts with progressive rendering for faster perceived performance
   useEffect(() => {
@@ -183,6 +245,8 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
 
   const hasMorePosts = posts.length < allBasicPosts.length;
 
+  const currentSortOption = SORT_OPTIONS.find(opt => opt.value === sortOption);
+
   if (loading) {
     return (
       <section className="py-6 sm:py-8 md:py-12 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
@@ -281,32 +345,137 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-4 sm:mb-6 md:mb-8">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-primary)' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)' }}>
-              Pins
-            </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-primary)' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)' }}>
+                Pins
+              </h2>
+              <span
+                className="text-sm sm:text-base px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: 'var(--section-bg)', color: 'var(--text-secondary)', fontFamily: 'var(--font-lexend)' }}
+              >
+                {allBasicPosts.length}
+              </span>
+            </div>
+
+            {/* Search and Sort Controls */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              {/* Search Bar */}
+              <div className="relative flex-1 sm:flex-none sm:w-64">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search pins..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-8 py-2 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  style={{
+                    backgroundColor: 'var(--card-bg)',
+                    borderColor: 'var(--border-color)',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'var(--font-lexend)'
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <X className="w-4 h-4 hover:opacity-70 transition-opacity" style={{ color: 'var(--text-muted)' }} />
+                  </button>
+                )}
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSortDropdown(!showSortDropdown)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all duration-200 hover:opacity-80"
+                  style={{
+                    backgroundColor: 'var(--card-bg)',
+                    borderColor: 'var(--border-color)',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'var(--font-lexend)'
+                  }}
+                >
+                  {currentSortOption?.icon}
+                  <span className="hidden sm:inline">{currentSortOption?.label}</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showSortDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowSortDropdown(false)}
+                    />
+                    <div
+                      className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 z-20 border"
+                      style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
+                    >
+                      {SORT_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setSortOption(option.value);
+                            setShowSortDropdown(false);
+                          }}
+                          className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${sortOption === option.value ? 'font-semibold' : ''
+                            }`}
+                          style={{
+                            color: sortOption === option.value ? '#ED6D28' : 'var(--text-primary)',
+                            backgroundColor: sortOption === option.value ? 'rgba(237, 109, 40, 0.1)' : 'transparent',
+                            fontFamily: 'var(--font-lexend)'
+                          }}
+                        >
+                          {option.icon}
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
+
+          {/* Search results count */}
+          {searchQuery && (
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-lexend)' }}>
+              Found {filteredAndSortedPosts.length} {filteredAndSortedPosts.length === 1 ? 'pin' : 'pins'} matching "{searchQuery}"
+            </p>
+          )}
         </div>
 
         {/* Posts Grid */}
-        {posts.length === 0 ? (
+        {filteredAndSortedPosts.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-sm sm:text-base" style={{ color: 'var(--text-muted)' }}>No posts available</p>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--section-bg)' }}>
+              <Search className="w-8 h-8" style={{ color: 'var(--text-muted)' }} />
+            </div>
+            <p className="text-sm sm:text-base font-medium" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)' }}>
+              No pins found
+            </p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+              Try a different search term
+            </p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-              {posts.map((post) => (
+              {filteredAndSortedPosts.map((post) => (
                 <ExploreCard key={post.slug} post={post} hideAvatar={true} />
               ))}
             </div>
 
-            {/* Load More Button */}
-            {hasMorePosts && (
+            {/* Load More Button - only show when not searching */}
+            {hasMorePosts && !searchQuery && (
               <div className="mt-6 sm:mt-8 md:mt-12 text-center">
                 <button
                   onClick={loadMorePosts}
@@ -344,4 +513,3 @@ export function UserPosts({ username, initialPins }: UserPostsProps) {
 }
 
 export default UserPosts;
-

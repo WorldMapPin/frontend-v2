@@ -178,6 +178,25 @@ body {
   background: linear-gradient(180deg, #0f0f0f 30.32%, #0a0a0a 100%);
 }
 
+/* Challenges Page Background */
+.challenges-page-bg {
+  background: linear-gradient(180deg, #E0F7FF 30.32%, #FFFFFF 100%);
+  transition: background 0.3s ease;
+}
+
+.dark .challenges-page-bg {
+  background: linear-gradient(180deg, #0a1520 30.32%, #0a0a0a 100%);
+}
+
+/* Challenges Hero - Winter Theme */
+.challenges-hero {
+  background: linear-gradient(92.88deg, #0ea5e9 1.84%, #38bdf8 50%, #7dd3fc 100%);
+}
+
+.dark .challenges-hero {
+  background: linear-gradient(92.88deg, #0369a1 1.84%, #0284c7 50%, #0ea5e9 100%);
+}
+
 /* Team Section Background */
 .team-section-bg {
   background: linear-gradient(180deg, #FFFFFF 0%, #FFF3DC 20.67%, #FFF3DC 94.23%, #FFFFFF 100%);
@@ -1351,6 +1370,7 @@ html[data-theme='dark'] nav span span[style*="#ED6D28"] {
     opacity: 0;
     transform: scale(0.9) translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);

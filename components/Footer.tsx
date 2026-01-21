@@ -71,6 +71,12 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                   Community Stories
                 </Link>
               </li>
+              <li>
+                <Link href="/challenges" className="hover:text-orange-500 text-sm transition-colors flex items-center group" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  Challenges
+                </Link>
+              </li>
             </ul>
           </div>
 

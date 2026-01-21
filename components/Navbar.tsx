@@ -170,8 +170,21 @@ export default function Navbar({ className = '' }: NavbarProps) {
               >
                 Explore
               </Link>
-
-
+              <Link
+                href="/challenges"
+                className="px-3 py-2 rounded-md text-lg transition-colors duration-200 hover:text-sky-500"
+                style={{
+                  fontFamily: 'var(--font-lexend)',
+                  fontWeight: 500,
+                  fontStyle: 'normal',
+                  lineHeight: '100%',
+                  letterSpacing: '-0.03em',
+                  color: 'var(--text-primary)'
+                }}
+                suppressHydrationWarning={true}
+              >
+                Challenges
+              </Link>
               {/* Auth Section */}
               {isReady ? (
                 user ? (
@@ -452,6 +465,22 @@ export default function Navbar({ className = '' }: NavbarProps) {
               suppressHydrationWarning={true}
             >
               Explore
+            </Link>
+            <Link
+              href="/challenges"
+              className="block px-3 py-2 rounded-md text-sm"
+              style={{
+                fontFamily: 'var(--font-lexend)',
+                fontWeight: 500,
+                fontStyle: 'normal',
+                lineHeight: '100%',
+                letterSpacing: '-0.03em',
+                color: 'var(--text-primary)'
+              }}
+              onClick={() => setIsMenuOpen(false)}
+              suppressHydrationWarning={true}
+            >
+              Challenges
             </Link>
 
             <Link

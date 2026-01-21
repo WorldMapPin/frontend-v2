@@ -15,7 +15,7 @@ export default function MapNavbar() {
     const [searchValue, setSearchValue] = useState('');
     const [pinCount] = useState(142194);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    
+
     // User menu state
     const [showUserMenu, setShowUserMenu] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
@@ -116,6 +116,7 @@ export default function MapNavbar() {
                     <div className="hidden lg:flex items-center space-x-6 text-[#4B5563] font-medium text-sm mr-4">
 
                         <Link href="/explore" className="hover:text-[#ED6D28] transition-colors">Explore</Link>
+                        <Link href="/challenges" className="hover:text-[#0ea5e9] transition-colors">Challenges</Link>
                         <Link href={`/map/@${user || ''}`} className="hover:text-[#ED6D28] transition-colors">My Map</Link>
                     </div>
 
@@ -138,7 +139,7 @@ export default function MapNavbar() {
                     {/* Desktop User profile */}
                     {isReady && user && (
                         <div className="hidden sm:block relative" ref={userMenuRef}>
-                            <button 
+                            <button
                                 onClick={toggleUserMenu}
                                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#ED6D28] p-[2px] transition-transform active:scale-95 focus:outline-none"
                             >
@@ -159,7 +160,7 @@ export default function MapNavbar() {
                                         <p className="text-xs text-gray-500 font-medium">Signed in as</p>
                                         <p className="text-sm font-bold text-gray-900 truncate">@{user}</p>
                                     </div>
-                                    
+
                                     <div className="py-1">
                                         <Link
                                             href={`/user/${user}`}
@@ -189,8 +190,15 @@ export default function MapNavbar() {
                                         >
                                             Explore
                                         </Link>
+                                        <Link
+                                            href="/challenges"
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition-colors lg:hidden"
+                                            onClick={() => setShowUserMenu(false)}
+                                        >
+                                            Challenges
+                                        </Link>
                                     </div>
-                                    
+
                                     <div className="border-t border-gray-100 mt-1 pt-1">
                                         <button
                                             onClick={() => {
@@ -260,6 +268,12 @@ export default function MapNavbar() {
                             <Link href="/explore" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between p-4 rounded-xl hover:bg-orange-50 text-gray-700 font-bold transition-all border border-transparent hover:border-orange-100">
                                 <span>Explore</span>
                                 <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                            <Link href="/challenges" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between p-4 rounded-xl hover:bg-sky-50 text-gray-700 font-bold transition-all border border-transparent hover:border-sky-100">
+                                <span>Challenges</span>
+                                <svg className="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </Link>

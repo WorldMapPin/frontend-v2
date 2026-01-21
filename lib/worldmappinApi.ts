@@ -134,7 +134,7 @@ export async function fetchUserPostsWithCoords(username: string): Promise<any[]>
   try {
     console.log('========================================');
     console.log('fetchUserPostsWithCoords: Fetching all data for', username);
-    
+
     const searchParams: SearchParams = {
       author: username.toLowerCase()
     };
@@ -151,12 +151,12 @@ export async function fetchUserPostsWithCoords(username: string): Promise<any[]>
 
     const posts = response.data;
     console.log('fetchUserPostsWithCoords: Received', posts.length, 'posts');
-    
+
     // Now get full post details for all IDs
     if (posts.length === 0) {
       return [];
     }
-    
+
     const markerIds = posts.map((p: BasicPinData) => p.id);
     const fullPostsResponse = await axios.post(
       `${BASE_API_URL}/marker/ids`,
@@ -167,49 +167,24 @@ export async function fetchUserPostsWithCoords(username: string): Promise<any[]>
         }
       }
     );
-    
+
     const fullPosts = fullPostsResponse.data;
     console.log('fetchUserPostsWithCoords: Received', fullPosts.length, 'full posts');
-    
-    // CRITICAL: Sort fullPosts by date descending (newest first)
-    fullPosts.sort((a: any, b: any) => {
-      const dateA = new Date(a.postDate || 0).getTime();
-      const dateB = new Date(b.postDate || 0).getTime();
-      return dateB - dateA;
-    });
-    
-    // CRITICAL: Also sort posts (coordinates) by ID descending
-    // Assuming higher IDs = newer posts (this is typically how databases work)
-    posts.sort((a: BasicPinData, b: BasicPinData) => {
-      return b.id - a.id; // Descending by ID
-    });
-    
-    console.log('fetchUserPostsWithCoords: Sorted coordinates by ID (descending):');
-    console.log('  IDs:', posts.map((p: BasicPinData) => p.id).join(', '));
-    
-    console.log('fetchUserPostsWithCoords: Sorted posts by date (descending):');
-    fullPosts.forEach((post: any, idx: number) => {
-      const match = post.postLink?.match(/@([^/]+)\/(.+)$/);
-      const permlink = match ? match[2].substring(0, 40) : 'unknown';
-      console.log(`  [${idx}] ${post.postDate} - ${permlink}...`);
-    });
-    
-    // Now both arrays should be sorted in the same chronological order (newest first)
-    // Match them by index
+
+    // FIRST: Merge posts with coordinates by matching index (API returns them in same order)
+    // We must merge BEFORE sorting to keep coords matched with correct posts
     const merged = fullPosts.map((post: any, index: number) => {
       const coords = posts[index];
-      
+
       if (!coords) {
         console.error('No coords for index', index);
         return null;
       }
-      
-      const match = post.postLink?.match(/@([^/]+)\/(.+)$/);
+
+      const match = post.postLink?.match(/@([^\/]+)\/(.+)$/);
       const author = match ? match[1] : '';
       const permlink = match ? match[2] : '';
-      
-      console.log(`  ✓ Matched: Pin ID ${coords.id} -> "${post.postTitle?.substring(0, 30)}..." (${post.postDate})`);
-      
+
       return {
         id: coords.id,
         longitude: coords.longitude,
@@ -224,10 +199,20 @@ export async function fetchUserPostsWithCoords(username: string): Promise<any[]>
         ...post
       };
     }).filter(Boolean);
-    
-    console.log('fetchUserPostsWithCoords: Successfully merged', merged.length, 'posts');
-    console.log('========================================');
-    
+
+    // THEN: Sort the merged data by date descending (newest first)
+    merged.sort((a: any, b: any) => {
+      const dateA = new Date(a.created || 0).getTime();
+      const dateB = new Date(b.created || 0).getTime();
+      return dateB - dateA; // Newest first
+    });
+
+    console.log('fetchUserPostsWithCoords: Sorted', merged.length, 'posts by date (newest first)');
+    if (merged.length > 0) {
+      console.log('  First post:', merged[0].created, '-', merged[0].title?.substring(0, 30));
+      console.log('  Last post:', merged[merged.length - 1].created, '-', merged[merged.length - 1].title?.substring(0, 30));
+    }
+
     return merged;
   } catch (error) {
     console.error('Error fetching user posts with coords:', error);
@@ -242,7 +227,7 @@ export async function fetchPinsByIds(markerIds: number[]): Promise<any[]> {
   try {
     console.log('========================================');
     console.log('fetchPinsByIds: Requesting IDs:', markerIds);
-    
+
     const response = await axios.post(
       `${BASE_API_URL}/marker/ids`,
       { marker_ids: markerIds },
@@ -254,7 +239,7 @@ export async function fetchPinsByIds(markerIds: number[]): Promise<any[]> {
     );
 
     console.log('fetchPinsByIds: Received', response.data.length, 'posts');
-    
+
     // Log all permlinks in response order to understand API ordering
     console.log('fetchPinsByIds: Response order (by permlink):');
     response.data.forEach((post: any, idx: number) => {
@@ -305,6 +290,57 @@ export async function fetchRankingData(): Promise<RankingData[]> {
   } catch (error) {
     console.error('Error fetching ranking data:', error);
     throw error;
+  }
+}
+
+// Interface for Winter Challenge ranking data
+export interface WinterChallengeRankingData {
+  rank: number;
+  username: string;
+  tickets: number;
+}
+
+// Function to fetch Winter Challenge ranking data
+// Endpoint: https://worldmappin.com/api/rankingWinter
+export async function fetchWinterChallengeRankingData(): Promise<WinterChallengeRankingData[]> {
+  try {
+    const response = await axios.get(`${BASE_API_URL}/rankingWinter`);
+    return response.data.map((item: any, index: number) => ({
+      rank: index + 1,
+      username: item.author,
+      tickets: item.tickets
+    }));
+  } catch (error) {
+    console.error('Error fetching winter challenge ranking data:', error);
+    throw error;
+  }
+}
+
+// Function to get user rank in Winter Challenge
+export async function getUserWinterChallengeRank(username: string): Promise<number> {
+  try {
+    const rankingData = await fetchWinterChallengeRankingData();
+    const userEntry = rankingData.find(
+      entry => entry.username.toLowerCase() === username.toLowerCase()
+    );
+    return userEntry ? userEntry.rank : 0;
+  } catch (error) {
+    console.error('Error getting user winter challenge rank:', error);
+    return 0;
+  }
+}
+
+// Function to get user tickets in Winter Challenge
+export async function getUserWinterChallengeTickets(username: string): Promise<number> {
+  try {
+    const rankingData = await fetchWinterChallengeRankingData();
+    const userEntry = rankingData.find(
+      entry => entry.username.toLowerCase() === username.toLowerCase()
+    );
+    return userEntry ? userEntry.tickets : 0;
+  } catch (error) {
+    console.error('Error getting user winter challenge tickets:', error);
+    return 0;
   }
 }
 
