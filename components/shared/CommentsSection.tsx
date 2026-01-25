@@ -6,6 +6,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { HiveComment } from '@/types/post';
 import { useHiveActions } from '@/hooks/use-hive-actions';
+import CommentVoteSlider from '@/components/shared/CommentVoteSlider';
 
 // Configure marked for comment rendering
 marked.setOptions({
@@ -38,12 +39,10 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
   const [expanded, setExpanded] = useState(true);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState('');
-  const [localVotes, setLocalVotes] = useState(comment.votes);
-  const [hasVoted, setHasVoted] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replySuccess, setReplySuccess] = useState(false);
-  
-  const { vote, comment: postComment, isVoting, isCommenting, isLoggedIn, user } = useHiveActions();
+
+  const { comment: postComment, isCommenting, isLoggedIn, user } = useHiveActions();
 
   // Process markdown body - mobile friendly with image sizing
   const processedBody = useMemo(() => {
@@ -78,24 +77,6 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
       console.error('Failed to load replies:', error);
     } finally {
       setLoadingReplies(false);
-    }
-  };
-
-  // Handle vote on comment
-  const handleVote = async () => {
-    if (!isLoggedIn || isVoting) return;
-    
-    const weight = hasVoted ? 0 : 10000; // Toggle vote
-    const result = await vote(comment.author, comment.permlink, weight);
-    
-    if (result.success) {
-      if (hasVoted) {
-        setLocalVotes(prev => Math.max(0, prev - 1));
-        setHasVoted(false);
-      } else {
-        setLocalVotes(prev => prev + 1);
-        setHasVoted(true);
-      }
     }
   };
 
@@ -185,27 +166,12 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
 
               {/* Comment Footer */}
               <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-3 flex-wrap">
-                {/* Interactive Vote Button */}
-                <button
-                  onClick={handleVote}
-                  disabled={isVoting || !isLoggedIn}
-                  className={`flex items-center gap-0.5 sm:gap-1 comment-votes transition-all ${
-                    isLoggedIn ? 'cursor-pointer hover:scale-105' : 'cursor-default'
-                  } ${hasVoted ? 'text-pink-500' : ''}`}
-                  title={isLoggedIn ? (hasVoted ? 'Remove vote' : 'Upvote') : 'Log in to vote'}
-                >
-                  {isVoting ? (
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill={hasVoted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                  )}
-                  <span className="text-[10px] sm:text-xs font-medium">{localVotes}</span>
-                </button>
+                {/* Value-based vote with slider */}
+                <CommentVoteSlider
+                  author={comment.author}
+                  permlink={comment.permlink}
+                  votes={comment.votes}
+                />
 
                 {/* Payout */}
                 {comment.payout !== '0' && (

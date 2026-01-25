@@ -2624,6 +2624,71 @@ html[data-theme='dark'] .comment-author-link {
   color: var(--like-color);
 }
 
+@keyframes comment-vote-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.comment-vote-fade-in {
+  animation: comment-vote-fade-in 0.2s ease-out;
+}
+
+/* Comment Vote Slider - overlay backdrop */
+.comment-vote-backdrop {
+  background-color: rgba(0, 0, 0, 0.2);
+  cursor: default;
+}
+
+.dark .comment-vote-backdrop,
+html[data-theme='dark'] .comment-vote-backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Comment Vote Slider popover - theme aware */
+.comment-vote-slider-popover {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.dark .comment-vote-slider-popover,
+html[data-theme='dark'] .comment-vote-slider-popover {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.comment-vote-remove-btn {
+  color: #dc2626;
+  background-color: rgba(254, 226, 226, 0.8);
+}
+
+.comment-vote-remove-btn:hover:not(:disabled) {
+  background-color: #fee2e2;
+}
+
+.dark .comment-vote-remove-btn,
+html[data-theme='dark'] .comment-vote-remove-btn {
+  color: #f87171;
+  background-color: rgba(220, 38, 38, 0.15);
+}
+
+.dark .comment-vote-remove-btn:hover:not(:disabled),
+html[data-theme='dark'] .comment-vote-remove-btn:hover:not(:disabled) {
+  background-color: rgba(220, 38, 38, 0.25);
+}
+
+.comment-vote-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.dark .comment-vote-error,
+html[data-theme='dark'] .comment-vote-error {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
 .comment-payout {
   color: #22c55e;
 }
