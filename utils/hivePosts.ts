@@ -176,26 +176,42 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
     };
     
     /**
-     * Extract the first image URL from markdown body as fallback
-     * Looks for patterns like ![alt](url) or [![alt](url)](url)
-     * Also handles InLeo format where images are standalone URLs
+     * Extract the first image URL from markdown or HTML body as fallback
+     * Looks for patterns like ![alt](url), HTML <img> tags, or standalone URLs
+     * Also handles InLeo format and travel digest posts with HTML content
      */
     const extractFirstImageFromBody = (body: string): string | null => {
       if (!body) return null;
       
-      // Match markdown image: ![...](url) - capture the URL
+      // Priority 1: Match markdown image: ![...](url) - capture the URL
       const imgMatch = body.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/);
       if (imgMatch && imgMatch[1]) {
         return imgMatch[1];
       }
       
-      // Match standalone image URL on its own line (handles InLeo format with leading/trailing whitespace)
+      // Priority 2: Match HTML img tags (for travel digest posts and HTML content)
+      // Handle both single and double quotes, and various attribute orders
+      const htmlImgMatch = body.match(/<img[^>]*\ssrc=['"']([^'"]+)['"']/) ||
+                           body.match(/<img[^>]*\ssrc='([^']+)'/) ||
+                           body.match(/<img[^>]*\ssrc="([^"]+)"/) ||
+                           body.match(/<img[^>]*src=['"']([^'"]+)['"']/) ||
+                           body.match(/<img[^>]*src='([^']+)'/) ||
+                           body.match(/<img[^>]*src="([^"]+)"/);
+      if (htmlImgMatch && htmlImgMatch[1]) {
+        const url = htmlImgMatch[1];
+        // Validate it's a proper HTTP/HTTPS URL
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          return url;
+        }
+      }
+      
+      // Priority 3: Match standalone image URL on its own line (handles InLeo format with leading/trailing whitespace)
       const standaloneMatch = body.match(/^\s*(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg))\s*$/im);
       if (standaloneMatch && standaloneMatch[1]) {
         return standaloneMatch[1];
       }
       
-      // Match InLeo/Leopedia images specifically (they may not have standard extensions)
+      // Priority 4: Match InLeo/Leopedia images specifically (they may not have standard extensions)
       const leopediaMatch = body.match(/^\s*(https?:\/\/img\.leopedia\.io\/[^\s]+)\s*$/im);
       if (leopediaMatch && leopediaMatch[1]) {
         return leopediaMatch[1];
@@ -223,6 +239,46 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
       const bodyImage = extractFirstImageFromBody(post.body);
       if (bodyImage) {
         coverImage = optimizeImageUrl(bodyImage, 'thumb');
+      }
+    }
+
+    // For crossposts: if no cover image found, try fetching from original post
+    if (!coverImage && metadata.original_author && metadata.original_permlink) {
+      try {
+        const originalApiUrl = `/api/hive/post?author=${encodeURIComponent(metadata.original_author)}&permlink=${encodeURIComponent(metadata.original_permlink)}`;
+        const originalResponse = await fetch(originalApiUrl, {
+          signal: AbortSignal.timeout(5000), // 5 second timeout
+        });
+
+        if (originalResponse.ok) {
+          const originalData = await originalResponse.json();
+          if (originalData.post) {
+            const originalPost = originalData.post;
+            const originalMetadata = safeJsonParse(originalPost.json_metadata);
+
+            // Try original post metadata images
+            const originalImageArray = originalMetadata.image || originalMetadata.images;
+            if (originalImageArray && Array.isArray(originalImageArray) && originalImageArray.length > 0) {
+              for (const img of originalImageArray) {
+                const cleanedUrl = cleanImageUrl(img);
+                if (cleanedUrl) {
+                  coverImage = optimizeImageUrl(cleanedUrl, 'thumb');
+                  break;
+                }
+              }
+            }
+
+            // Try original post body images
+            if (!coverImage && originalPost.body) {
+              const originalBodyImage = extractFirstImageFromBody(originalPost.body);
+              if (originalBodyImage) {
+                coverImage = optimizeImageUrl(originalBodyImage, 'thumb');
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(`Error fetching original post cover image for crosspost @${metadata.original_author}/${metadata.original_permlink}:`, error);
       }
     }
     

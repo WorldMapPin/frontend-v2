@@ -281,14 +281,15 @@ export default function PostReaderPage() {
         <article>
           {/* Cover Image */}
           {post.coverImage && (
-            <div
-              className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96 bg-gradient-to-br from-blue-500 to-purple-600"
-              style={{
-                boxShadow: '0px 1px 3px 1px #00000026, 0px 1px 2px 0px #0000004D',
-                borderRadius: '18px',
-                overflow: 'hidden'
-              }}
-            >
+            <div className="px-4 sm:px-6 lg:px-8 mb-4 sm:mb-6 lg:mb-8">
+              <div
+                className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96 bg-gradient-to-br from-blue-500 to-purple-600"
+                style={{
+                  boxShadow: '0px 1px 3px 1px #00000026, 0px 1px 2px 0px #0000004D',
+                  borderRadius: '18px',
+                  overflow: 'hidden'
+                }}
+              >
               <ProgressiveImage
                 src={post.coverImage}
                 alt={post.title}
@@ -367,6 +368,7 @@ export default function PostReaderPage() {
                   />
                 </svg>
               </button>
+            </div>
             </div>
           )}
 

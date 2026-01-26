@@ -56,8 +56,8 @@ export default function ExploreHeader({
   loading = false 
 }: ExploreHeaderProps) {
   return (
-    <div className="mx-auto px-2 sm:px-4 lg:px-8 pt-2 sm:pt-4" style={{ maxWidth: '1344px' }}>
-      <div className="rounded-lg sm:rounded-xl shadow-lg m-2 sm:m-4 relative overflow-hidden" style={{ background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)' }}>
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-2 sm:pt-4">
+      <div className="rounded-lg sm:rounded-xl shadow-lg relative overflow-hidden" style={{ background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)' }}>
         
         <img 
           src="/globe.svg" 
@@ -134,7 +134,7 @@ export default function ExploreHeader({
       </div>
 
       {/* Sort Filter Buttons */}
-      <div className="m-2 sm:m-4 mt-0 sm:mt-0">
+      <div className="mt-3 sm:mt-4">
         <div className="flex flex-wrap gap-2 sm:gap-3">
           {SORT_OPTIONS.map((option) => {
             const isActive = sortType === option.value;
