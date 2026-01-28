@@ -220,7 +220,7 @@ export default function PostReaderPage() {
     return (
       <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="relative z-10">
-        <div className="w-full px-4 sm:w-[90%] md:w-[85%] lg:w-[70%] mx-auto sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-12">
           <div className="rounded-lg shadow-md overflow-hidden" style={{ backgroundColor: 'var(--card-bg)' }}>
             {/* Loading Skeleton */}
             <div className="animate-pulse">
@@ -246,7 +246,7 @@ export default function PostReaderPage() {
     return (
       <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
         <div className="relative z-10">
-        <div className="w-full px-4 sm:w-[90%] md:w-[85%] lg:w-[70%] mx-auto sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <div className="rounded-lg shadow-md p-4 sm:p-6 lg:p-8 text-center" style={{ backgroundColor: 'var(--card-bg)' }}>
             <svg className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mx-auto mb-3 sm:mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -277,11 +277,11 @@ export default function PostReaderPage() {
   return (
     <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       <div className="relative z-10">
-      <div className="w-full px-4 sm:w-[90%] md:w-[85%] lg:w-[70%] mx-auto sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <article>
           {/* Cover Image */}
           {post.coverImage && (
-            <div className="px-4 sm:px-6 lg:px-8 mb-4 sm:mb-6 lg:mb-8">
+            <div className="mb-4 sm:mb-6 lg:mb-8">
               <div
                 className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96 bg-gradient-to-br from-blue-500 to-purple-600"
                 style={{
