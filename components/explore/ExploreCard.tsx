@@ -27,7 +27,7 @@ export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = 
   };
 
   return (
-    <Link href={`/read/${post.slug}`}>
+    <Link href={`/${post.slug}`}>
       <div className="group rounded-xl sm:rounded-2xl hover:shadow-xl transition-all duration-300 overflow-visible cursor-pointer flex flex-col relative h-full explore-card" style={{ backgroundColor: 'var(--card-bg)', boxShadow: '0px 4px 4px 0px var(--shadow-color)' }}>
         {/* Cover Image with Overlay Content */}
         <div className="relative w-full bg-gradient-to-br from-orange-400 to-amber-500 overflow-hidden rounded-t-xl sm:rounded-t-2xl h-[180px] sm:h-[220px] lg:h-[249.6px]">

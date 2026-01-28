@@ -1147,7 +1147,7 @@ export default function StatsPage() {
                     <div className="w-6 text-[10px] font-bold group-hover:text-orange-300 text-center" style={{ color: 'var(--text-muted)' }}>{index + 1}</div>
                     <div className="min-w-0 flex-1">
                       <a
-                        href={`/user/${user.username}`}
+                        href={`/@${user.username}`}
                         className="text-xs font-bold truncate block hover:text-orange-600 transition-colors"
                         style={{ color: 'var(--text-primary)' }}
                       >

@@ -126,7 +126,7 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
         </button>
 
         {/* Avatar */}
-        <Link href={`/user/${comment.author}`} className="flex-shrink-0">
+        <Link href={`/@${comment.author}`} className="flex-shrink-0">
           <img
             src={`https://images.hive.blog/u/${comment.author}/avatar/small`}
             alt={`${comment.author}'s avatar`}
@@ -143,7 +143,7 @@ function CommentItem({ comment, onLoadReplies, onReplyPosted }: CommentItemProps
           {/* Author Info */}
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             <Link
-              href={`/user/${comment.author}`}
+              href={`/@${comment.author}`}
               className="font-semibold text-xs sm:text-base comment-author-link hover:underline truncate max-w-[120px] sm:max-w-none"
             >
               @{comment.author}

@@ -1,29 +1,38 @@
-import type { Metadata } from "next";
-import UserProfile from "./UserProfile";
+'use client';
 
-type Props = {
-  params: Promise<{
-    username: string;
-  }>;
-};
+import { useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { username: rawUsername } = await params;
-  
-  // Handle @username format - remove @ if present and decode URL encoding
-  const username = decodeURIComponent(rawUsername).replace(/^@/, '');
-  
-  return {
-    title: `${username} - WorldMapPin`,
-    description: `Explore ${username}'s travel pins and adventures on WorldMapPin. Discover unique destinations and stories shared by this traveler.`,
-  };
-}
+/**
+ * Redirect from old /user/username to new /@username
+ * This maintains backward compatibility for existing links
+ */
+export default function UserRedirectPage() {
+  const params = useParams();
+  const router = useRouter();
 
-export default async function UserPage({ params }: Props) {
-  const { username: rawUsername } = await params;
-  
-  // Handle @username format - remove @ if present and decode URL encoding
-  const username = decodeURIComponent(rawUsername).replace(/^@/, '');
+  useEffect(() => {
+    const rawUsername = params.username as string;
+    if (rawUsername) {
+      // Decode and remove @ if present (some old links might have @)
+      const username = decodeURIComponent(rawUsername).replace(/^@/, '');
+      // Redirect to the new route: /@username
+      router.replace(`/@${username}`);
+    } else {
+      // If no valid username, go to home
+      router.replace('/');
+    }
+  }, [params.username, router]);
 
-  return <UserProfile username={username} />;
+  // Show a minimal loading state while redirecting
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-sm" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-lexend)' }}>
+          Redirecting...
+        </p>
+      </div>
+    </div>
+  );
 }

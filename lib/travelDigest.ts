@@ -326,9 +326,10 @@ export function parseDigestHTML(htmlContent: string): DigestPost[] {
 
 /**
  * Generate a slug for post navigation
+ * Returns format: @author/permlink (for use with /@author/permlink routes)
  */
 export function generatePostSlug(author: string, permlink: string): string {
-  return `${author}/${permlink}`;
+  return `@${author}/${permlink}`;
 }
 
 /**

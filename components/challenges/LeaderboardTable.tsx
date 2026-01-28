@@ -196,7 +196,7 @@ export default function LeaderboardTable({ data, loading = false }: LeaderboardT
                             <div className="flex items-center gap-2">
                                 {/* WorldMapPin Profile */}
                                 <Link
-                                    href={`/user/${item.username}`}
+                                    href={`/@${item.username}`}
                                     className="p-2 rounded-lg transition-all duration-200 hover:scale-105"
                                     style={{
                                         backgroundColor: 'rgba(237, 109, 40, 0.1)',

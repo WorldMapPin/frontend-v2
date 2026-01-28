@@ -221,7 +221,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                           </span>
                         </div>
                         <Link
-                          href={`/user/${user}`}
+                          href={`/@${user}`}
                           className="block px-4 py-2 text-sm transition-colors"
                           style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)', backgroundColor: 'transparent' }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
@@ -507,7 +507,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 {user ? (
                   <>
                     <Link
-                      href={`/user/${user}`}
+                      href={`/@${user}`}
                       className="block px-3 py-2 rounded-md text-sm"
                       style={{
                         fontFamily: 'var(--font-lexend)',

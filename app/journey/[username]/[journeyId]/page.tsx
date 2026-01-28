@@ -98,7 +98,7 @@ export default function JourneyDetailPage() {
             <div className="flex items-center space-x-2">
               <span className="font-medium">👤 By</span>
               <Link
-                href={`/user/${journey.createdBy}`}
+                href={`/@${journey.createdBy}`}
                 className="font-bold underline hover:text-[#331B00] transition-colors"
               >
                 @{journey.createdBy}
@@ -149,7 +149,7 @@ export default function JourneyDetailPage() {
                 <div>
                   <div className="text-gray-600 font-medium mb-1">Traveler</div>
                   <Link
-                    href={`/user/${journey.createdBy}`}
+                    href={`/@${journey.createdBy}`}
                     className="text-orange-600 hover:text-orange-700 font-medium underline"
                   >
                     @{journey.createdBy}

@@ -163,7 +163,7 @@ export default function MapNavbar() {
 
                                     <div className="py-1">
                                         <Link
-                                            href={`/user/${user}`}
+                                            href={`/@${user}`}
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                                             onClick={() => setShowUserMenu(false)}
                                         >
