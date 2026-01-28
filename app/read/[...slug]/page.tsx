@@ -3,10 +3,7 @@
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-/**
- * Redirect from old /read/@author/permlink to new /@author/permlink
- * This maintains backward compatibility for existing links
- */
+
 export default function ReadRedirectPage() {
   const params = useParams();
   const router = useRouter();
@@ -23,7 +20,6 @@ export default function ReadRedirectPage() {
     }
   }, [params.slug, router]);
 
-  // Show a minimal loading state while redirecting
   return (
     <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
       <div className="relative z-10">
