@@ -24,6 +24,7 @@ export default function Home() {
       description: 'Pin your adventures on an interactive global map and visualize your journey across continents.',
       iconGradient: 'linear-gradient(135deg, #54F7F4 0%, #73FFBB 100%)',
       cardGradient: 'linear-gradient(135deg, rgba(84, 247, 244, 0.1) 0%, rgba(115, 255, 187, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
+      href: '/map',
     },
     {
       icon: (
@@ -36,6 +37,7 @@ export default function Home() {
       description: 'Share stunning photos, videos, and detailed narratives of your travel experiences with the community.',
       iconGradient: 'linear-gradient(135deg, #ED6D28 0%, #FF8C42 100%)',
       cardGradient: 'linear-gradient(135deg, rgba(237, 109, 40, 0.1) 0%, rgba(255, 140, 66, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
+      href: '/explore',
     },
     {
       icon: (
@@ -50,6 +52,7 @@ export default function Home() {
       description: 'Your content is permanently stored on Hive blockchain, ensuring authenticity and ownership.',
       iconGradient: 'linear-gradient(135deg, #C654F7 0%, #FF737A 100%)',
       cardGradient: 'linear-gradient(135deg, rgba(198, 84, 247, 0.1) 0%, rgba(255, 115, 154, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
+      href: '/about',
     },
   ];
 
