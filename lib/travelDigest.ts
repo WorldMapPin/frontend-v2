@@ -32,47 +32,63 @@ export async function checkDigestExists(digestNumber: number): Promise<boolean> 
 }
 
 /**
- * Find the latest available digest number
- * Starts from a known number and increments until 404
+ 
+ * Baseline: Digest #2797 was published on January 7, 2026
+ */
+export function calculateDigestNumberForDate(date: Date = new Date()): number {
+  // Baseline: January 7, 2026 (UTC) = Digest #2797
+  const baselineDate = new Date(Date.UTC(2026, 0, 7)); // Month is 0-indexed
+  const baselineDigest = 2797;
+  
+  // Normalize input date to UTC midnight for consistent day calculation
+  const targetDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  
+  // Calculate days difference
+  const diffTime = targetDate.getTime() - baselineDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Each day has one digest
+  return baselineDigest + diffDays;
+}
+
+/**
+ * Find the latest available digest number using date-based calculation
+ * This eliminates the need for multiple probing requests
  */
 export async function findLatestDigestNumber(startNumber?: number): Promise<number> {
+  // Use provided start number or calculate based on today's date
+  const calculatedNumber = startNumber || calculateDigestNumberForDate();
   
-  let currentNumber = startNumber || 2797;
-  let maxAttempts = 15; // Increase attempts for better search
+  console.log(`Calculated digest number for today: ${calculatedNumber}`);
   
-  console.log(`Searching for latest digest starting from number: ${currentNumber}`);
+  // Check if the calculated digest exists
+  const exists = await checkDigestExists(calculatedNumber);
   
-  // First, verify the start number exists, if not go backwards
-  const startExists = await checkDigestExists(currentNumber);
-  if (!startExists) {
-    console.log(`Digest ${currentNumber} doesn't exist, searching backwards...`);
-    // If start number doesn't exist, go backwards to find a valid one
-    let backwardAttempts = 20; // Allow more backward search
-    while (currentNumber > 2780 && backwardAttempts > 0) {
-      currentNumber--;
-      const exists = await checkDigestExists(currentNumber);
-      if (exists) {
-        console.log(`Found existing digest: ${currentNumber}`);
-        break;
-      }
-      backwardAttempts--;
+  if (exists) {
+    // Check if there's an even newer one (in case we're slightly behind or digest was posted early)
+    const nextExists = await checkDigestExists(calculatedNumber + 1);
+    if (nextExists) {
+      console.log(`Found newer digest: ${calculatedNumber + 1}`);
+      return calculatedNumber + 1;
+    }
+    console.log(`Latest digest confirmed: ${calculatedNumber}`);
+    return calculatedNumber;
+  }
+  
+  // If calculated doesn't exist (maybe today's digest hasn't been posted yet), go back a few days
+  console.log(`Digest ${calculatedNumber} doesn't exist yet, searching backwards...`);
+  for (let i = 1; i <= 5; i++) {
+    const fallbackNumber = calculatedNumber - i;
+    const fallbackExists = await checkDigestExists(fallbackNumber);
+    if (fallbackExists) {
+      console.log(`Found latest available digest: ${fallbackNumber}`);
+      return fallbackNumber;
     }
   }
   
-  // Now find the highest available number by going forward
-  maxAttempts = 10; // Reset attempts for forward search
-  while (maxAttempts > 0) {
-    const nextExists = await checkDigestExists(currentNumber + 1);
-    if (!nextExists) {
-      console.log(`Latest digest found: ${currentNumber}`);
-      return currentNumber;
-    }
-    currentNumber++;
-    maxAttempts--;
-  }
-  
-  console.log(`Reached max attempts, returning: ${currentNumber}`);
-  return currentNumber;
+  // Ultimate fallback - return the baseline (this should rarely happen)
+  console.warn(`No recent digest found, returning baseline: 2797`);
+  return 2797;
 }
 
 /**
@@ -506,13 +522,12 @@ class DigestCache {
   }
   
   /**
-   * Estimate digest number based on date (rough calculation)
+   * Estimate digest number based on date
+   * Uses the same calculation as calculateDigestNumberForDate
    */
   private estimateDigestNumber(date: Date): number {
-    // As of Jan 7, 2026, the latest digest is 2797
-    // Use this as a baseline for cache TTL decisions
-    const currentDigest = 2797;
-    return currentDigest;
+    // Use the exported function for consistency
+    return calculateDigestNumberForDate(date);
   }
   
   /**
