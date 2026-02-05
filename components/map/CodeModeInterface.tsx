@@ -41,11 +41,11 @@ export const CodeModeInterface: React.FC<CodeModeInterfaceProps> = ({
 
     return (
         <div className="absolute inset-x-0 bottom-32 sm:bottom-28 z-[60] flex flex-col items-center justify-center p-4 pointer-events-none">
-            <div className="w-full max-w-[340px] bg-white rounded-[20px] shadow-2xl overflow-hidden pointer-events-auto transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
+            <div className="w-full max-w-[340px] bg-white dark:bg-[#161616] rounded-[20px] shadow-2xl overflow-hidden pointer-events-auto transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
                 {/* Header Section */}
-                <div className="bg-[#E9ECEF] p-4 flex items-center justify-between border-b border-gray-100">
-                    <div className="flex items-center space-x-2 text-[#495057]">
-                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm">
+                <div className="bg-[#E9ECEF] dark:bg-[#2d2d2d] p-4 flex items-center justify-between border-b border-gray-100 dark:border-white/10">
+                    <div className="flex items-center space-x-2 text-[#495057] dark:text-[#c9b8a8]">
+                        <div className="w-8 h-8 rounded-full bg-white dark:bg-[#161616] flex items-center justify-center border border-gray-200 dark:border-white/10 shadow-sm">
                             <Hash className="w-4 h-4 text-[#ED6D28]" strokeWidth={3} />
                         </div>
                         <span className="font-bold text-sm tracking-wide font-lexend">Location Details</span>
@@ -55,10 +55,10 @@ export const CodeModeInterface: React.FC<CodeModeInterfaceProps> = ({
                 {/* Body Section */}
                 <div className="p-5 space-y-4">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider ml-1">Current Coordinates</label>
-                        <div className="bg-[#CED4DA]/50 rounded-xl p-3 flex items-center space-x-3 border border-gray-200/50">
+                        <label className="text-[10px] uppercase font-bold text-gray-400 opacity-70 tracking-wider ml-1">Current Coordinates</label>
+                        <div className="bg-[#CED4DA]/50 dark:bg-white/5 rounded-xl p-3 flex items-center space-x-3 border border-gray-200/50 dark:border-white/5">
                             <div className="w-2 h-2 rounded-full bg-[#ED6D28] animate-pulse" />
-                            <span className="font-mono text-sm text-gray-600 font-bold tracking-tight">
+                            <span className="font-mono text-sm text-gray-600 dark:text-[#f5e6d3] font-bold tracking-tight">
                                 {codeModeMarker ? `${codeModeMarker.lat.toFixed(5)}, ${codeModeMarker.lng.toFixed(5)}` : 'Click on map to select'}
                             </span>
                         </div>

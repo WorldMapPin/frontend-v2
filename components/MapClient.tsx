@@ -6,6 +6,7 @@ import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-m
 import axios from 'axios';
 
 // Import components
+import { useTheme } from './ThemeProvider';
 import { ClusteredMarkers } from '@/components/map/ClusteredMarkers';
 import { InfoWindowContent } from '@/components/map/InfoWindowContent';
 import { SpendHBDInfoWindow } from '@/components/map/community/SpendHBDInfoWindow';
@@ -39,6 +40,109 @@ const MAP_CONFIG = {
   mapTypeId: 'roadmap'
 };
 
+const DARK_MAP_STYLE = [
+  {
+    "elementType": "geometry",
+    "stylers": [{ "color": "#212121" }]
+  },
+  {
+    "elementType": "labels.icon",
+    "stylers": [{ "visibility": "off" }]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#757575" }]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [{ "color": "#212121" }]
+  },
+  {
+    "featureType": "administrative",
+    "elementType": "geometry",
+    "stylers": [{ "color": "#757575" }]
+  },
+  {
+    "featureType": "administrative.country",
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#9e9e9e" }]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "stylers": [{ "visibility": "off" }]
+  },
+  {
+    "featureType": "administrative.locality",
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#bdbdbd" }]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#757575" }]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [{ "color": "#181818" }]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#616161" }]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.stroke",
+    "stylers": [{ "color": "#1b1b1b" }]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.fill",
+    "stylers": [{ "color": "#2c2c2c" }]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#8a8a8a" }]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "geometry",
+    "stylers": [{ "color": "#373737" }]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [{ "color": "#3c3c3c" }]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "geometry",
+    "stylers": [{ "color": "#4e4e4e" }]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#616161" }]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#757575" }]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [{ "color": "#000000" }]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [{ "color": "#3d3d3d" }]
+  }
+];
+
 
 
 interface MapClientProps {
@@ -57,6 +161,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const [infowindowData, setInfowindowData] = useState<InfoWindowData>(null);
   const [currentZoom, setCurrentZoom] = useState(2); // Start at 2, skip 3
   const previousZoomRef = React.useRef(2); // Track previous zoom for direction detection
+  const { theme } = useTheme();
 
   // Code mode states
   const [codeMode, setCodeMode] = useState(false);
@@ -945,6 +1050,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
             onIdle={handleMapIdle}
             onClick={handleMapClick}
             className={`mobile-map-container ${(codeMode || codeModeMarker) ? 'code-mode-active' : ''}`}
+            styles={theme === 'dark' ? DARK_MAP_STYLE : []}
           >
             {/* Clustered Markers - Show when not in full code mode and journey controls are hidden */}
             {!codeMode && !showJourneyControls && geojson && (
@@ -1021,7 +1127,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                 {/* Mobile: Bottom Sheet - More rounded and polished */}
                 <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden z-10">
-                  <div className="mobile-post-popup bg-white/98 backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t border-white/40">
+                  <div className="mobile-post-popup bg-white/98 dark:bg-[#161616]/98 backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t border-white/40 dark:border-white/10">
                     {/* Handle Bar - Thicker and more modern */}
                     <div className="flex justify-center pt-4 pb-2">
                       <div className="w-10 h-1.5 bg-gray-200/80 rounded-full"></div>
@@ -1029,7 +1135,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                     {/* Close Button - More visible and styled */}
                     <button
-                      className="absolute top-5 right-5 w-9 h-9 bg-gray-100/80 backdrop-blur-sm hover:bg-gray-200/80 text-gray-500 rounded-full flex items-center justify-center transition-all duration-200 z-10 shadow-sm border border-white/20 active:scale-90"
+                      className="absolute top-5 right-5 w-9 h-9 bg-gray-100/80 dark:bg-white/10 backdrop-blur-sm hover:bg-gray-200/80 dark:hover:bg-white/20 text-gray-500 dark:text-[#c9b8a8] rounded-full flex items-center justify-center transition-all duration-200 z-10 shadow-sm border border-white/20 active:scale-90"
                       onClick={closeTab}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1064,7 +1170,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                 {/* Desktop: Centered Modal - Premium Glassmorphism Design */}
                 <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-6 z-10">
-                  <div className="w-full max-w-7xl bg-white/95 backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border border-white/40 overflow-hidden flex flex-col max-h-[90vh]">
+                  <div className="w-full max-w-7xl bg-white/95 dark:bg-[#161616]/95 backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border border-white/40 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
                     {/* Header - Minimal and elegant */}
                     <div className="relative flex items-center justify-between px-10 py-7 border-b border-gray-100/50">
                       <div className="flex items-center gap-4">
@@ -1074,10 +1180,10 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                           </svg>
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-lexend)' }}>
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-[#f5e6d3]" style={{ fontFamily: 'var(--font-lexend)' }}>
                             {loadedCommunity?.id === 'spendhbd' ? 'Business Details' : 'Discover Adventures'}
                           </h2>
-                          <p className="text-sm text-gray-500 font-medium mt-0.5">
+                          <p className="text-sm text-gray-500 dark:text-[#c9b8a8] font-medium mt-0.5">
                             {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} found at this location
                           </p>
                         </div>
@@ -1085,7 +1191,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                       {/* Close Button - Premium Style */}
                       <button
-                        className="w-12 h-12 bg-gray-50 hover:bg-orange-50 text-gray-400 hover:text-orange-500 rounded-2xl flex items-center justify-center transition-all duration-300 group border border-gray-100 hover:border-orange-100 active:scale-95"
+                        className="w-12 h-12 bg-gray-50 hover:bg-orange-50 dark:bg-white/5 dark:hover:bg-orange-500/10 text-gray-400 hover:text-orange-500 dark:text-[#c9b8a8] dark:hover:text-orange-400 rounded-2xl flex items-center justify-center transition-all duration-300 group border border-gray-100 dark:border-white/10 hover:border-orange-100 active:scale-95"
                         onClick={closeTab}
                       >
                         <svg className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -42,19 +42,12 @@ export const ClusterMarker = ({
   clusterId
 }: ClusterMarkerProps) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
-  
+
   const handleClick = useCallback(
     () => {
-      // For large clusters at low zoom levels, zoom in instead of showing details
-      if (size > maxClickableCluster && (mapZoom < 14)) {        
-        (window as any).setGlobalLocation?.({ location: position });
-        (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels
-      } else {
-        // Show cluster details for smaller clusters or at higher zoom levels
-        onMarkerClick && onMarkerClick(marker!, clusterId);
-      }
+      onMarkerClick && onMarkerClick(marker!, clusterId);
     },
-    [onMarkerClick, marker, clusterId, position, size]
+    [onMarkerClick, marker, clusterId]
   );
 
   const handleTouchStart = useCallback(
@@ -63,17 +56,10 @@ export const ClusterMarker = ({
       e.stopPropagation();
       // Add a small delay to prevent double-tap issues
       setTimeout(() => {
-        // For large clusters at low zoom levels, zoom in instead of showing details
-        if (size > maxClickableCluster && (mapZoom < 14)) {        
-          (window as any).setGlobalLocation?.({ location: position });
-          (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels
-        } else {
-          // Show cluster details for smaller clusters or at higher zoom levels
-          onMarkerClick && onMarkerClick(marker!, clusterId);
-        }
+        onMarkerClick && onMarkerClick(marker!, clusterId);
       }, 100);
     },
-    [onMarkerClick, marker, clusterId, position, size]
+    [onMarkerClick, marker, clusterId]
   );
 
   // Calculate marker size based on cluster size
@@ -104,10 +90,10 @@ export const ClusterMarker = ({
       position={position}
       zIndex={size}
       onClick={handleClick}
-      className={'marker cluster'} 
+      className={'marker cluster'}
       style={{
-        width: markerSize, 
-        height: markerSize, 
+        width: markerSize,
+        height: markerSize,
         background: backgroundColor,
         borderRadius: '50%',
         display: 'flex',
@@ -122,11 +108,11 @@ export const ClusterMarker = ({
         cursor: 'pointer',
         touchAction: 'manipulation' // Improve touch responsiveness
       }}
-    >  
-      <span 
+    >
+      <span
         onTouchStart={handleTouchStart} // Add touch support for mobile
         onClick={handleClick} // Handle click events
-        style={{ 
+        style={{
           touchAction: 'manipulation',
           cursor: 'pointer',
           userSelect: 'none',
