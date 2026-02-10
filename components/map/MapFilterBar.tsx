@@ -108,8 +108,12 @@ export default function MapFilterBar({
                     onClick={onToggleCodeMode}
                     className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl transition-all ${isCodeMode
                         ? 'bg-[#ED6D28] text-white ring-4 ring-orange-500/20'
-                        : 'bg-white dark:bg-[#161616] text-gray-700 dark:text-[#c9b8a8] hover:bg-gray-50 dark:hover:bg-white/5'
+                        : 'hover:opacity-80'
                         }`}
+                    style={!isCodeMode ? {
+                        backgroundColor: 'var(--card-bg)',
+                        color: 'var(--text-secondary)'
+                    } : undefined}
                     title={isCodeMode ? 'Exit Code' : 'Get Code'}
                 >
                     <Code className="w-5 h-5" />
@@ -120,8 +124,12 @@ export default function MapFilterBar({
                     onClick={onToggleJourneys}
                     className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl transition-all ${showJourneys
                         ? 'bg-[#ED6D28] text-white'
-                        : 'bg-white dark:bg-[#161616] text-gray-700 dark:text-[#c9b8a8] hover:bg-gray-50 dark:hover:bg-white/5'
+                        : 'hover:opacity-80'
                         }`}
+                    style={!showJourneys ? {
+                        backgroundColor: 'var(--card-bg)',
+                        color: 'var(--text-secondary)'
+                    } : undefined}
                     title="Journeys"
                 >
                     <MapIcon className="w-5 h-5" />
@@ -130,28 +138,35 @@ export default function MapFilterBar({
                 {/* Map Type Toggle - Yellow Circle */}
                 <button
                     onClick={onToggleMapType}
-                    className="w-11 h-11 bg-[#FFD700] rounded-full flex items-center justify-center shadow-xl border-2 border-white dark:border-[#161616] hover:scale-105 active:scale-95 transition-all"
+                    className="w-11 h-11 bg-[#FFD700] rounded-full flex items-center justify-center shadow-xl border-2 hover:scale-105 active:scale-95 transition-all"
+                    style={{ borderColor: 'var(--card-bg)' }}
                     title="Toggle Terrain/Satellite"
                 >
                     <Layers className="w-5 h-5 text-white" />
                 </button>
 
                 {/* Zoom Capsule */}
-                <div className="bg-white dark:bg-[#161616] rounded-full h-11 flex items-center shadow-xl px-1 border border-gray-100 dark:border-white/5">
+                <div className="rounded-full h-11 flex items-center shadow-xl px-1 border" 
+                    style={{ 
+                        backgroundColor: 'var(--card-bg)',
+                        borderColor: 'var(--border-subtle)' 
+                    }}>
                     <button
                         onClick={onZoomOut}
-                        className="w-9 h-9 flex items-center justify-center text-[#ADB5BD] hover:text-[#ED6D28] transition-colors"
+                        className="w-9 h-9 flex items-center justify-center hover:text-[#ED6D28] transition-colors"
+                        style={{ color: 'var(--text-muted)' }}
                     >
                         <Minus className="w-5 h-5" />
                     </button>
-                    <div className="w-[1px] h-4 bg-gray-200 dark:bg-white/10 mx-1" />
+                    <div className="w-[1px] h-4 mx-1" style={{ backgroundColor: 'var(--border-subtle)' }} />
                     <div className="px-2">
-                        <Search className="w-4 h-4 text-[#ADB5BD] stroke-[3]" />
+                        <Search className="w-4 h-4 stroke-[3]" style={{ color: 'var(--text-muted)' }} />
                     </div>
-                    <div className="w-[1px] h-4 bg-gray-200 dark:bg-white/10 mx-1" />
+                    <div className="w-[1px] h-4 mx-1" style={{ backgroundColor: 'var(--border-subtle)' }} />
                     <button
                         onClick={onZoomIn}
-                        className="w-9 h-9 flex items-center justify-center text-[#ADB5BD] hover:text-[#ED6D28] transition-colors"
+                        className="w-9 h-9 flex items-center justify-center hover:text-[#ED6D28] transition-colors"
+                        style={{ color: 'var(--text-muted)' }}
                     >
                         <Plus className="w-5 h-5" />
                     </button>
@@ -159,40 +174,57 @@ export default function MapFilterBar({
             </div>
 
             {/* Filter Bar Card - Width adjusted to match buttons */}
-            <div className={`bg-white dark:bg-[#161616] rounded-t-[20px] sm:rounded-[16px] shadow-2xl overflow-hidden transition-all duration-300 w-full sm:w-[340px]`}>
+            <div className="rounded-t-[20px] sm:rounded-[16px] shadow-2xl overflow-hidden transition-all duration-300 w-full sm:w-[340px]" 
+                style={{ backgroundColor: 'var(--card-bg)' }}>
                 {/* Header */}
                 <div
-                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    className="p-4 flex items-center justify-between cursor-pointer transition-colors"
+                    style={{ ':hover': { backgroundColor: 'var(--hover-bg)' } }}
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
                     <div className="flex items-center space-x-3">
-                        <div className="w-9 h-9 bg-orange-50 dark:bg-orange-500/10 rounded-xl flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center" 
+                            style={{ backgroundColor: 'var(--section-bg)' }}>
                             <Filter className="w-5 h-5 text-[#ED6D28]" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 dark:text-[#f5e6d3] text-sm font-lexend">Map Filters</h3>
-                            <p className="text-[10px] text-gray-500 dark:text-[#c9b8a8] font-bold uppercase tracking-wider">
+                            <h3 className="font-bold text-sm font-lexend" style={{ color: 'var(--text-primary)' }}>Map Filters</h3>
+                            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                                 {isExpanded ? 'Collapse filters' : `Showing ${selectedCommunityName}`}
                             </p>
                         </div>
                     </div>
-                    {isExpanded ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronUp className="w-5 h-5 text-gray-400" />}
+                    {isExpanded ? <ChevronDown className="w-5 h-5" style={{ color: 'var(--text-muted)' }} /> : <ChevronUp className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />}
                 </div>
 
                 {/* Expanded Content */}
                 {isExpanded && (
                     <div className="px-6 pb-6 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
                         {/* Tabs */}
-                        <div className="flex bg-gray-100 dark:bg-[#2d2d2d] p-1 rounded-xl mb-6">
+                        <div className="flex p-1 rounded-xl mb-6" style={{ backgroundColor: 'var(--section-bg)' }}>
                             <button
                                 onClick={() => setActiveTab('filters')}
-                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'filters' ? 'bg-white dark:bg-[#161616] shadow-sm text-[#ED6D28]' : 'text-gray-500 dark:text-[#c9b8a8] hover:text-gray-700 dark:hover:text-[#f5e6d3]'}`}
+                                className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
+                                style={activeTab === 'filters' ? {
+                                    backgroundColor: 'var(--card-bg)',
+                                    color: '#ED6D28',
+                                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                                } : {
+                                    color: 'var(--text-muted)'
+                                }}
                             >
                                 Search Pins
                             </button>
                             <button
                                 onClick={() => setActiveTab('community')}
-                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'community' ? 'bg-white dark:bg-[#161616] shadow-sm text-[#ED6D28]' : 'text-gray-500 dark:text-[#c9b8a8] hover:text-gray-700 dark:hover:text-[#f5e6d3]'}`}
+                                className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
+                                style={activeTab === 'community' ? {
+                                    backgroundColor: 'var(--card-bg)',
+                                    color: '#ED6D28',
+                                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                                } : {
+                                    color: 'var(--text-muted)'
+                                }}
                             >
                                 Community
                             </button>
@@ -201,49 +233,61 @@ export default function MapFilterBar({
                         {activeTab === 'filters' ? (
                             <form onSubmit={handleFilterSubmit} className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Username</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Username</label>
                                     <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                                         <input
                                             type="text"
                                             placeholder="Enter Hive username..."
                                             value={username}
                                             onChange={(e) => setUsername(e.target.value)}
-                                            className="w-full bg-[#F3F4F6] dark:bg-[#2d2d2d] border-none rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium text-gray-700 dark:text-[#f5e6d3] placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                            className="w-full border-none rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium"
+                                            style={{
+                                                backgroundColor: 'var(--section-bg)',
+                                                color: 'var(--text-primary)'
+                                            }}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tags</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Tags</label>
                                     <div className="relative">
-                                        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                                         <input
                                             type="text"
                                             placeholder="Travel, foodie, etc..."
                                             value={tags}
                                             onChange={(e) => setTags(e.target.value)}
-                                            className="w-full bg-[#F3F4F6] dark:bg-[#2d2d2d] border-none rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium text-gray-700 dark:text-[#f5e6d3] placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                            className="w-full border-none rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium"
+                                            style={{
+                                                backgroundColor: 'var(--section-bg)',
+                                                color: 'var(--text-primary)'
+                                            }}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Post Title</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Post Title</label>
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                                         <input
                                             type="text"
                                             placeholder="Keywords in title..."
                                             value={postTitle}
                                             onChange={(e) => setPostTitle(e.target.value)}
-                                            className="w-full bg-[#F3F4F6] dark:bg-[#2d2d2d] border-none rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium text-gray-700 dark:text-[#f5e6d3] placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                            className="w-full border-none rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium"
+                                            style={{
+                                                backgroundColor: 'var(--section-bg)',
+                                                color: 'var(--text-primary)'
+                                            }}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Date Range</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Date Range</label>
 
                                     {/* Presets - Dropdown */}
                                     <div className="relative mb-2">
@@ -253,7 +297,11 @@ export default function MapFilterBar({
                                                     handlePresetDate(parseInt(e.target.value));
                                                 }
                                             }}
-                                            className="w-full bg-[#F3F4F6] dark:bg-[#2d2d2d] border-none rounded-xl px-4 py-2 text-[11px] font-bold text-gray-600 dark:text-[#c9b8a8] focus:ring-2 focus:ring-[#ED6D28]/20 transition-all appearance-none cursor-pointer"
+                                            className="w-full border-none rounded-xl px-4 py-2 text-[11px] font-bold focus:ring-2 focus:ring-[#ED6D28]/20 transition-all appearance-none cursor-pointer"
+                                            style={{
+                                                backgroundColor: 'var(--section-bg)',
+                                                color: 'var(--text-secondary)'
+                                            }}
                                             defaultValue=""
                                         >
                                             <option value="" disabled>Quick Select Range...</option>
@@ -262,26 +310,34 @@ export default function MapFilterBar({
                                             <option value="30">Last Month</option>
                                             <option value="365">Last Year</option>
                                         </select>
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
                                     </div>
 
                                     <div className="flex items-center space-x-2">
                                         <div className="relative flex-1">
-                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                                             <input
                                                 type="date"
                                                 value={startDate}
                                                 onChange={(e) => setStartDate(e.target.value)}
-                                                className="w-full bg-[#F3F4F6] dark:bg-[#2d2d2d] border-none rounded-xl pl-10 pr-2 py-2 text-[11px] focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium text-gray-700 dark:text-[#f5e6d3]"
+                                                className="w-full border-none rounded-xl pl-10 pr-2 py-2 text-[11px] focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium"
+                                                style={{
+                                                    backgroundColor: 'var(--section-bg)',
+                                                    color: 'var(--text-primary)'
+                                                }}
                                             />
                                         </div>
                                         <div className="relative flex-1">
-                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                                             <input
                                                 type="date"
                                                 value={endDate}
                                                 onChange={(e) => setEndDate(e.target.value)}
-                                                className="w-full bg-[#F3F4F6] dark:bg-[#2d2d2d] border-none rounded-xl pl-10 pr-2 py-2 text-[11px] focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium text-gray-700 dark:text-[#f5e6d3]"
+                                                className="w-full border-none rounded-xl pl-10 pr-2 py-2 text-[11px] focus:ring-2 focus:ring-[#ED6D28]/20 transition-all font-medium"
+                                                style={{
+                                                    backgroundColor: 'var(--section-bg)',
+                                                    color: 'var(--text-primary)'
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -297,7 +353,11 @@ export default function MapFilterBar({
                                     <button
                                         type="button"
                                         onClick={clearFilters}
-                                        className="w-11 h-11 bg-gray-100 dark:bg-[#2d2d2d] hover:bg-gray-200 dark:hover:bg-[#3d3d3d] text-gray-500 dark:text-[#c9b8a8] rounded-xl flex items-center justify-center transition-all active:scale-95"
+                                        className="w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                                        style={{
+                                            backgroundColor: 'var(--section-bg)',
+                                            color: 'var(--text-muted)'
+                                        }}
                                         title="Clear all"
                                     >
                                         <X className="w-5 h-5" />
@@ -308,22 +368,27 @@ export default function MapFilterBar({
                             <div className="space-y-4">
                                 <div
                                     onClick={onOpenCommunitySelector}
-                                    className="p-4 bg-orange-50/50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 rounded-2xl cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-500/20 transition-all group"
+                                    className="p-4 border rounded-2xl cursor-pointer transition-all group"
+                                    style={{
+                                        backgroundColor: 'var(--section-bg)',
+                                        borderColor: 'var(--border-color)'
+                                    }}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-white dark:bg-[#2d2d2d] rounded-xl flex items-center justify-center shadow-sm">
+                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" 
+                                                style={{ backgroundColor: 'var(--card-bg)' }}>
                                                 <Users className="w-5 h-5 text-[#ED6D28]" />
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-bold text-[#ED6D28] uppercase tracking-widest leading-none">Selected Region</p>
-                                                <h4 className="font-bold text-gray-900 dark:text-[#f5e6d3] mt-1">{selectedCommunityName}</h4>
+                                                <h4 className="font-bold mt-1" style={{ color: 'var(--text-primary)' }}>{selectedCommunityName}</h4>
                                             </div>
                                         </div>
                                         <ChevronDown className="w-4 h-4 text-[#ED6D28] group-hover:translate-y-0.5 transition-transform" />
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-gray-500 font-medium px-1 text-center italic">
+                                <p className="text-[10px] font-medium px-1 text-center italic" style={{ color: 'var(--text-muted)' }}>
                                     Switch communities to discover pins from specific curators and regions.
                                 </p>
                             </div>

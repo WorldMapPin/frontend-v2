@@ -60,7 +60,11 @@ export default function MapNavbar() {
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 dark:bg-[#1a1a1a]/90 backdrop-blur-md border-b border-gray-100 dark:border-white/5 flex items-center justify-between px-3 sm:px-6 h-12 sm:h-14 md:h-16 shadow-sm font-lexend transition-colors duration-300">
+            <nav className="fixed top-0 left-0 right-0 z-[100] backdrop-blur-md border-b flex items-center justify-between px-3 sm:px-6 h-12 sm:h-14 md:h-16 shadow-sm font-lexend transition-colors duration-300"
+                style={{
+                    backgroundColor: 'var(--navbar-bg)',
+                    borderColor: 'var(--border-subtle)'
+                }}>
                 {/* Left: Logo */}
                 <div className="flex items-center flex-shrink-0">
                     <Link href="/" className="flex items-center space-x-2">
@@ -72,7 +76,7 @@ export default function MapNavbar() {
                             className="w-7 h-7 sm:w-8 sm:h-8"
                         />
                         <div className="hidden sm:flex flex-col">
-                            <span className="text-base sm:text-lg font-bold leading-none text-gray-900 dark:text-[#f5e6d3]">
+                            <span className="text-base sm:text-lg font-bold leading-none" style={{ color: 'var(--text-primary)' }}>
                                 World<span className="text-[#ED6D28]">Map</span>Pin
                             </span>
                             <span className="text-[10px] sm:text-xs text-[#ED6D28] font-medium leading-none mt-0.5">
@@ -84,8 +88,9 @@ export default function MapNavbar() {
 
                 <div className="flex flex-1 max-w-md mx-2 sm:mx-4">
                     <form onSubmit={handleSearch} className="relative w-full">
-                        <div className="flex items-center w-full bg-[#F3F4F6] dark:bg-[#2d2d2d] rounded-full px-3 sm:px-4 h-9 sm:h-10 transition-colors duration-200">
-                            <svg className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center w-full rounded-full px-3 sm:px-4 h-9 sm:h-10 transition-colors duration-200"
+                            style={{ backgroundColor: 'var(--section-bg)' }}>
+                            <svg className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input
@@ -93,7 +98,11 @@ export default function MapNavbar() {
                                 placeholder="Find a Place"
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
-                                className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-xs sm:text-sm text-gray-700 dark:text-[#f5e6d3] placeholder-gray-400 dark:placeholder-gray-500 p-0"
+                                className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-xs sm:text-sm p-0"
+                                style={{ 
+                                    color: 'var(--text-primary)',
+                                    '::placeholder': { color: 'var(--text-muted)' }
+                                }}
                             />
                             <button
                                 type="button"
@@ -112,7 +121,7 @@ export default function MapNavbar() {
 
                 {/* Right: Desktop Links and Actions */}
                 <div className="flex items-center space-x-1 sm:space-x-4">
-                    <div className="hidden lg:flex items-center space-x-6 text-[#4B5563] dark:text-[#c9b8a8] font-medium text-sm mr-4">
+                    <div className="hidden lg:flex items-center space-x-6 font-medium text-sm mr-4" style={{ color: 'var(--text-secondary)' }}>
 
                         <Link href="/explore" className="hover:text-[#ED6D28] transition-colors">Explore</Link>
                         <Link href="/leaderboard" className="hover:text-[#0ea5e9] transition-colors">Leaderboard</Link>
@@ -121,7 +130,11 @@ export default function MapNavbar() {
 
                     <button
                         onClick={toggleTheme}
-                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-600 dark:text-[#f5e6d3] hidden sm:block"
+                        className="p-2 rounded-full transition-colors hidden sm:block"
+                        style={{ 
+                            color: 'var(--text-secondary)',
+                            ':hover': { backgroundColor: 'var(--hover-bg)' }
+                        }}
                         aria-label="Toggle Theme"
                     >
                         {theme === 'dark' ? (
@@ -142,7 +155,11 @@ export default function MapNavbar() {
                                 onClick={toggleUserMenu}
                                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#ED6D28] p-[2px] transition-transform active:scale-95 focus:outline-none"
                             >
-                                <div className="w-full h-full rounded-full overflow-hidden border-2 border-white dark:border-[#2d2d2d] relative bg-white dark:bg-[#1a1a1a]">
+                                <div className="w-full h-full rounded-full overflow-hidden border-2 relative" 
+                                    style={{ 
+                                        borderColor: 'var(--card-bg)',
+                                        backgroundColor: 'var(--card-bg)'
+                                    }}>
                                     <Image
                                         src={`https://images.hive.blog/u/${user}/avatar`}
                                         alt={user}
@@ -154,58 +171,67 @@ export default function MapNavbar() {
 
                             {/* Dropdown Menu */}
                             {showUserMenu && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#161616] rounded-xl shadow-xl py-2 z-50 border border-gray-100 dark:border-white/5 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                                    <div className="px-4 py-2 border-b border-gray-100 dark:border-white/5">
-                                        <p className="text-xs text-gray-500 dark:text-[#a89888] font-medium">Signed in as</p>
-                                        <p className="text-sm font-bold text-gray-900 dark:text-[#f5e6d3] truncate">@{user}</p>
+                                <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl py-2 z-50 border animate-in fade-in zoom-in-95 duration-100 origin-top-right"
+                                    style={{
+                                        backgroundColor: 'var(--card-bg)',
+                                        borderColor: 'var(--border-subtle)'
+                                    }}>
+                                    <div className="px-4 py-2 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                                        <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Signed in as</p>
+                                        <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>@{user}</p>
                                     </div>
 
                                     <div className="py-1">
                                         <Link
                                             href={`/@${user}`}
-                                            className="block px-4 py-2 text-sm text-gray-700 dark:text-[#c9b8a8] hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                                            className="block px-4 py-2 text-sm hover:text-orange-600 transition-colors"
+                                            style={{ color: 'var(--text-secondary)' }}
                                             onClick={() => setShowUserMenu(false)}
                                         >
                                             My Profile
                                         </Link>
                                         <Link
                                             href={`/map/@${user}`}
-                                            className="block px-4 py-2 text-sm text-gray-700 dark:text-[#c9b8a8] hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                                            className="block px-4 py-2 text-sm hover:text-orange-600 transition-colors"
+                                            style={{ color: 'var(--text-secondary)' }}
                                             onClick={() => setShowUserMenu(false)}
                                         >
                                             My Map
                                         </Link>
                                         <Link
                                             href="/my-countries"
-                                            className="block px-4 py-2 text-sm text-gray-700 dark:text-[#c9b8a8] hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                                            className="block px-4 py-2 text-sm hover:text-orange-600 transition-colors"
+                                            style={{ color: 'var(--text-secondary)' }}
                                             onClick={() => setShowUserMenu(false)}
                                         >
                                             My Countries
                                         </Link>
                                         <Link
                                             href="/explore"
-                                            className="block px-4 py-2 text-sm text-gray-700 dark:text-[#c9b8a8] hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600 dark:hover:text-orange-400 transition-colors lg:hidden"
+                                            className="block px-4 py-2 text-sm hover:text-orange-600 transition-colors lg:hidden"
+                                            style={{ color: 'var(--text-secondary)' }}
                                             onClick={() => setShowUserMenu(false)}
                                         >
                                             Explore
                                         </Link>
                                         <Link
                                             href="/leaderboard"
-                                            className="block px-4 py-2 text-sm text-gray-700 dark:text-[#c9b8a8] hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:text-sky-600 dark:hover:text-sky-400 transition-colors lg:hidden"
+                                            className="block px-4 py-2 text-sm hover:text-sky-600 transition-colors lg:hidden"
+                                            style={{ color: 'var(--text-secondary)' }}
                                             onClick={() => setShowUserMenu(false)}
                                         >
                                             Leaderboard
                                         </Link>
                                     </div>
 
-                                    <div className="border-t border-gray-100 dark:border-white/5 mt-1 pt-1">
+                                    <div className="border-t mt-1 pt-1" style={{ borderColor: 'var(--border-subtle)' }}>
                                         <button
                                             onClick={() => {
                                                 setShowUserMenu(false);
                                                 logout();
                                                 router.push('/');
                                             }}
-                                            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 font-medium transition-colors"
+                                            className="block w-full text-left px-4 py-2 text-sm text-red-600 font-medium transition-colors"
                                         >
                                             Log out
                                         </button>
@@ -218,7 +244,8 @@ export default function MapNavbar() {
                     {/* Mobile Menu Toggle */}
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="p-1.5 sm:p-2 lg:hidden rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-600 dark:text-[#f5e6d3]"
+                        className="p-1.5 sm:p-2 lg:hidden rounded-full transition-colors"
+                        style={{ color: 'var(--text-secondary)' }}
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -233,12 +260,13 @@ export default function MapNavbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
             >
                 <div
-                    className={`absolute top-0 right-0 h-screen w-72 bg-white dark:bg-[#1a1a1a] shadow-2xl transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} font-lexend`}
+                    className={`absolute top-0 right-0 h-screen w-72 shadow-2xl transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} font-lexend`}
+                    style={{ backgroundColor: 'var(--card-bg)' }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="p-6 flex flex-col h-full overflow-y-auto">
                         {/* Header of Sidebar */}
-                        <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100 dark:border-white/5">
+                        <div className="flex items-center justify-between mb-8 pb-4 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                             <div className="flex items-center space-x-3">
                                 {isReady && user ? (
                                     <>
@@ -246,15 +274,19 @@ export default function MapNavbar() {
                                             <Image src={`https://images.hive.blog/u/${user}/avatar`} alt={user} fill className="object-cover" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-gray-900 dark:text-[#f5e6d3] leading-none">@{user}</span>
+                                            <span className="font-bold leading-none" style={{ color: 'var(--text-primary)' }}>@{user}</span>
                                             <span className="text-[10px] text-orange-600 font-bold uppercase tracking-wider mt-1">Explorer</span>
                                         </div>
                                     </>
                                 ) : (
-                                    <span className="font-bold text-gray-800 dark:text-[#f5e6d3]">Menu</span>
+                                    <span className="font-bold" style={{ color: 'var(--text-primary)' }}>Menu</span>
                                 )}
                             </div>
-                            <button onClick={() => setIsMobileMenuOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-[#c9b8a8]">
+                            <button onClick={() => setIsMobileMenuOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full" 
+                                style={{ 
+                                    backgroundColor: 'var(--section-bg)',
+                                    color: 'var(--text-muted)' 
+                                }}>
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -264,19 +296,22 @@ export default function MapNavbar() {
                         {/* Navigation Links */}
                         <div className="space-y-1 flex-1">
 
-                            <Link href="/explore" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between p-4 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-500/10 text-gray-700 dark:text-[#c9b8a8] font-bold transition-all border border-transparent hover:border-orange-100 dark:hover:border-orange-500/20">
+                            <Link href="/explore" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between p-4 rounded-xl font-bold transition-all border border-transparent hover:border-orange-100" 
+                                style={{ color: 'var(--text-secondary)' }}>
                                 <span>Explore</span>
                                 <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </Link>
-                            <Link href="/leaderboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between p-4 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-500/10 text-gray-700 dark:text-[#c9b8a8] font-bold transition-all border border-transparent hover:border-sky-100 dark:hover:border-sky-500/20">
+                            <Link href="/leaderboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between p-4 rounded-xl font-bold transition-all border border-transparent hover:border-sky-100" 
+                                style={{ color: 'var(--text-secondary)' }}>
                                 <span>Leaderboard</span>
                                 <svg className="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </Link>
-                            <Link href={`/map/@${user || ''}`} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between p-4 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-500/10 text-gray-700 dark:text-[#c9b8a8] font-bold transition-all border border-transparent hover:border-orange-100 dark:hover:border-orange-500/20">
+                            <Link href={`/map/@${user || ''}`} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between p-4 rounded-xl font-bold transition-all border border-transparent hover:border-orange-100" 
+                                style={{ color: 'var(--text-secondary)' }}>
                                 <span>My Map</span>
                                 <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -286,7 +321,11 @@ export default function MapNavbar() {
                             <div className="pt-4 mt-2">
                                 <button
                                     onClick={() => { toggleTheme(); setIsMobileMenuOpen(false); }}
-                                    className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-[#f5e6d3] font-bold transition-all"
+                                    className="w-full flex items-center justify-between p-4 rounded-xl font-bold transition-all"
+                                    style={{ 
+                                        backgroundColor: 'var(--section-bg)',
+                                        color: 'var(--text-primary)' 
+                                    }}
                                 >
                                     <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
                                     {theme === 'dark' ? (
@@ -303,11 +342,11 @@ export default function MapNavbar() {
                         </div>
 
                         {/* Footer section of Sidebar */}
-                        <div className="mt-auto pt-6 border-t border-gray-100 dark:border-white/5">
+                        <div className="mt-auto pt-6 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
                             {user && (
                                 <button
                                     onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                    className="w-full p-4 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 font-bold transition-all flex items-center justify-center shadow-sm"
+                                    className="w-full p-4 rounded-xl bg-red-50 text-red-600 font-bold transition-all flex items-center justify-center shadow-sm"
                                 >
                                     Log out
                                 </button>

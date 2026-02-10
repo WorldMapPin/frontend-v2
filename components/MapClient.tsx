@@ -943,7 +943,12 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         {/* Community Header Image */}
         {showCommunityHeader && loadedCommunity && (
           <div className="absolute z-25 top-4 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 max-w-sm relative">
+            <div className="backdrop-blur-md rounded-2xl shadow-2xl border p-2 max-w-sm relative" 
+              style={{
+                backgroundColor: 'var(--card-bg)',
+                borderColor: 'var(--border-subtle)',
+                opacity: 0.95
+              }}>
               {/* Close button */}
               <button
                 onClick={() => setShowCommunityHeader(false)}
@@ -1127,15 +1132,25 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                 {/* Mobile: Bottom Sheet - More rounded and polished */}
                 <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden z-10">
-                  <div className="mobile-post-popup bg-white/98 dark:bg-[#161616]/98 backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t border-white/40 dark:border-white/10">
+                  <div className="mobile-post-popup backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t" 
+                    style={{ 
+                      backgroundColor: 'var(--card-bg)',
+                      borderColor: 'var(--border-subtle)',
+                      opacity: 0.98 
+                    }}>
                     {/* Handle Bar - Thicker and more modern */}
                     <div className="flex justify-center pt-4 pb-2">
-                      <div className="w-10 h-1.5 bg-gray-200/80 rounded-full"></div>
+                      <div className="w-10 h-1.5 rounded-full" style={{ backgroundColor: 'var(--border-color)' }}></div>
                     </div>
 
                     {/* Close Button - More visible and styled */}
                     <button
-                      className="absolute top-5 right-5 w-9 h-9 bg-gray-100/80 dark:bg-white/10 backdrop-blur-sm hover:bg-gray-200/80 dark:hover:bg-white/20 text-gray-500 dark:text-[#c9b8a8] rounded-full flex items-center justify-center transition-all duration-200 z-10 shadow-sm border border-white/20 active:scale-90"
+                      className="absolute top-5 right-5 w-9 h-9 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 z-10 shadow-sm border active:scale-90"
+                      style={{
+                        backgroundColor: 'var(--section-bg)',
+                        borderColor: 'var(--border-subtle)',
+                        color: 'var(--text-muted)'
+                      }}
                       onClick={closeTab}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1170,20 +1185,26 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                 {/* Desktop: Centered Modal - Premium Glassmorphism Design */}
                 <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-6 z-10">
-                  <div className="w-full max-w-7xl bg-white/95 dark:bg-[#161616]/95 backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border border-white/40 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
+                  <div className="w-full max-w-7xl backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border overflow-hidden flex flex-col max-h-[90vh]" 
+                    style={{
+                      backgroundColor: 'var(--card-bg)',
+                      borderColor: 'var(--border-subtle)',
+                      opacity: 0.95
+                    }}>
                     {/* Header - Minimal and elegant */}
-                    <div className="relative flex items-center justify-between px-10 py-7 border-b border-gray-100/50">
+                    <div className="relative flex items-center justify-between px-10 py-7 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center shadow-inner">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner" 
+                          style={{ backgroundColor: 'var(--section-bg)' }}>
                           <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012 2h6a2 2 0 012 2v2M7 7h10" />
                           </svg>
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold text-gray-900 dark:text-[#f5e6d3]" style={{ fontFamily: 'var(--font-lexend)' }}>
+                          <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
                             {loadedCommunity?.id === 'spendhbd' ? 'Business Details' : 'Discover Adventures'}
                           </h2>
-                          <p className="text-sm text-gray-500 dark:text-[#c9b8a8] font-medium mt-0.5">
+                          <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                             {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} found at this location
                           </p>
                         </div>
@@ -1191,7 +1212,12 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                       {/* Close Button - Premium Style */}
                       <button
-                        className="w-12 h-12 bg-gray-50 hover:bg-orange-50 dark:bg-white/5 dark:hover:bg-orange-500/10 text-gray-400 hover:text-orange-500 dark:text-[#c9b8a8] dark:hover:text-orange-400 rounded-2xl flex items-center justify-center transition-all duration-300 group border border-gray-100 dark:border-white/10 hover:border-orange-100 active:scale-95"
+                        className="w-12 h-12 hover:bg-orange-50 rounded-2xl flex items-center justify-center transition-all duration-300 group border hover:border-orange-100 active:scale-95"
+                        style={{
+                          backgroundColor: 'var(--section-bg)',
+                          borderColor: 'var(--border-subtle)',
+                          color: 'var(--text-muted)'
+                        }}
                         onClick={closeTab}
                       >
                         <svg className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1204,7 +1230,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                     </div>
 
                     {/* Content - Scrollable with optimized padding */}
-                    <div className="px-10 py-8 overflow-y-auto custom-scrollbar flex-1 bg-gradient-to-b from-transparent to-gray-50/30">
+                    <div className="px-10 py-8 overflow-y-auto custom-scrollbar flex-1" 
+                      style={{ background: 'linear-gradient(to bottom, transparent, var(--section-bg))' }}>
                       {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
                         <SpendHBDClusterInfo
                           features={infowindowData.features}

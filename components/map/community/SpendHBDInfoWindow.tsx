@@ -156,7 +156,11 @@ export const SpendHBDInfoWindow = memo(({
 
       {/* Store Information - Enhanced Design */}
       {features[0]?.properties && (
-        <div className="mb-6 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+        <div className="mb-6 rounded-xl shadow-lg overflow-hidden border" 
+          style={{ 
+            backgroundColor: 'var(--card-bg)',
+            borderColor: 'var(--border-subtle)' 
+          }}>
           {/* Store Image Header */}
           <div className="relative h-32 bg-gradient-to-br from-orange-400 to-orange-600">
             {features[0].properties.displayImage ? (
@@ -203,7 +207,7 @@ export const SpendHBDInfoWindow = memo(({
             {/* Store Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">{features[0].properties.name}</h2>
+                <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{features[0].properties.name}</h2>
                 <p className="text-orange-600 font-semibold text-sm">{features[0].properties.businessType}</p>
               </div>
               <div className="ml-4">
@@ -230,27 +234,27 @@ export const SpendHBDInfoWindow = memo(({
             {/* Store Info Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               {features[0].properties.workTime && (
-                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--section-bg)' }}>
                   <span className="text-orange-500">🕒</span>
-                  <span className="text-gray-700 font-medium">{features[0].properties.workTime}</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{features[0].properties.workTime}</span>
                 </div>
               )}
               {features[0].properties.phone && (
-                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--section-bg)' }}>
                   <span className="text-orange-500">📞</span>
-                  <span className="text-gray-700 font-medium">{features[0].properties.phone}</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{features[0].properties.phone}</span>
                 </div>
               )}
               {features[0].properties.email && (
-                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg col-span-full">
+                <div className="flex items-center space-x-2 p-2 rounded-lg col-span-full" style={{ backgroundColor: 'var(--section-bg)' }}>
                   <span className="text-orange-500">✉️</span>
-                  <span className="text-gray-700 font-medium">{features[0].properties.email}</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{features[0].properties.email}</span>
                 </div>
               )}
               {features[0].properties.address && (
-                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg col-span-full">
+                <div className="flex items-center space-x-2 p-2 rounded-lg col-span-full" style={{ backgroundColor: 'var(--section-bg)' }}>
                   <span className="text-orange-500">📍</span>
-                  <span className="text-gray-700 font-medium">
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
                     {features[0].properties.address.city}, {features[0].properties.address.country}
                   </span>
                 </div>
@@ -268,8 +272,8 @@ export const SpendHBDInfoWindow = memo(({
         {reviews.length > 0 ? (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Customer Reviews</h3>
-              <span className="text-sm text-gray-500">{features[0]?.properties?.reviewCount || 0} total review{(features[0]?.properties?.reviewCount || 0) !== 1 ? 's' : ''}</span>
+              <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Customer Reviews</h3>
+              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{features[0]?.properties?.reviewCount || 0} total review{(features[0]?.properties?.reviewCount || 0) !== 1 ? 's' : ''}</span>
             </div>
           
           {/* Reviews List - Using shared ReviewCard component */}
@@ -311,12 +315,13 @@ export const SpendHBDInfoWindow = memo(({
           </div>
         ) : (
           <div className="text-center py-8">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" 
+              style={{ backgroundColor: 'var(--section-bg)' }}>
+              <svg className="w-6 h-6" style={{ color: 'var(--text-muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <p className="text-sm text-gray-500">No reviews available for this store</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No reviews available for this store</p>
           </div>
         )}
       </div>
