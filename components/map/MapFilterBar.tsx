@@ -178,8 +178,7 @@ export default function MapFilterBar({
                 style={{ backgroundColor: 'var(--card-bg)' }}>
                 {/* Header */}
                 <div
-                    className="p-4 flex items-center justify-between cursor-pointer transition-colors"
-                    style={{ ':hover': { backgroundColor: 'var(--hover-bg)' } }}
+                    className="p-4 flex items-center justify-between cursor-pointer transition-colors hover:opacity-90"
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
                     <div className="flex items-center space-x-3">

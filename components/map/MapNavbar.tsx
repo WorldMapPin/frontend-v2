@@ -98,11 +98,8 @@ export default function MapNavbar() {
                                 placeholder="Find a Place"
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
-                                className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-xs sm:text-sm p-0"
-                                style={{ 
-                                    color: 'var(--text-primary)',
-                                    '::placeholder': { color: 'var(--text-muted)' }
-                                }}
+                                className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-xs sm:text-sm p-0 placeholder:text-[var(--text-muted)]"
+                                style={{ color: 'var(--text-primary)' }}
                             />
                             <button
                                 type="button"
@@ -130,11 +127,8 @@ export default function MapNavbar() {
 
                     <button
                         onClick={toggleTheme}
-                        className="p-2 rounded-full transition-colors hidden sm:block"
-                        style={{ 
-                            color: 'var(--text-secondary)',
-                            ':hover': { backgroundColor: 'var(--hover-bg)' }
-                        }}
+                        className="p-2 rounded-full transition-colors hidden sm:block hover:opacity-80"
+                        style={{ color: 'var(--text-secondary)' }}
                         aria-label="Toggle Theme"
                     >
                         {theme === 'dark' ? (
