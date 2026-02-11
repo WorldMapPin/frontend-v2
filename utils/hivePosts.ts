@@ -59,15 +59,53 @@ function optimizeImageUrl(imageUrl: string, size: 'thumb' | 'small' | 'medium' |
   return `https://images.ecency.com/${ecencySize}/${imageUrl}`;
 }
 
+// Max entries to persist in localStorage (keeps size well under 5 MB quota)
+const MAX_STORAGE_ENTRIES = 100;
+
 /**
- * Save cache to localStorage
+ * Save cache to localStorage.
+ * - Strips heavy fields (bodyMarkdown, images) to keep payload small.
  */
 function saveCacheToStorage() {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(postCache));
+    // Build a lightweight copy: drop bodyMarkdown & images arrays
+    let entries = Object.entries(postCache);
+
+    // Keep only the newest MAX_STORAGE_ENTRIES entries
+    if (entries.length > MAX_STORAGE_ENTRIES) {
+      entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
+      entries = entries.slice(0, MAX_STORAGE_ENTRIES);
+    }
+
+    const lightweight: Record<string, { post: any; timestamp: number }> = {};
+    for (const [key, value] of entries) {
+      const { bodyMarkdown, images, ...rest } = value.post;
+      lightweight[key] = { post: rest, timestamp: value.timestamp };
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
   } catch (error) {
-    console.error('Error saving cache to localStorage:', error);
+    // Quota exceeded — prune half and retry once
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      try {
+        const entries = Object.entries(postCache)
+          .sort((a, b) => b[1].timestamp - a[1].timestamp)
+          .slice(0, Math.floor(MAX_STORAGE_ENTRIES / 2));
+
+        const lightweight: Record<string, { post: any; timestamp: number }> = {};
+        for (const [key, value] of entries) {
+          const { bodyMarkdown, images, ...rest } = value.post;
+          lightweight[key] = { post: rest, timestamp: value.timestamp };
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
+      } catch {
+        // Still failing — clear it entirely so the app keeps working
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } else {
+      console.error('Error saving cache to localStorage:', error);
+    }
   }
 }
 
@@ -84,12 +122,24 @@ function loadCacheFromStorage() {
     }
   } catch (error) {
     console.error('Error loading cache from localStorage:', error);
+    // Corrupted cache — remove it
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
   }
 }
 
-// Load cache on module initialization
+// If the stored cache is over 2 MB it was written by the old un-trimmed logic
+// — clear it so we start fresh with the lightweight format.
 if (typeof window !== 'undefined') {
-  loadCacheFromStorage();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw && raw.length > 2 * 1024 * 1024) {
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      loadCacheFromStorage();
+    }
+  } catch {
+    loadCacheFromStorage();
+  }
 }
 
 /**
@@ -458,6 +508,156 @@ export async function loadCuratedPosts(): Promise<CuratedPost[]> {
     console.error('Error loading curated posts:', error);
     return [];
   }
+}
+
+/**
+ * Process a single post from bridge.get_post response into ProcessedPost.
+ */
+function processBridgePost(post: any): ProcessedPost | null {
+  if (!post || !post.author || !post.permlink) return null;
+
+  const metadata = typeof post.json_metadata === 'string'
+    ? safeJsonParse(post.json_metadata)
+    : (post.json_metadata || {});
+
+  // --- Cover image extraction (same logic as fetchSinglePost) ---
+  let coverImage: string | null = null;
+
+  const cleanImageUrl = (url: string): string | null => {
+    if (!url || typeof url !== 'string') return null;
+    const ecencyMatch = url.match(/\[!\[\]\(([^)]+)\)\]\([^)]+\)/);
+    if (ecencyMatch?.[1]?.startsWith('http')) return ecencyMatch[1];
+    const mdImg = url.match(/!\[[^\]]*\]\(([^)]+)\)/);
+    if (mdImg?.[1]?.startsWith('http')) return mdImg[1];
+    const mdLink = url.match(/\[[^\]]*\]\(([^)]+)\)/);
+    if (mdLink?.[1]?.startsWith('http')) return mdLink[1];
+    if (url.includes('](')) {
+      const before = url.split('](')[0];
+      if (before.startsWith('http')) return before;
+    }
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return null;
+  };
+
+  const extractFirstImageFromBody = (body: string): string | null => {
+    if (!body) return null;
+    const imgMatch = body.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/);
+    if (imgMatch?.[1]) return imgMatch[1];
+    const htmlImg = body.match(/<img[^>]*\ssrc=["']([^"']+)["']/) ||
+                    body.match(/<img[^>]*src=["']([^"']+)["']/);
+    if (htmlImg?.[1]?.startsWith('http')) return htmlImg[1];
+    const standalone = body.match(/^\s*(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg))\s*$/im);
+    if (standalone?.[1]) return standalone[1];
+    return null;
+  };
+
+  const imageArray = metadata.image || metadata.images;
+  if (Array.isArray(imageArray)) {
+    for (const img of imageArray) {
+      const cleaned = cleanImageUrl(img);
+      if (cleaned) { coverImage = optimizeImageUrl(cleaned, 'thumb'); break; }
+    }
+  }
+  if (!coverImage && post.body) {
+    const bodyImg = extractFirstImageFromBody(post.body);
+    if (bodyImg) coverImage = optimizeImageUrl(bodyImg, 'thumb');
+  }
+
+  // --- Payout ---
+  const pendingPayout = parseFloat(post.pending_payout_value || '0');
+  let payoutValue: string;
+  if (pendingPayout > 0) {
+    payoutValue = post.pending_payout_value || '0';
+  } else {
+    const authorPay = parseFloat(post.author_payout_value || '0') || 0;
+    const curatorPay = parseFloat(post.curator_payout_value || '0') || 0;
+    payoutValue = `${(authorPay + curatorPay).toFixed(3)} HBD`;
+  }
+
+  const canonicalUrl = metadata.canonical_url || `https://peakd.com/@${post.author}/${post.permlink}`;
+
+  const processed: ProcessedPost = {
+    title: post.title || 'Untitled',
+    author: post.author,
+    permlink: post.permlink,
+    created: post.created,
+    createdRelative: formatRelativeTime(post.created),
+    coverImage,
+    tags: metadata.tags || [],
+    payout: formatPayout(payoutValue),
+    votes: post.stats?.total_votes ?? 0,
+    comments: post.children ?? 0,
+    reputation: formatReputation(post.author_reputation ?? 25),
+    slug: `@${post.author}/${post.permlink}`,
+    bodyMarkdown: post.body,
+    images: metadata.image || metadata.images || [],
+    readingTimeMin: calculateReadingTime(post.body || ''),
+    cashoutTime: post.payout_at,
+    activeVotesCount: post.active_votes?.length || 0,
+    canonicalUrl,
+    rawJsonUrl: getHiveBlogUrl(post.author, post.permlink),
+  };
+
+  // Cache the result
+  const cacheKey = `${post.author}/${post.permlink}`;
+  postCache[cacheKey] = { post: processed, timestamp: Date.now() };
+
+  return processed;
+}
+
+/**
+ * Batch-fetch posts via the /api/hive/posts/batch route which uses a single
+ * JSON-RPC batch call to bridge.get_post. Much faster than N individual calls.
+ */
+export async function batchFetchPosts(
+  posts: { author: string; permlink: string }[]
+): Promise<(ProcessedPost | null)[]> {
+  if (posts.length === 0) return [];
+
+  // Check cache first -- only fetch what we don't have
+  const results: (ProcessedPost | null)[] = new Array(posts.length).fill(null);
+  const uncachedIndices: number[] = [];
+  const uncachedPosts: { author: string; permlink: string }[] = [];
+
+  for (let i = 0; i < posts.length; i++) {
+    const key = `${posts[i].author}/${posts[i].permlink}`;
+    const cached = postCache[key];
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      results[i] = cached.post;
+    } else {
+      uncachedIndices.push(i);
+      uncachedPosts.push(posts[i]);
+    }
+  }
+
+  if (uncachedPosts.length === 0) return results;
+
+  try {
+    const response = await fetch('/api/hive/posts/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ posts: uncachedPosts }),
+    });
+
+    if (!response.ok) {
+      console.error('Batch fetch failed:', response.status);
+      return results; // return what we have from cache
+    }
+
+    const data = await response.json();
+    const batchResults: any[] = data.results || [];
+
+    for (let j = 0; j < batchResults.length; j++) {
+      const processed = batchResults[j] ? processBridgePost(batchResults[j]) : null;
+      results[uncachedIndices[j]] = processed;
+    }
+
+    saveCacheToStorage();
+  } catch (error) {
+    console.error('Error in batchFetchPosts:', error);
+  }
+
+  return results;
 }
 
 /**
