@@ -32,6 +32,7 @@ interface MapFilterBarProps {
     onZoomOut: () => void;
     onToggleMapType: () => void;
     mapTypeId: string;
+    onReloadPins: () => void;
 }
 
 export default function MapFilterBar({
@@ -46,7 +47,8 @@ export default function MapFilterBar({
     onZoomIn,
     onZoomOut,
     onToggleMapType,
-    mapTypeId
+    mapTypeId,
+    onReloadPins
 }: MapFilterBarProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [activeTab, setActiveTab] = useState<'filters' | 'community'>('filters');
@@ -145,11 +147,27 @@ export default function MapFilterBar({
                     <Layers className="w-5 h-5 text-white" />
                 </button>
 
-                {/* Zoom Capsule */}
-                <div className="rounded-full h-11 flex items-center shadow-xl px-1 border" 
-                    style={{ 
+                {/* Reload Pins Button */}
+                <button
+                    onClick={onReloadPins}
+                    className="w-11 h-11 rounded-full flex items-center justify-center shadow-xl border hover:scale-105 active:scale-95 transition-all"
+                    style={{
                         backgroundColor: 'var(--card-bg)',
-                        borderColor: 'var(--border-subtle)' 
+                        borderColor: 'var(--border-subtle)',
+                        color: 'var(--text-secondary)'
+                    }}
+                    title="Reload Pins"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+
+                {/* Zoom Capsule */}
+                <div className="rounded-full h-11 flex items-center shadow-xl px-1 border"
+                    style={{
+                        backgroundColor: 'var(--card-bg)',
+                        borderColor: 'var(--border-subtle)'
                     }}>
                     <button
                         onClick={onZoomOut}
@@ -174,7 +192,7 @@ export default function MapFilterBar({
             </div>
 
             {/* Filter Bar Card - Width adjusted to match buttons */}
-            <div className="rounded-t-[20px] sm:rounded-[16px] shadow-2xl overflow-hidden transition-all duration-300 w-full sm:w-[340px]" 
+            <div className="rounded-t-[20px] sm:rounded-[16px] shadow-2xl overflow-hidden transition-all duration-300 w-full sm:w-[340px]"
                 style={{ backgroundColor: 'var(--card-bg)' }}>
                 {/* Header */}
                 <div
@@ -182,7 +200,7 @@ export default function MapFilterBar({
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
                     <div className="flex items-center space-x-3">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center" 
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                             style={{ backgroundColor: 'var(--section-bg)' }}>
                             <Filter className="w-5 h-5 text-[#ED6D28]" />
                         </div>
@@ -375,7 +393,7 @@ export default function MapFilterBar({
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" 
+                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
                                                 style={{ backgroundColor: 'var(--card-bg)' }}>
                                                 <Users className="w-5 h-5 text-[#ED6D28]" />
                                             </div>

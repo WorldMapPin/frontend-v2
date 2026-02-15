@@ -15,6 +15,9 @@ const MapClient = dynamicImport(() => import('../../../../components/MapClient')
   loading: () => <div className="h-screen w-full flex items-center justify-center">Loading map...</div>
 });
 
+
+import { MapCookieConsent } from '../../../../components/map/MapCookieConsent';
+
 export default function CommunityMapPage() {
   const params = useParams();
   const [community, setCommunity] = useState<Community | null>(null);
@@ -22,13 +25,13 @@ export default function CommunityMapPage() {
 
   useEffect(() => {
     if (params?.community) {
-      const communityId = Array.isArray(params.community) 
-        ? params.community[0] 
+      const communityId = Array.isArray(params.community)
+        ? params.community[0]
         : params.community;
-      
+
       // Find the community by ID
       const foundCommunity = COMMUNITIES.find(c => c.id === communityId);
-      
+
       if (foundCommunity) {
         setCommunity(foundCommunity);
       } else {
@@ -36,7 +39,7 @@ export default function CommunityMapPage() {
         // Fallback to default community
         setCommunity(COMMUNITIES.find(c => c.isDefault) || COMMUNITIES[0]);
       }
-      
+
       setIsLoading(false);
     }
   }, [params?.community]);
@@ -58,8 +61,8 @@ export default function CommunityMapPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Community Not Found</h1>
           <p className="text-gray-600 mb-4">The requested community could not be found.</p>
-          <a 
-            href="/map" 
+          <a
+            href="/map"
             className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors duration-200"
           >
             Go to Main Map
@@ -70,8 +73,10 @@ export default function CommunityMapPage() {
   }
 
   return (
-    <MapClient 
-      initialCommunity={community}
-    />
+    <MapCookieConsent>
+      <MapClient
+        initialCommunity={community}
+      />
+    </MapCookieConsent>
   );
 }

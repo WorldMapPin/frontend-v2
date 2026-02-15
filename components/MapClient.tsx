@@ -30,6 +30,7 @@ import { InfoWindowData, SearchParams, Community, Journey, JourneyState } from '
 import { Feature, Point } from 'geojson';
 import { initPerformanceCheck, getNetworkSpeed, isExtremelySlowConnection, isSlowConnection } from '../utils/performanceCheck';
 import { fetchCommunityPins, COMMUNITIES, getDefaultCommunity } from '../utils/communityApi';
+import { pinCache } from '../utils/pinCache';
 
 // Global variables for zoom (local to this module)
 export let mapZoom = 2; // Start at zoom 2, skip 3
@@ -338,7 +339,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   }, []);
 
   // Load markers function
-  async function loadMarkers(reloadExisting = false, filterParams?: SearchParams, community?: Community) {
+  async function loadMarkers(reloadExisting = false, filterParams?: SearchParams, community?: Community, forceRefresh = false) {
     try {
       const targetCommunity = community || selectedCommunity;
 
@@ -348,7 +349,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       }
       setClustersReady(false);
 
-      if (reloadExisting && geojson) {
+      if (reloadExisting && geojson && !forceRefresh) {
         // Just reload the existing geojson data without fetching from API
         setGeojson(geojson);
       } else {
@@ -356,6 +357,19 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         const params = filterParams || searchParams;
 
         let geoJsonData;
+
+        // Try to get from cache first if not forcing refresh
+        if (!forceRefresh) {
+          const cachedData = await pinCache.getCachedPins(targetCommunity.id, params);
+          if (cachedData) {
+            console.log('Using cached pins for', targetCommunity.name);
+            setGeojson(cachedData);
+            setLoadedCommunity(targetCommunity);
+            // If we have cached data, we can return early, but we still need to set loadedCommunity
+            return;
+          }
+        }
+
         if (targetCommunity.isDefault) {
           // Use the original WorldMapPin API for default community
           const response = await axios.post(`https://worldmappin.com/api/marker/0/150000/`, params);
@@ -363,6 +377,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         } else {
           // Use community-specific API
           geoJsonData = await fetchCommunityPins(targetCommunity);
+        }
+
+        // Cache the new data
+        if (geoJsonData && geoJsonData.features && geoJsonData.features.length > 0) {
+          await pinCache.setCachedPins(targetCommunity.id, params, geoJsonData);
         }
 
         setGeojson(geoJsonData);
@@ -943,7 +962,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         {/* Community Header Image */}
         {showCommunityHeader && loadedCommunity && (
           <div className="absolute z-25 top-4 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-            <div className="backdrop-blur-md rounded-2xl shadow-2xl border p-2 max-w-sm relative" 
+            <div className="backdrop-blur-md rounded-2xl shadow-2xl border p-2 max-w-sm relative"
               style={{
                 backgroundColor: 'var(--card-bg)',
                 borderColor: 'var(--border-subtle)',
@@ -1008,6 +1027,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           onZoomOut={handleZoomOut}
           onToggleMapType={handleToggleMapType}
           mapTypeId={mapTypeId}
+          onReloadPins={() => loadMarkers(true, searchParams, selectedCommunity, true)}
         />
 
         {/* Community Selector Component */}
@@ -1132,11 +1152,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                 {/* Mobile: Bottom Sheet - More rounded and polished */}
                 <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden z-10">
-                  <div className="mobile-post-popup backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t" 
-                    style={{ 
+                  <div className="mobile-post-popup backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t"
+                    style={{
                       backgroundColor: 'var(--card-bg)',
                       borderColor: 'var(--border-subtle)',
-                      opacity: 0.98 
+                      opacity: 0.98
                     }}>
                     {/* Handle Bar - Thicker and more modern */}
                     <div className="flex justify-center pt-4 pb-2">
@@ -1185,7 +1205,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                 {/* Desktop: Centered Modal - Premium Glassmorphism Design */}
                 <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-6 z-10">
-                  <div className="w-full max-w-7xl backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border overflow-hidden flex flex-col max-h-[90vh]" 
+                  <div className="w-full max-w-7xl backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border overflow-hidden flex flex-col max-h-[90vh]"
                     style={{
                       backgroundColor: 'var(--card-bg)',
                       borderColor: 'var(--border-subtle)',
@@ -1194,7 +1214,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                     {/* Header - Minimal and elegant */}
                     <div className="relative flex items-center justify-between px-10 py-7 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner" 
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner"
                           style={{ backgroundColor: 'var(--section-bg)' }}>
                           <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012 2h6a2 2 0 012 2v2M7 7h10" />
@@ -1230,7 +1250,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                     </div>
 
                     {/* Content - Scrollable with optimized padding */}
-                    <div className="px-10 py-8 overflow-y-auto custom-scrollbar flex-1" 
+                    <div className="px-10 py-8 overflow-y-auto custom-scrollbar flex-1"
                       style={{ background: 'linear-gradient(to bottom, transparent, var(--section-bg))' }}>
                       {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
                         <SpendHBDClusterInfo

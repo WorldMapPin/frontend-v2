@@ -11,6 +11,12 @@ const MapClient = dynamicImport(() => import('../../components/MapClient'), {
   loading: () => <div className="h-screen w-full flex items-center justify-center">Loading map...</div>
 });
 
+import { MapCookieConsent } from '../../components/map/MapCookieConsent';
+
 export default function MapPage() {
-  return <MapClient />;
+  return (
+    <MapCookieConsent>
+      <MapClient />
+    </MapCookieConsent>
+  );
 }
