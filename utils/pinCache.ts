@@ -48,18 +48,24 @@ class PinCache {
         try {
             const db = await this.dbPromise;
             const key = this.getCacheKey(communityId, params);
+            console.log(`[PinCache] Requesting cached pins for key: ${key}`);
+
             const cached = await db.get(STORE_NAME, key);
 
-            if (!cached) return null;
+            if (!cached) {
+                console.log(`[PinCache] Cache MISS for key: ${key}`);
+                return null;
+            }
 
             const now = Date.now();
-            if (now - cached.timestamp > CACHE_TTL) {
-                // Cache expired
+            const age = now - cached.timestamp;
+            if (age > CACHE_TTL) {
+                console.log(`[PinCache] Cache EXPIRED for key: ${key} (Age: ${age}ms, TTL: ${CACHE_TTL}ms)`);
                 await db.delete(STORE_NAME, key);
                 return null;
             }
 
-            console.log(`[PinCache] Hit for ${key}`);
+            console.log(`[PinCache] Cache HIT for key: ${key} (Age: ${age}ms)`);
             return cached.data;
         } catch (error) {
             console.error('[PinCache] Error getting cache:', error);
@@ -74,12 +80,13 @@ class PinCache {
             const db = await this.dbPromise;
             const key = this.getCacheKey(communityId, params);
 
+            console.log(`[PinCache] Caching data for key: ${key}`);
             await db.put(STORE_NAME, {
                 data,
                 timestamp: Date.now(),
             }, key);
 
-            console.log(`[PinCache] Saved ${key}`);
+            console.log(`[PinCache] Successfully cached ${key}`);
         } catch (error) {
             console.error('[PinCache] Error setting cache:', error);
         }
