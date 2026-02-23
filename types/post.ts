@@ -130,6 +130,7 @@ export interface TravelDigest {
 export interface DigestFetchResult {
   success: boolean;
   digest?: TravelDigest;
+  processedPosts?: ProcessedPost[];
   error?: string;
   cached?: boolean;
 }
