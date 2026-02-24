@@ -150,7 +150,15 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
   
   // Check in-memory cache
   const cached = postCache[cacheKey];
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+  // NOTE: localStorage persistence intentionally strips heavy fields like `bodyMarkdown`.
+  // If we serve that lightweight cached entry here, the post read page will render blank.
+  // Treat missing `bodyMarkdown` as an incomplete cache entry and refetch.
+  if (
+    cached &&
+    Date.now() - cached.timestamp < CACHE_DURATION &&
+    typeof cached.post?.bodyMarkdown === 'string' &&
+    cached.post.bodyMarkdown.length > 0
+  ) {
     return cached.post;
   }
   
@@ -349,10 +357,13 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
     
     // Determine canonical URL - use metadata if available (InLeo, etc.), otherwise default to PeakD
     const canonicalUrl = metadata.canonical_url || `https://peakd.com/@${post.author}/${post.permlink}`;
+
+    // Muted posts have their title and body replaced with the literal string "error"
+    const isMuted = post.title === 'error' && (post.body || '').trim() === 'error';
     
     // Process the post
     const processedPost: ProcessedPost = {
-      title: post.title || 'Untitled',
+      title: isMuted ? 'Muted Post' : (post.title || 'Untitled'),
       author: post.author,
       permlink: post.permlink,
       created: post.created,
@@ -364,13 +375,14 @@ async function fetchSinglePost(author: string, permlink: string): Promise<Proces
       comments: post.children,
       reputation: formatReputation(post.author_reputation),
       slug: `@${post.author}/${post.permlink}`,
-      bodyMarkdown: post.body,
+      bodyMarkdown: isMuted ? '' : post.body,
       images: metadata.image || metadata.images || [],
-      readingTimeMin: calculateReadingTime(post.body),
+      readingTimeMin: isMuted ? 0 : calculateReadingTime(post.body),
       cashoutTime: post.cashout_time,
       activeVotesCount: post.active_votes?.length || 0,
       canonicalUrl: canonicalUrl,
-      rawJsonUrl: getHiveBlogUrl(post.author, post.permlink)
+      rawJsonUrl: getHiveBlogUrl(post.author, post.permlink),
+      isMuted,
     };
     
     // Cache the post
@@ -515,6 +527,9 @@ export async function loadCuratedPosts(): Promise<CuratedPost[]> {
  */
 function processBridgePost(post: any): ProcessedPost | null {
   if (!post || !post.author || !post.permlink) return null;
+
+  // Skip muted/grayed posts entirely (community-moderated)
+  if (post.stats?.gray) return null;
 
   const metadata = typeof post.json_metadata === 'string'
     ? safeJsonParse(post.json_metadata)

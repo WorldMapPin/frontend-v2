@@ -101,6 +101,7 @@ export interface ProcessedPost {
   activeVotesCount?: number;
   canonicalUrl: string;
   rawJsonUrl: string;
+  isMuted?: boolean;
 }
 
 export interface PostCache {

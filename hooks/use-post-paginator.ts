@@ -154,10 +154,12 @@ export function usePostPaginator(
 
         if (!response.ok) throw new Error('Failed to fetch posts');
 
-        // API now returns ProcessedPost[] directly -- no client processing needed
-        const processedPosts: ProcessedPost[] = await response.json();
+        const json = await response.json();
 
-        const receivedCount = processedPosts.length;
+        // API returns { posts: ProcessedPost[], hasMore: boolean }
+        const processedPosts: ProcessedPost[] = json.posts ?? json;
+        const serverHasMore: boolean | undefined = json.hasMore;
+
         const hasCursor =
           !isInitial && lastAuthorRef.current && lastPermlinkRef.current;
 
@@ -167,7 +169,9 @@ export function usePostPaginator(
           newPosts.shift();
         }
 
-        if (receivedCount < postsPerPage) {
+        if (serverHasMore !== undefined) {
+          setHasMore(serverHasMore);
+        } else if (processedPosts.length < postsPerPage) {
           setHasMore(false);
         }
 

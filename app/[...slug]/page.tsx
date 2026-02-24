@@ -278,6 +278,44 @@ function PostPage({ author, permlink }: { author: string; permlink: string }) {
     );
   }
 
+  if (post?.isMuted) {
+    return (
+      <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="rounded-lg shadow-md p-4 sm:p-6 lg:p-8 text-center" style={{ backgroundColor: 'var(--card-bg)' }}>
+            <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--text-secondary)' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+            <h2 className="text-xl sm:text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-lexend)' }}>Post Muted by Community</h2>
+            <p className="text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-lexend)' }}>
+              This post has been muted by community moderators and its content is no longer available for viewing.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+              <button
+                onClick={() => router.back()}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 sm:px-6 py-2 rounded-lg transition-colors text-sm sm:text-base"
+                style={{ fontFamily: 'var(--font-lexend)' }}
+              >
+                Go Back
+              </button>
+              <a
+                href={`https://peakd.com/@${post.author}/${post.permlink}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-lg transition-colors text-sm sm:text-base"
+                style={{ fontFamily: 'var(--font-lexend)' }}
+              >
+                View on PeakD
+              </a>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error || !post) {
     return (
       <div className="relative min-h-screen overflow-hidden transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>

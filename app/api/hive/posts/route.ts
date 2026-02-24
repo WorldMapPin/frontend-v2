@@ -20,7 +20,9 @@ const HIVE_API_NODES = [
   'https://api.openhive.network',
 ];
 
-const RPC_TIMEOUT = 6_000;
+// Hive RPC nodes can be slow; keep this high enough to avoid frequent 500s,
+// but still bounded so requests don't hang indefinitely.
+const RPC_TIMEOUT = 10_000;
 
 interface RankedPostsParams {
   sort: SortType;
@@ -35,8 +37,13 @@ interface RankedPostsParams {
 // Server-side response cache
 // ---------------------------------------------------------------------------
 
+interface PostsResponse {
+  posts: ProcessedPost[];
+  hasMore: boolean;
+}
+
 interface PostCacheEntry {
-  data: ProcessedPost[];
+  data: PostsResponse;
   timestamp: number;
 }
 
@@ -48,7 +55,7 @@ function cacheKey(sort: string, startAuthor?: string, startPermlink?: string): s
   return `${sort}:${startAuthor || ''}:${startPermlink || ''}`;
 }
 
-function getCached(key: string): ProcessedPost[] | null {
+function getCached(key: string): PostsResponse | null {
   const entry = postCache.get(key);
   if (!entry) return null;
   if (Date.now() - entry.timestamp > POST_CACHE_TTL) {
@@ -58,7 +65,7 @@ function getCached(key: string): ProcessedPost[] | null {
   return entry.data;
 }
 
-function setCached(key: string, data: ProcessedPost[]) {
+function setCached(key: string, data: PostsResponse) {
   if (postCache.size >= MAX_CACHE_ENTRIES) {
     const oldest = [...postCache.entries()]
       .sort((a, b) => a[1].timestamp - b[1].timestamp);
@@ -191,9 +198,49 @@ function extractCoverImage(metadata: any, body: string): string | null {
   return null;
 }
 
-function processRankedPost(post: any): ProcessedPost {
+// Cross-posts often have `image: []` and only reference the original post.
+// Resolve cover image from the original post when needed.
+const originalCoverCache = new Map<string, { cover: string | null; timestamp: number }>();
+const ORIGINAL_COVER_TTL = 5 * 60_000;
+
+async function fetchOriginalCoverImage(author: string, permlink: string): Promise<string | null> {
+  const key = `${author}/${permlink}`;
+  const cached = originalCoverCache.get(key);
+  if (cached && Date.now() - cached.timestamp < ORIGINAL_COVER_TTL) return cached.cover;
+
+  try {
+    const url = getHiveBlogUrl(author, permlink);
+    const res = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(5_000),
+    });
+
+    if (!res.ok) {
+      originalCoverCache.set(key, { cover: null, timestamp: Date.now() });
+      return null;
+    }
+
+    const data = await res.json();
+    const originalPost = data?.post;
+    const metadata = safeJsonParse(originalPost?.json_metadata);
+    const cover = extractCoverImage(metadata, originalPost?.body || '');
+
+    originalCoverCache.set(key, { cover, timestamp: Date.now() });
+    return cover;
+  } catch (error) {
+    console.warn(`fetchOriginalCoverImage failed for @${author}/${permlink}`, error);
+    originalCoverCache.set(key, { cover: null, timestamp: Date.now() });
+    return null;
+  }
+}
+
+async function processRankedPost(post: any): Promise<ProcessedPost> {
   const metadata = safeJsonParse(post.json_metadata);
-  const coverImage = extractCoverImage(metadata, post.body || '');
+  let coverImage = extractCoverImage(metadata, post.body || '');
+
+  if (!coverImage && metadata?.original_author && metadata?.original_permlink) {
+    coverImage = await fetchOriginalCoverImage(metadata.original_author, metadata.original_permlink);
+  }
 
   const pendingPayout = parseFloat(post.pending_payout_value || '0');
   let payoutValue: string;
@@ -273,13 +320,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unexpected response from Hive API' }, { status: 502 });
     }
 
-    const processed: ProcessedPost[] = rawPosts.map((post) => processRankedPost(post));
+    // Filter out posts muted/grayed by community moderators before processing.
+    // Muted posts have stats.gray === true and their title/body are replaced with "error".
+    const visiblePosts = rawPosts.filter((post) => !post.stats?.gray);
 
-    setCached(key, processed);
+    const processed: ProcessedPost[] = await Promise.all(visiblePosts.map((post) => processRankedPost(post)));
 
-    console.log(`hive/posts: cache MISS — ${rawPosts.length} posts in ${Date.now() - t0}ms`);
+    // Determine hasMore from the *raw* Hive response count, not the filtered count.
+    // If Hive returned a full page, there are likely more posts to fetch.
+    const requestedLimit = Math.min(limit, 50);
+    const hasMore = rawPosts.length >= requestedLimit;
 
-    return NextResponse.json(processed, {
+    const response: PostsResponse = { posts: processed, hasMore };
+    setCached(key, response);
+
+    console.log(`hive/posts: cache MISS — ${rawPosts.length} raw, ${processed.length} visible in ${Date.now() - t0}ms`);
+
+    return NextResponse.json(response, {
       headers: {
         'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
         'X-Cache': 'MISS',
