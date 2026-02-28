@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import ExploreCard from '@/components/explore/ExploreCard';
 import GradientText from './GradientText';
 import { DigestFetchResult, ProcessedPost } from '@/types/post';
-import { transformDigestPosts } from '@/lib/travelDigest';
 
 interface TravelDigestSectionProps {
   className?: string;
@@ -27,9 +26,8 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
         throw new Error(result.error || 'Failed to fetch travel digest');
       }
       
-      if (result.digest && result.digest.posts.length > 0) {
-        const processedPosts = await transformDigestPosts(result.digest.posts);
-        setPosts(processedPosts);
+      if (result.processedPosts && result.processedPosts.length > 0) {
+        setPosts(result.processedPosts);
       } else {
         setPosts([]);
       }

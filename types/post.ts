@@ -101,6 +101,7 @@ export interface ProcessedPost {
   activeVotesCount?: number;
   canonicalUrl: string;
   rawJsonUrl: string;
+  isMuted?: boolean;
 }
 
 export interface PostCache {
@@ -130,6 +131,7 @@ export interface TravelDigest {
 export interface DigestFetchResult {
   success: boolean;
   digest?: TravelDigest;
+  processedPosts?: ProcessedPost[];
   error?: string;
   cached?: boolean;
 }

@@ -1,13 +1,20 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { WinterChallengeRankingData } from '@/lib/worldmappinApi';
-import { Medal, Search, X, Ticket, ChevronDown, Check, ExternalLink, User } from 'lucide-react';
+import { Medal, Search, X, Ticket, ChevronDown, Check, ExternalLink, User, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
+export interface LeaderboardItem {
+    rank: number;
+    username: string;
+    score: number;
+    scoreLabel: string;
+}
+
 interface LeaderboardTableProps {
-    data: WinterChallengeRankingData[];
+    data: LeaderboardItem[];
     loading?: boolean;
+    scoreLabel: string;
 }
 
 // Skeleton row for loading state
@@ -67,7 +74,7 @@ function RankBadge({ rank }: { rank: number }) {
     );
 }
 
-export default function LeaderboardTable({ data, loading = false }: LeaderboardTableProps) {
+export default function LeaderboardTable({ data, loading = false, scoreLabel }: LeaderboardTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [displayCount, setDisplayCount] = useState(20);
 
@@ -179,17 +186,17 @@ export default function LeaderboardTable({ data, loading = false }: LeaderboardT
                                 @{item.username}
                             </span>
 
-                            {/* Tickets */}
+                            {/* Score */}
                             <div
                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm sm:text-base font-semibold"
                                 style={{
-                                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                                    color: '#0284c7',
+                                    backgroundColor: scoreLabel === 'Tickets' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(237, 109, 40, 0.15)',
+                                    color: scoreLabel === 'Tickets' ? '#0284c7' : '#ED6D28',
                                     fontFamily: 'var(--font-lexend)'
                                 }}
                             >
-                                <Ticket className="w-4 h-4" />
-                                <span>{item.tickets.toLocaleString()}</span>
+                                {scoreLabel === 'Tickets' ? <Ticket className="w-4 h-4" /> : <Trophy className="w-4 h-4" />}
+                                <span>{item.score.toLocaleString()} {scoreLabel}</span>
                             </div>
 
                             {/* Action buttons */}
@@ -270,7 +277,7 @@ export default function LeaderboardTable({ data, loading = false }: LeaderboardT
                                 <p className="text-sm font-medium" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
                                     All {data.length.toLocaleString()} participants shown
                                 </p>
-                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Keep collecting tickets to climb the ranks!</p>
+                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Keep contributing to climb the ranks!</p>
                             </div>
                         </div>
                     </div>

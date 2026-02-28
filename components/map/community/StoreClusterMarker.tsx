@@ -40,19 +40,12 @@ export const StoreClusterMarker = ({
   clusterId
 }: StoreClusterMarkerProps) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
-  
+
   const handleClick = useCallback(
     () => {
-      // For large clusters at low zoom levels, zoom in instead of showing details
-      if (size > maxClickableCluster && (mapZoom < 14)) {        
-        (window as any).setGlobalLocation?.({ location: position });
-        (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels
-      } else {
-        // Show cluster details for smaller clusters or at higher zoom levels
-        onMarkerClick && onMarkerClick(marker!, clusterId);
-      }
+      onMarkerClick && onMarkerClick(marker!, clusterId);
     },
-    [onMarkerClick, marker, clusterId, position, size]
+    [onMarkerClick, marker, clusterId]
   );
 
   const handleTouchStart = useCallback(
@@ -61,17 +54,10 @@ export const StoreClusterMarker = ({
       e.stopPropagation();
       // Add a small delay to prevent double-tap issues
       setTimeout(() => {
-        // For large clusters at low zoom levels, zoom in instead of showing details
-        if (size > maxClickableCluster && (mapZoom < 14)) {        
-          (window as any).setGlobalLocation?.({ location: position });
-          (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels
-        } else {
-          // Show cluster details for smaller clusters or at higher zoom levels
-          onMarkerClick && onMarkerClick(marker!, clusterId);
-        }
+        onMarkerClick && onMarkerClick(marker!, clusterId);
       }, 100);
     },
-    [onMarkerClick, marker, clusterId, position, size]
+    [onMarkerClick, marker, clusterId]
   );
 
   // Calculate marker size based on cluster size
@@ -81,7 +67,7 @@ export const StoreClusterMarker = ({
   // Store cluster colors - different from single stores for better distinction
   let backgroundColor: string;
   let iconColor: string = '#ffffff';
-  
+
   if (size < 10) {
     backgroundColor = 'linear-gradient(135deg, #06b6d4, #0891b2)'; // Cyan for small store clusters
   } else if (size < 50) {
@@ -100,10 +86,10 @@ export const StoreClusterMarker = ({
       position={position}
       zIndex={size}
       onClick={handleClick}
-      className={'marker store-cluster'} 
+      className={'marker store-cluster'}
       style={{
-        width: markerSize, 
-        height: markerSize, 
+        width: markerSize,
+        height: markerSize,
         background: backgroundColor,
         borderRadius: '12px', // More rectangular like a store building
         display: 'flex',
@@ -120,11 +106,11 @@ export const StoreClusterMarker = ({
         touchAction: 'manipulation',
         position: 'relative'
       }}
-    >  
+    >
       <div
         onTouchStart={handleTouchStart}
         onClick={handleClick}
-        style={{ 
+        style={{
           touchAction: 'manipulation',
           cursor: 'pointer',
           userSelect: 'none',
@@ -139,11 +125,11 @@ export const StoreClusterMarker = ({
         }}
       >
         {/* Store building icon */}
-        <svg 
-          width={iconSize} 
-          height={iconSize} 
-          viewBox="0 0 24 24" 
-          fill="none" 
+        <svg
+          width={iconSize}
+          height={iconSize}
+          viewBox="0 0 24 24"
+          fill="none"
           stroke={iconColor}
           strokeWidth="2"
           style={{ marginBottom: '2px' }}
@@ -156,7 +142,7 @@ export const StoreClusterMarker = ({
           <path d="M10 2v4" />
           <path d="M14 2v4" />
         </svg>
-        
+
         {/* Store count */}
         <span style={{
           fontSize: Math.max(10, Math.min(14, markerSize / 4)) + 'px',

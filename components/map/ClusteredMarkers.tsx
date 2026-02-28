@@ -3,6 +3,7 @@
 // and handles the rendering of both individual markers and cluster markers
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { useMap } from '@vis.gl/react-google-maps';
 import Supercluster, { ClusterProperties } from 'supercluster';
 import { ClusterMarker } from './ClusterMarker';
 import { FeatureMarker } from './FeatureMarker';
@@ -17,7 +18,7 @@ import { groupPinsByCoordinates } from '../../utils/coordinateGrouping';
 
 // Determine minimum zoom level based on screen size
 let minZoom = 2; // Allow zoom level 2
-if (typeof window !== 'undefined' && window.innerWidth < 800) {  
+if (typeof window !== 'undefined' && window.innerWidth < 800) {
   minZoom = 2;
 }
 
@@ -69,7 +70,7 @@ export const ClusteredMarkers = ({
   const processedGeojson = React.useMemo(() => {
     if (community?.id === 'spendhbd') {
       const groupedPins = groupPinsByCoordinates(geojson.features);
-      
+
       // Convert grouped pins back to GeoJSON format
       const groupedFeatures = groupedPins.map(group => ({
         type: "Feature" as const,
@@ -86,7 +87,7 @@ export const ClusteredMarkers = ({
           originalFeatureIds: group.features.map(f => f.id)
         }
       }));
-      
+
       return {
         type: "FeatureCollection" as const,
         features: groupedFeatures
@@ -95,12 +96,13 @@ export const ClusteredMarkers = ({
     return geojson;
   }, [geojson, community]);
 
-  const { clusters, getLeaves } = useSupercluster(processedGeojson, superclusterOptions);
+  const { clusters, getLeaves, getClusterExpansionZoom } = useSupercluster(processedGeojson, superclusterOptions);
+  const map = useMap();
 
   // Update cluster count when clusters change
   useEffect(() => {
     setNumClusters(clusters.length);
-    
+
     // Notify parent that clusters are ready (even if empty, to signal data has been processed)
     if (onClustersReady) {
       onClustersReady(clusters.length);
@@ -110,14 +112,27 @@ export const ClusteredMarkers = ({
   // Handle cluster click - show all markers in the cluster
   const handleClusterClick = useCallback((marker: google.maps.marker.AdvancedMarkerElement, clusterId: number) => {
     const leaves = getLeaves(clusterId);
-    
+
+    // If cluster has more than 100 pins, zoom in instead of showing list
+    if (leaves.length > 100 && map) {
+      const expansionZoom = getClusterExpansionZoom(clusterId);
+
+      // Get marker position
+      const position = marker.position;
+      if (position) {
+        map.panTo(position);
+        map.setZoom(expansionZoom);
+      }
+      return;
+    }
+
     // For SpendHBD community, show cluster info instead of individual markers
     if (community?.id === 'spendhbd') {
       setInfowindowData({ anchor: marker, features: leaves, isCluster: true });
     } else {
       setInfowindowData({ anchor: marker, features: leaves });
     }
-  }, [getLeaves, setInfowindowData, community]);
+  }, [getLeaves, setInfowindowData, community, map, getClusterExpansionZoom]);
 
   // Handle individual marker click - show single marker info
   const handleMarkerClick = useCallback(
@@ -135,7 +150,7 @@ export const ClusteredMarkers = ({
     },
     [clusters, setInfowindowData, community]
   );
-  
+
   return (
     <>
       {clusters.map(feature => {
@@ -143,7 +158,7 @@ export const ClusteredMarkers = ({
 
         const clusterProperties = feature.properties as ClusterProperties;
         const isCluster: boolean = clusterProperties.cluster;
-        
+
         return isCluster ? (
           community?.id === 'spendhbd' ? (
             <StoreClusterMarker

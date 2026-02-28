@@ -1,260 +1,50 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { ProcessedPost, HiveRankedPost, SortType } from '@/types/post';
-import {
-  formatReputation,
-  formatRelativeTime,
-  calculateReadingTime,
-  formatPayout,
-  getHiveBlogUrl,
-  safeJsonParse
-} from '@/utils/postUtils';
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { ProcessedPost, SortType } from '@/types/post';
 
 const POSTS_PER_PAGE = 20;
 
-/**
- * Optimize image URL using Ecency's image proxy
- */
-function optimizeImageUrl(imageUrl: string, size: 'thumb' | 'small' | 'medium' | 'large' = 'thumb'): string {
-  if (!imageUrl || typeof imageUrl !== 'string') return imageUrl;
+// ---------------------------------------------------------------------------
+// Module-level pagination cache -- survives component unmount/remount
+// during Next.js client navigation so back-button restores instantly.
+// ---------------------------------------------------------------------------
 
-  const sizeMap = {
-    thumb: '150x0',
-    small: '256x512',
-    medium: '400x0',
-    large: '600x0'
-  };
-
-  const ecencySize = sizeMap[size];
-
-  if (imageUrl.includes('images.ecency.com')) {
-    return imageUrl.replace(/\/\d+x\d+\//, `/${ecencySize}/`);
-  }
-
-  const trustedCDNs = [
-    'files.peakd.com',
-    'cdn.steemitimages.com',
-    'images.hive.blog',
-    'img.leopedia.io'
-  ];
-
-  if (trustedCDNs.some(cdn => imageUrl.includes(cdn))) {
-    return imageUrl;
-  }
-
-  return `https://images.ecency.com/${ecencySize}/${imageUrl}`;
+interface PaginationCache {
+  posts: ProcessedPost[];
+  cursor: { author: string | null; permlink: string | null };
+  sortType: SortType;
+  hasMore: boolean;
+  scrollY: number;
+  timestamp: number;
 }
 
-/**
- * Clean and extract valid image URL from various formats
- */
-function cleanImageUrl(url: string): string | null {
-  if (!url || typeof url !== 'string') return null;
+const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutes
+let exploreCache: PaginationCache | null = null;
 
-  // Handle Ecency format: [![](url)](url)
-  const ecencyMatch = url.match(/\[!\[\]\(([^)]+)\)\]\([^)]+\)/);
-  if (ecencyMatch && ecencyMatch[1]) {
-    const extractedUrl = ecencyMatch[1];
-    if (extractedUrl.startsWith('http://') || extractedUrl.startsWith('https://')) {
-      return extractedUrl;
-    }
-  }
-
-  // Handle standard markdown image: ![alt](url)
-  const markdownImgMatch = url.match(/!\[[^\]]*\]\(([^)]+)\)/);
-  if (markdownImgMatch && markdownImgMatch[1]) {
-    const extractedUrl = markdownImgMatch[1];
-    if (extractedUrl.startsWith('http://') || extractedUrl.startsWith('https://')) {
-      return extractedUrl;
-    }
-  }
-
-  // Handle markdown link: [url](url)
-  const markdownLinkMatch = url.match(/\[[^\]]*\]\(([^)]+)\)/);
-  if (markdownLinkMatch && markdownLinkMatch[1]) {
-    const extractedUrl = markdownLinkMatch[1];
-    if (extractedUrl.startsWith('http://') || extractedUrl.startsWith('https://')) {
-      return extractedUrl;
-    }
-  }
-
-  // Handle malformed URLs with "]("
-  if (url.includes('](')) {
-    const beforeBracket = url.split('](')[0];
-    if (beforeBracket.startsWith('http://') || beforeBracket.startsWith('https://')) {
-      return beforeBracket;
-    }
-  }
-
-  // Handle plain URLs
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-
-  return null;
+function saveToCache(state: Omit<PaginationCache, 'timestamp'>) {
+  exploreCache = { ...state, timestamp: Date.now() };
 }
 
-/**
- * Extract first image from markdown or HTML body
- * Handles markdown images, HTML img tags, InLeo format, and travel digest posts
- */
-function extractFirstImageFromBody(body: string): string | null {
-  if (!body) return null;
-
-  // Priority 1: Match markdown image: ![alt](url)
-  const imgMatch = body.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/);
-  if (imgMatch && imgMatch[1]) {
-    return imgMatch[1];
-  }
-
-  // Priority 2: Match HTML img tags (for travel digest posts and HTML content)
-  // Handle both single and double quotes, and various attribute orders
-  const htmlImgMatch = body.match(/<img[^>]*\ssrc=['"']([^'"]+)['"']/) ||
-                       body.match(/<img[^>]*\ssrc='([^']+)'/) ||
-                       body.match(/<img[^>]*\ssrc="([^"]+)"/) ||
-                       body.match(/<img[^>]*src=['"']([^'"]+)['"']/) ||
-                       body.match(/<img[^>]*src='([^']+)'/) ||
-                       body.match(/<img[^>]*src="([^"]+)"/);
-  if (htmlImgMatch && htmlImgMatch[1]) {
-    const url = htmlImgMatch[1];
-    // Validate it's a proper HTTP/HTTPS URL
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-  }
-
-  // Priority 3: Match standalone image URL on its own line (handles InLeo format with leading/trailing whitespace)
-  const standaloneMatch = body.match(/^\s*(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg))\s*$/im);
-  if (standaloneMatch && standaloneMatch[1]) {
-    return standaloneMatch[1];
-  }
-
-  // Priority 4: Match InLeo/Leopedia images specifically (they may not have standard extensions)
-  const leopediaMatch = body.match(/^\s*(https?:\/\/img\.leopedia\.io\/[^\s]+)\s*$/im);
-  if (leopediaMatch && leopediaMatch[1]) {
-    return leopediaMatch[1];
-  }
-
-  return null;
-}
-
-/**
- * Fetch cover image from original post for crossposts
- */
-async function fetchOriginalPostCoverImage(originalAuthor: string, originalPermlink: string): Promise<string | null> {
-  try {
-    const apiUrl = `/api/hive/post?author=${encodeURIComponent(originalAuthor)}&permlink=${encodeURIComponent(originalPermlink)}`;
-    const response = await fetch(apiUrl, {
-      signal: AbortSignal.timeout(5000), // 5 second timeout
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    if (!data.post) {
-      return null;
-    }
-
-    const post = data.post;
-    const metadata = safeJsonParse(post.json_metadata);
-
-    // Try metadata images first
-    const imageArray = metadata.image || metadata.images;
-    if (imageArray && Array.isArray(imageArray) && imageArray.length > 0) {
-      for (const img of imageArray) {
-        const cleanedUrl = cleanImageUrl(img);
-        if (cleanedUrl) {
-          return optimizeImageUrl(cleanedUrl, 'thumb');
-        }
-      }
-    }
-
-    // Try body images
-    if (post.body) {
-      const bodyImage = extractFirstImageFromBody(post.body);
-      if (bodyImage) {
-        return optimizeImageUrl(bodyImage, 'thumb');
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.warn(`Error fetching original post cover image for @${originalAuthor}/${originalPermlink}:`, error);
+function loadFromCache(sortType: SortType): PaginationCache | null {
+  if (
+    !exploreCache ||
+    exploreCache.sortType !== sortType ||
+    exploreCache.posts.length === 0 ||
+    Date.now() - exploreCache.timestamp > CACHE_MAX_AGE
+  ) {
     return null;
   }
+  return exploreCache;
 }
 
-/**
- * Process a raw Hive ranked post into our ProcessedPost format
- */
-async function processRankedPost(post: HiveRankedPost): Promise<ProcessedPost> {
-  const metadata = safeJsonParse(post.json_metadata);
-
-  // Get cover image
-  // Note: Some platforms use 'image' (Ecency, PeakD), others use 'images' (InLeo)
-  let coverImage: string | null = null;
-  const imageArray = metadata.image || metadata.images;
-
-  if (imageArray && Array.isArray(imageArray) && imageArray.length > 0) {
-    for (const img of imageArray) {
-      const cleanedUrl = cleanImageUrl(img);
-      if (cleanedUrl) {
-        coverImage = optimizeImageUrl(cleanedUrl, 'thumb');
-        break;
-      }
-    }
-  }
-
-  if (!coverImage && post.body) {
-    const bodyImage = extractFirstImageFromBody(post.body);
-    if (bodyImage) {
-      coverImage = optimizeImageUrl(bodyImage, 'thumb');
-    }
-  }
-
-  // For crossposts: if no cover image found, try fetching from original post
-  if (!coverImage && metadata.original_author && metadata.original_permlink) {
-    coverImage = await fetchOriginalPostCoverImage(metadata.original_author, metadata.original_permlink);
-  }
-
-  // Calculate payout
-  let payoutValue: string;
-  const pendingPayout = parseFloat(post.pending_payout_value || '0');
-
-  if (pendingPayout > 0) {
-    payoutValue = post.pending_payout_value || '0';
-  } else {
-    const authorPayout = parseFloat(post.author_payout_value || '0');
-    const curatorPayout = parseFloat(post.curator_payout_value || '0');
-    const combinedPayout = (isNaN(authorPayout) ? 0 : authorPayout) + (isNaN(curatorPayout) ? 0 : curatorPayout);
-    payoutValue = `${combinedPayout.toFixed(3)} HBD`;
-  }
-
-  return {
-    title: post.title || 'Untitled',
-    author: post.author,
-    permlink: post.permlink,
-    created: post.created,
-    createdRelative: formatRelativeTime(post.created),
-    coverImage: coverImage,
-    tags: metadata.tags || [],
-    payout: formatPayout(payoutValue),
-    votes: post.stats?.total_votes || 0,
-    comments: post.children,
-    reputation: formatReputation(post.author_reputation),
-    slug: `@${post.author}/${post.permlink}`,
-    bodyMarkdown: post.body,
-    images: metadata.image || metadata.images || [],
-    readingTimeMin: calculateReadingTime(post.body),
-    cashoutTime: post.payout_at,
-    activeVotesCount: post.active_votes?.length || 0,
-    canonicalUrl: metadata.canonical_url || `https://peakd.com/@${post.author}/${post.permlink}`,
-    rawJsonUrl: getHiveBlogUrl(post.author, post.permlink)
-  };
+function clearCache() {
+  exploreCache = null;
 }
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
 
 interface UsePostPaginatorOptions {
   initialSort?: SortType;
@@ -275,129 +65,169 @@ interface UsePostPaginatorReturn {
   reset: () => void;
 }
 
-export function usePostPaginator(options: UsePostPaginatorOptions = {}): UsePostPaginatorReturn {
+export function usePostPaginator(
+  options: UsePostPaginatorOptions = {},
+): UsePostPaginatorReturn {
   const { initialSort = 'created', postsPerPage = POSTS_PER_PAGE } = options;
 
-  const [posts, setPosts] = useState<ProcessedPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Hydrate from cache on first render so the DOM is immediately tall enough
+  // for scroll restoration (no flash of skeleton/empty state).
+  const initialCache = loadFromCache(initialSort);
+
+  const [posts, setPosts] = useState<ProcessedPost[]>(initialCache?.posts ?? []);
+  const [loading, setLoading] = useState(!initialCache);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(initialCache?.hasMore ?? true);
   const [sortType, setSortType] = useState<SortType>(initialSort);
 
-  // Cursor for pagination
-  const lastAuthorRef = useRef<string | null>(null);
-  const lastPermlinkRef = useRef<string | null>(null);
+  const lastAuthorRef = useRef<string | null>(initialCache?.cursor.author ?? null);
+  const lastPermlinkRef = useRef<string | null>(initialCache?.cursor.permlink ?? null);
 
-  const fetchPosts = useCallback(async (isInitial: boolean = false) => {
-    if (!isInitial && loadingMore) return;
-    if (!hasMore && !isInitial) return;
+  const abortRef = useRef<AbortController | null>(null);
+  const fetchingRef = useRef(false);
+  const restoredRef = useRef(!!initialCache);
+  const pendingScrollY = useRef(initialCache?.scrollY ?? 0);
 
-    if (isInitial) {
-      setLoading(true);
-      setError(null);
-      setPosts([]);
-      lastAuthorRef.current = null;
-      lastPermlinkRef.current = null;
-      setHasMore(true);
-    } else {
-      setLoadingMore(true);
+  // ---- Restore scroll position synchronously before paint ----
+  useLayoutEffect(() => {
+    if (pendingScrollY.current > 0) {
+      const y = pendingScrollY.current;
+      pendingScrollY.current = 0;
+      window.scrollTo(0, y);
     }
+  }, []);
 
-    try {
-      const requestBody: {
-        sort: SortType;
-        limit: number;
-        start_author?: string;
-        start_permlink?: string;
-      } = {
-        sort: sortType,
-        limit: postsPerPage
-      };
-
-      // Add cursor for pagination (not on initial load)
-      if (!isInitial && lastAuthorRef.current && lastPermlinkRef.current) {
-        requestBody.start_author = lastAuthorRef.current;
-        requestBody.start_permlink = lastPermlinkRef.current;
+  // ---- Persist scroll position on unmount / before navigating away ----
+  useEffect(() => {
+    return () => {
+      if (exploreCache) {
+        exploreCache.scrollY = window.scrollY;
       }
+    };
+  }, []);
 
-      const response = await fetch('/api/hive/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      });
+  // ---- Fetch posts (API now returns ProcessedPost[] directly) ----
+  const fetchPosts = useCallback(
+    async (isInitial: boolean = false) => {
+      if (fetchingRef.current && !isInitial) return;
+      if (!hasMore && !isInitial) return;
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch posts');
+      // Cancel any in-flight request
+      if (abortRef.current) {
+        abortRef.current.abort();
       }
-
-      const rawPosts: HiveRankedPost[] = await response.json();
-
-      // Store the raw count BEFORE any modifications
-      // This determines if more posts exist on the server
-      const receivedCount = rawPosts.length;
-      
-      // If we have a cursor, remove the first post (it's a duplicate from previous page)
-      let newPosts = [...rawPosts];
-      const hasCursor = !isInitial && lastAuthorRef.current && lastPermlinkRef.current;
-      if (hasCursor && newPosts.length > 0) {
-        newPosts.shift();
-      }
-
-      // Determine if there are more posts based on raw count from API
-      // If API returned fewer than we requested, we've reached the end
-      if (receivedCount < postsPerPage) {
-        setHasMore(false);
-      }
-
-      // Update cursor to last post
-      if (newPosts.length > 0) {
-        const lastPost = newPosts[newPosts.length - 1];
-        lastAuthorRef.current = lastPost.author;
-        lastPermlinkRef.current = lastPost.permlink;
-      }
-
-      // Process posts (now async to handle crosspost image fetching)
-      const processedPosts = await Promise.all(newPosts.map(processRankedPost));
+      const controller = new AbortController();
+      abortRef.current = controller;
+      fetchingRef.current = true;
 
       if (isInitial) {
-        setPosts(processedPosts);
+        setLoading(true);
+        setError(null);
+        setPosts([]);
+        lastAuthorRef.current = null;
+        lastPermlinkRef.current = null;
+        setHasMore(true);
       } else {
-        setPosts(prev => [...prev, ...processedPosts]);
+        setLoadingMore(true);
       }
 
-    } catch (err) {
-      console.error('Error fetching posts:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load posts');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [sortType, postsPerPage, hasMore, loadingMore]);
+      try {
+        const requestBody: {
+          sort: SortType;
+          limit: number;
+          start_author?: string;
+          start_permlink?: string;
+        } = { sort: sortType, limit: postsPerPage };
 
-  const fetchInitialPosts = useCallback(() => {
-    return fetchPosts(true);
-  }, [fetchPosts]);
+        if (!isInitial && lastAuthorRef.current && lastPermlinkRef.current) {
+          requestBody.start_author = lastAuthorRef.current;
+          requestBody.start_permlink = lastPermlinkRef.current;
+        }
 
-  const fetchNextPage = useCallback(() => {
-    return fetchPosts(false);
-  }, [fetchPosts]);
+        const response = await fetch('/api/hive/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
 
-  const changeSortType = useCallback((newSort: SortType) => {
-    if (newSort !== sortType) {
-      setSortType(newSort);
-      // Reset and fetch with new sort
-      lastAuthorRef.current = null;
-      lastPermlinkRef.current = null;
-      setHasMore(true);
-      setPosts([]);
-      setLoading(true);
-    }
-  }, [sortType]);
+        if (!response.ok) throw new Error('Failed to fetch posts');
+
+        const json = await response.json();
+
+        // API returns { posts: ProcessedPost[], hasMore: boolean }
+        const processedPosts: ProcessedPost[] = json.posts ?? json;
+        const serverHasMore: boolean | undefined = json.hasMore;
+
+        const hasCursor =
+          !isInitial && lastAuthorRef.current && lastPermlinkRef.current;
+
+        // Remove duplicate first post when cursor-paginating
+        let newPosts = [...processedPosts];
+        if (hasCursor && newPosts.length > 0) {
+          newPosts.shift();
+        }
+
+        if (serverHasMore !== undefined) {
+          setHasMore(serverHasMore);
+        } else if (processedPosts.length < postsPerPage) {
+          setHasMore(false);
+        }
+
+        if (newPosts.length > 0) {
+          const lastPost = newPosts[newPosts.length - 1];
+          lastAuthorRef.current = lastPost.author;
+          lastPermlinkRef.current = lastPost.permlink;
+        }
+
+        if (isInitial) {
+          setPosts(newPosts);
+        } else {
+          setPosts((prev) => [...prev, ...newPosts]);
+        }
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') {
+          fetchingRef.current = false;
+          return;
+        }
+        console.error('Error fetching posts:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load posts');
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
+        fetchingRef.current = false;
+      }
+    },
+    [sortType, postsPerPage, hasMore],
+  );
+
+  const fetchInitialPosts = useCallback(() => fetchPosts(true), [fetchPosts]);
+  const fetchNextPage = useCallback(() => fetchPosts(false), [fetchPosts]);
+
+  const changeSortType = useCallback(
+    (newSort: SortType) => {
+      if (newSort !== sortType) {
+        if (abortRef.current) abortRef.current.abort();
+        clearCache();
+        restoredRef.current = false;
+        setSortType(newSort);
+        lastAuthorRef.current = null;
+        lastPermlinkRef.current = null;
+        setHasMore(true);
+        setPosts([]);
+        setLoading(true);
+      }
+    },
+    [sortType],
+  );
 
   const reset = useCallback(() => {
+    if (abortRef.current) abortRef.current.abort();
+    clearCache();
+    restoredRef.current = false;
     setPosts([]);
     setLoading(true);
     setLoadingMore(false);
@@ -407,10 +237,31 @@ export function usePostPaginator(options: UsePostPaginatorOptions = {}): UsePost
     lastPermlinkRef.current = null;
   }, []);
 
-  // Fetch when sort type changes
+  // ---- Cleanup on unmount: cancel pending requests ----
   useEffect(() => {
+    return () => {
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, []);
+
+  // ---- Fetch when sort type changes (skip if restored from cache) ----
+  useEffect(() => {
+    if (restoredRef.current) return;
     fetchPosts(true);
   }, [sortType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---- Keep cache in sync whenever posts/cursor/hasMore change ----
+  useEffect(() => {
+    if (posts.length > 0) {
+      saveToCache({
+        posts,
+        cursor: { author: lastAuthorRef.current, permlink: lastPermlinkRef.current },
+        sortType,
+        hasMore,
+        scrollY: window.scrollY,
+      });
+    }
+  }, [posts, hasMore, sortType]);
 
   return {
     posts,
@@ -423,21 +274,21 @@ export function usePostPaginator(options: UsePostPaginatorOptions = {}): UsePost
     fetchInitialPosts,
     fetchNextPage,
     changeSortType,
-    reset
+    reset,
   };
 }
 
-/**
- * Hook for infinite scroll functionality
- */
+// ---------------------------------------------------------------------------
+// Infinite scroll hook (unchanged)
+// ---------------------------------------------------------------------------
+
 export function useInfiniteScroll(
   onLoadMore: () => void,
-  options: { threshold?: number; enabled?: boolean } = {}
+  options: { threshold?: number; enabled?: boolean } = {},
 ) {
   const { threshold = 300, enabled = true } = options;
   const loadMoreRef = useRef(onLoadMore);
 
-  // Update ref when callback changes
   useEffect(() => {
     loadMoreRef.current = onLoadMore;
   }, [onLoadMore]);
@@ -460,4 +311,3 @@ export function useInfiniteScroll(
     return () => window.removeEventListener('scroll', handleScroll);
   }, [threshold, enabled]);
 }
-

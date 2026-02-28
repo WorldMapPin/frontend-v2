@@ -171,7 +171,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 Explore
               </Link>
               <Link
-                href="/challenges"
+                href="/leaderboard"
                 className="px-3 py-2 rounded-md text-lg transition-colors duration-200 hover:text-sky-500"
                 style={{
                   fontFamily: 'var(--font-lexend)',
@@ -183,7 +183,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 }}
                 suppressHydrationWarning={true}
               >
-                Challenges
+                Leaderboard
               </Link>
               {/* Auth Section */}
               {isReady ? (
@@ -467,7 +467,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               Explore
             </Link>
             <Link
-              href="/challenges"
+              href="/leaderboard"
               className="block px-3 py-2 rounded-md text-sm"
               style={{
                 fontFamily: 'var(--font-lexend)',
@@ -480,7 +480,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
               onClick={() => setIsMenuOpen(false)}
               suppressHydrationWarning={true}
             >
-              Challenges
+              Leaderboard
             </Link>
 
             <Link

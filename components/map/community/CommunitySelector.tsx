@@ -58,14 +58,19 @@ export default function CommunitySelector({
   return (
     <div className="absolute z-40 inset-0 pointer-events-none">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto"
         onClick={onClose}
       ></div>
-      
+
       {/* Community Selector Modal */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-6 min-w-[320px] max-w-[400px]">
+        <div className="backdrop-blur-md rounded-2xl shadow-2xl border p-6 min-w-[320px] max-w-[400px]" 
+          style={{
+            backgroundColor: 'var(--card-bg)',
+            borderColor: 'var(--border-subtle)',
+            opacity: 0.95
+          }}>
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
@@ -76,15 +81,19 @@ export default function CommunitySelector({
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Select Community</h3>
-                <p className="text-sm text-gray-600">Choose a community to view their pins</p>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Select Community</h3>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Choose a community to view their pins</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200"
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-200"
+              style={{
+                backgroundColor: 'var(--section-bg)',
+                color: 'var(--text-secondary)'
+              }}
             >
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -94,23 +103,28 @@ export default function CommunitySelector({
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-left flex items-center justify-between transition-colors duration-200"
+              className="w-full border rounded-xl px-4 py-3 text-left flex items-center justify-between transition-colors duration-200"
+              style={{
+                backgroundColor: 'var(--section-bg)',
+                borderColor: 'var(--border-subtle)'
+              }}
             >
               <div className="flex items-center space-x-3">
                 <div className="w-6 h-6 bg-orange-500/20 rounded-full flex items-center justify-center">
                   <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{selectedCommunity.name}</p>
+                  <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{selectedCommunity.name}</p>
                   {selectedCommunity.description && (
-                    <p className="text-sm text-gray-600">{selectedCommunity.description}</p>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{selectedCommunity.description}</p>
                   )}
                 </div>
               </div>
-              <svg 
-                className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className={`w-5 h-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                style={{ color: 'var(--text-muted)' }}
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -119,30 +133,32 @@ export default function CommunitySelector({
 
             {/* Dropdown Menu */}
             {isOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
+              <div className="absolute top-full left-0 right-0 mt-2 rounded-xl shadow-lg border overflow-hidden z-50" 
+                style={{
+                  backgroundColor: 'var(--card-bg)',
+                  borderColor: 'var(--border-subtle)'
+                }}>
                 {communities.map((community) => (
                   <button
                     key={community.id}
                     onClick={() => handleCommunitySelect(community)}
-                    className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-3 ${
-                      community.id === selectedCommunity.id ? 'bg-orange-50' : ''
-                    }`}
+                    className="w-full px-4 py-3 text-left transition-colors duration-200 flex items-center space-x-3"
+                    style={{
+                      backgroundColor: community.id === selectedCommunity.id ? 'var(--section-bg)' : 'transparent'
+                    }}
                   >
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                      community.id === selectedCommunity.id ? 'bg-orange-500' : 'bg-gray-200'
-                    }`}>
-                      <div className={`w-2 h-2 rounded-full ${
-                        community.id === selectedCommunity.id ? 'bg-white' : 'bg-gray-400'
-                      }`}></div>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${community.id === selectedCommunity.id ? 'bg-orange-500' : ''}`}
+                      style={community.id !== selectedCommunity.id ? { backgroundColor: 'var(--border-color)' } : undefined}>
+                      <div className={`w-2 h-2 rounded-full ${community.id === selectedCommunity.id ? 'bg-white' : ''}`}
+                        style={community.id !== selectedCommunity.id ? { backgroundColor: 'var(--text-muted)' } : undefined}></div>
                     </div>
                     <div className="flex-1">
-                      <p className={`font-medium ${
-                        community.id === selectedCommunity.id ? 'text-orange-600' : 'text-gray-900'
-                      }`}>
+                      <p className={`font-medium ${community.id === selectedCommunity.id ? 'text-orange-600' : ''}`}
+                        style={community.id !== selectedCommunity.id ? { color: 'var(--text-primary)' } : undefined}>
                         {community.name}
                       </p>
                       {community.description && (
-                        <p className="text-sm text-gray-600">{community.description}</p>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{community.description}</p>
                       )}
                     </div>
                     {community.id === selectedCommunity.id && (
@@ -160,7 +176,11 @@ export default function CommunitySelector({
           <div className="flex space-x-3 mt-6">
             <button
               onClick={onClose}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-xl transition-colors duration-200"
+              className="flex-1 font-medium py-3 px-4 rounded-xl transition-colors duration-200"
+              style={{
+                backgroundColor: 'var(--section-bg)',
+                color: 'var(--text-secondary)'
+              }}
             >
               Cancel
             </button>
@@ -169,7 +189,7 @@ export default function CommunitySelector({
                 onLoadPins(selectedCommunity);
                 onClose();
               }}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-xl transition-colors duration-200"
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-xl transition-colors duration-200 shadow-lg shadow-orange-500/30"
             >
               Load Pins
             </button>

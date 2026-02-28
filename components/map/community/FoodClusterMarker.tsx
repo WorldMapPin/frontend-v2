@@ -40,19 +40,12 @@ export const FoodClusterMarker = ({
   clusterId
 }: FoodClusterMarkerProps) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
-  
+
   const handleClick = useCallback(
     () => {
-      // For large clusters at low zoom levels, zoom in instead of showing details
-      if (size > maxClickableCluster && (mapZoom < 14)) {        
-        (window as any).setGlobalLocation?.({ location: position });
-        (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels
-      } else {
-        // Show cluster details for smaller clusters or at higher zoom levels
-        onMarkerClick && onMarkerClick(marker!, clusterId);
-      }
+      onMarkerClick && onMarkerClick(marker!, clusterId);
     },
-    [onMarkerClick, marker, clusterId, position, size]
+    [onMarkerClick, marker, clusterId]
   );
 
   const handleTouchStart = useCallback(
@@ -61,17 +54,10 @@ export const FoodClusterMarker = ({
       e.stopPropagation();
       // Add a small delay to prevent double-tap issues
       setTimeout(() => {
-        // For large clusters at low zoom levels, zoom in instead of showing details
-        if (size > maxClickableCluster && (mapZoom < 14)) {        
-          (window as any).setGlobalLocation?.({ location: position });
-          (window as any).setGlobalZoom?.(mapZoom + 3); // Zoom in by 3 levels
-        } else {
-          // Show cluster details for smaller clusters or at higher zoom levels
-          onMarkerClick && onMarkerClick(marker!, clusterId);
-        }
+        onMarkerClick && onMarkerClick(marker!, clusterId);
       }, 100);
     },
-    [onMarkerClick, marker, clusterId, position, size]
+    [onMarkerClick, marker, clusterId]
   );
 
   // Calculate marker size based on cluster size
@@ -81,7 +67,7 @@ export const FoodClusterMarker = ({
   // Default WorldMapPin cluster colors with food theme
   let backgroundColor: string;
   let foodIcon: React.ReactNode;
-  
+
   if (size < 10) {
     // Small clusters - Ice Cream
     backgroundColor = 'linear-gradient(135deg, #FFB8D1, #FF85A6)';
@@ -114,10 +100,10 @@ export const FoodClusterMarker = ({
       position={position}
       zIndex={size}
       onClick={handleClick}
-      className={'marker food-cluster'} 
+      className={'marker food-cluster'}
       style={{
-        width: markerSize, 
-        height: markerSize, 
+        width: markerSize,
+        height: markerSize,
         background: backgroundColor,
         borderRadius: '50%', // Circular like a plate
         display: 'flex',
@@ -134,11 +120,11 @@ export const FoodClusterMarker = ({
         touchAction: 'manipulation',
         position: 'relative'
       }}
-    >  
+    >
       <div
         onTouchStart={handleTouchStart}
         onClick={handleClick}
-        style={{ 
+        style={{
           touchAction: 'manipulation',
           cursor: 'pointer',
           userSelect: 'none',
@@ -153,14 +139,14 @@ export const FoodClusterMarker = ({
         }}
       >
         {/* Food icon based on cluster size */}
-        <div style={{ 
+        <div style={{
           marginBottom: '6px',
           filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))',
           lineHeight: '1'
         }}>
           {foodIcon}
         </div>
-        
+
         {/* Food location count */}
         <span style={{
           fontSize: Math.max(11, Math.min(16, markerSize / 3.5)) + 'px',
