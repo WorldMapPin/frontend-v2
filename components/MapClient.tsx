@@ -1,150 +1,168 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import Image from 'next/image';
-import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import axios from 'axios';
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import Image from "next/image";
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  useMap,
+} from "@vis.gl/react-google-maps";
+import axios from "axios";
 
 // Import components
-import { useTheme } from './ThemeProvider';
-import { ClusteredMarkers } from '@/components/map/ClusteredMarkers';
-import { InfoWindowContent } from '@/components/map/InfoWindowContent';
-import { SpendHBDInfoWindow } from '@/components/map/community/SpendHBDInfoWindow';
-import { SpendHBDClusterInfo } from '@/components/map/community/SpendHBDClusterInfo';
-import { OldLoadingSpinner } from '@/components/map/OldLoadingSpinner';
-import { GetCodeButton } from '@/components/map/GetCodeButton';
-import { CodeModeInterface } from '@/components/map/CodeModeInterface';
-import { FloatingContextMenu } from '@/components/map/FloatingContextMenu';
-import FilterComponent from '@/components/map/FilterComponent';
-import CommunitySelector from '@/components/map/community/CommunitySelector';
-import MapFilterBar from '@/components/map/MapFilterBar';
+import { useTheme } from "./ThemeProvider";
+import { ClusteredMarkers } from "@/components/map/ClusteredMarkers";
+import { InfoWindowContent } from "@/components/map/InfoWindowContent";
+import { SpendHBDInfoWindow } from "@/components/map/community/SpendHBDInfoWindow";
+import { SpendHBDClusterInfo } from "@/components/map/community/SpendHBDClusterInfo";
+import { OldLoadingSpinner } from "@/components/map/OldLoadingSpinner";
+import { GetCodeButton } from "@/components/map/GetCodeButton";
+import { CodeModeInterface } from "@/components/map/CodeModeInterface";
+import { FloatingContextMenu } from "@/components/map/FloatingContextMenu";
+import FilterComponent from "@/components/map/FilterComponent";
+import CommunitySelector from "@/components/map/community/CommunitySelector";
+import MapFilterBar from "@/components/map/MapFilterBar";
 
 // Import journey components
-import SimpleJourneyEditor from '@/components/journey/SimpleJourneyEditor';
-import SimpleJourneyMap from '@/components/journey/SimpleJourneyMap';
-import UserPostsOnMap from '@/components/journey/UserPostsOnMap';
+import SimpleJourneyEditor from "@/components/journey/SimpleJourneyEditor";
+import SimpleJourneyMap from "@/components/journey/SimpleJourneyMap";
+import UserPostsOnMap from "@/components/journey/UserPostsOnMap";
 
 // Import utilities and types
-import { convertDatafromApitoGeojson } from '../utils/dataConversion';
-import { InfoWindowData, SearchParams, Community, Journey, JourneyState } from '../types';
-import { Feature, Point } from 'geojson';
-import { initPerformanceCheck, getNetworkSpeed, isExtremelySlowConnection, isSlowConnection } from '../utils/performanceCheck';
-import { fetchCommunityPins, COMMUNITIES, getDefaultCommunity } from '../utils/communityApi';
-import { pinCache } from '../utils/pinCache';
+import { convertDatafromApitoGeojson } from "../utils/dataConversion";
+import {
+  InfoWindowData,
+  SearchParams,
+  Community,
+  Journey,
+  JourneyState,
+} from "../types";
+import { Feature, Point } from "geojson";
+import {
+  initPerformanceCheck,
+  getNetworkSpeed,
+  isExtremelySlowConnection,
+  isSlowConnection,
+} from "../utils/performanceCheck";
+import {
+  fetchCommunityPins,
+  COMMUNITIES,
+  getDefaultCommunity,
+} from "../utils/communityApi";
+import { pinCache } from "../utils/pinCache";
 
 // Global variables for zoom (local to this module)
 export let mapZoom = 2; // Start at zoom 2, skip 3
 
 // Simple map configuration
 const MAP_CONFIG = {
-  mapId: 'edce5dcfb5575af1',
-  mapTypeId: 'roadmap'
+  mapId: "edce5dcfb5575af1",
+  mapTypeId: "roadmap",
 };
 
 const DARK_MAP_STYLE = [
   {
-    "elementType": "geometry",
-    "stylers": [{ "color": "#212121" }]
+    elementType: "geometry",
+    stylers: [{ color: "#212121" }],
   },
   {
-    "elementType": "labels.icon",
-    "stylers": [{ "visibility": "off" }]
+    elementType: "labels.icon",
+    stylers: [{ visibility: "off" }],
   },
   {
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#757575" }]
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#757575" }],
   },
   {
-    "elementType": "labels.text.stroke",
-    "stylers": [{ "color": "#212121" }]
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#212121" }],
   },
   {
-    "featureType": "administrative",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#757575" }]
+    featureType: "administrative",
+    elementType: "geometry",
+    stylers: [{ color: "#757575" }],
   },
   {
-    "featureType": "administrative.country",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#9e9e9e" }]
+    featureType: "administrative.country",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#9e9e9e" }],
   },
   {
-    "featureType": "administrative.land_parcel",
-    "stylers": [{ "visibility": "off" }]
+    featureType: "administrative.land_parcel",
+    stylers: [{ visibility: "off" }],
   },
   {
-    "featureType": "administrative.locality",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#bdbdbd" }]
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#bdbdbd" }],
   },
   {
-    "featureType": "poi",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#757575" }]
+    featureType: "poi",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#757575" }],
   },
   {
-    "featureType": "poi.park",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#181818" }]
+    featureType: "poi.park",
+    elementType: "geometry",
+    stylers: [{ color: "#181818" }],
   },
   {
-    "featureType": "poi.park",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#616161" }]
+    featureType: "poi.park",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#616161" }],
   },
   {
-    "featureType": "poi.park",
-    "elementType": "labels.text.stroke",
-    "stylers": [{ "color": "#1b1b1b" }]
+    featureType: "poi.park",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#1b1b1b" }],
   },
   {
-    "featureType": "road",
-    "elementType": "geometry.fill",
-    "stylers": [{ "color": "#2c2c2c" }]
+    featureType: "road",
+    elementType: "geometry.fill",
+    stylers: [{ color: "#2c2c2c" }],
   },
   {
-    "featureType": "road",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#8a8a8a" }]
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#8a8a8a" }],
   },
   {
-    "featureType": "road.arterial",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#373737" }]
+    featureType: "road.arterial",
+    elementType: "geometry",
+    stylers: [{ color: "#373737" }],
   },
   {
-    "featureType": "road.highway",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#3c3c3c" }]
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#3c3c3c" }],
   },
   {
-    "featureType": "road.highway.controlled_access",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#4e4e4e" }]
+    featureType: "road.highway.controlled_access",
+    elementType: "geometry",
+    stylers: [{ color: "#4e4e4e" }],
   },
   {
-    "featureType": "road.local",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#616161" }]
+    featureType: "road.local",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#616161" }],
   },
   {
-    "featureType": "transit",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#757575" }]
+    featureType: "transit",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#757575" }],
   },
   {
-    "featureType": "water",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#000000" }]
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#000000" }],
   },
   {
-    "featureType": "water",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#3d3d3d" }]
-  }
+    featureType: "water",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#3d3d3d" }],
+  },
 ];
-
-
 
 interface MapClientProps {
   initialUsername?: string;
@@ -153,7 +171,12 @@ interface MapClientProps {
   initialCommunity?: Community;
 }
 
-export default function MapClient({ initialUsername, initialPermlink, initialTag, initialCommunity }: MapClientProps = {}) {
+export default function MapClient({
+  initialUsername,
+  initialPermlink,
+  initialTag,
+  initialCommunity,
+}: MapClientProps = {}) {
   // Basic states
   const [geojson, setGeojson] = useState<any>(null);
   const [numClusters, setNumClusters] = useState(0);
@@ -166,24 +189,36 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
   // Code mode states
   const [codeMode, setCodeMode] = useState(false);
-  const [codeModeMarker, setCodeModeMarker] = useState<{ lat: number; lng: number } | null>(null);
+  const [codeModeMarker, setCodeModeMarker] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Floating context menu states
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
-  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
-  const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [contextMenuPosition, setContextMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [pendingLocation, setPendingLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Location and zoom states
-  const [location, setLocation] = useState<google.maps.places.Place | undefined>(undefined);
-  const [mylocationzoom, setMyLocationZoom] = useState<number | undefined>(undefined);
-
+  const [location, setLocation] = useState<
+    google.maps.places.Place | undefined
+  >(undefined);
+  const [mylocationzoom, setMyLocationZoom] = useState<number | undefined>(
+    undefined,
+  );
 
   // Function to zoom to specific coordinates
   const handleViewOnMap = (coordinates: [number, number]) => {
     const [lng, lat] = coordinates;
     setLocation({
       location: { lat, lng },
-      name: 'Store Location'
+      name: "Store Location",
     } as unknown as google.maps.places.Place);
     setMyLocationZoom(18); // Higher zoom level for better store highlighting
   };
@@ -210,10 +245,16 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   });
 
   // Community states
-  const [selectedCommunity, setSelectedCommunity] = useState<Community>(initialCommunity || getDefaultCommunity());
+  const [selectedCommunity, setSelectedCommunity] = useState<Community>(
+    initialCommunity || getDefaultCommunity(),
+  );
   const [showCommunitySelector, setShowCommunitySelector] = useState(false);
-  const [originalClusterFeatures, setOriginalClusterFeatures] = useState<Feature<Point>[] | null>(null);
-  const [loadedCommunity, setLoadedCommunity] = useState<Community>(initialCommunity || getDefaultCommunity());
+  const [originalClusterFeatures, setOriginalClusterFeatures] = useState<
+    Feature<Point>[] | null
+  >(null);
+  const [loadedCommunity, setLoadedCommunity] = useState<Community>(
+    initialCommunity || getDefaultCommunity(),
+  );
   const [showCommunityHeader, setShowCommunityHeader] = useState(false);
   const [mapTypeId, setMapTypeId] = useState<string>(MAP_CONFIG.mapTypeId);
 
@@ -222,35 +263,42 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     journeys: [],
     currentJourney: null,
     editableUsers: [],
-    activeUser: '',
-    isEditMode: false
+    activeUser: "",
+    isEditMode: false,
   });
   const [showJourneyControls, setShowJourneyControls] = useState(false);
   const [authStateKey, setAuthStateKey] = useState(0); // Track auth changes to force remount
   const [showUserPostsOnMap, setShowUserPostsOnMap] = useState(false);
-  const [userPostsUsername, setUserPostsUsername] = useState<string>('');
-  const [onUserPostClick, setOnUserPostClick] = useState<((post: any) => void) | null>(null);
-  const [selectedStartingPostId, setSelectedStartingPostId] = useState<number | null>(null);
+  const [userPostsUsername, setUserPostsUsername] = useState<string>("");
+  const [onUserPostClick, setOnUserPostClick] = useState<
+    ((post: any) => void) | null
+  >(null);
+  const [selectedStartingPostId, setSelectedStartingPostId] = useState<
+    number | null
+  >(null);
 
   // API key
-  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
   // Debug API key
   useEffect(() => {
-    console.log('API Key status:', API_KEY ? 'Set' : 'Missing');
+    console.log("API Key status:", API_KEY ? "Set" : "Missing");
     if (!API_KEY) {
-      console.error('Google Maps API key is missing! Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local');
+      console.error(
+        "Google Maps API key is missing! Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local",
+      );
     }
   }, [API_KEY]);
 
   // Listen for auth changes to force SimpleJourneyEditor remount
   useEffect(() => {
     const handleAuthChange = () => {
-      setAuthStateKey(prev => prev + 1);
+      setAuthStateKey((prev) => prev + 1);
     };
 
-    window.addEventListener('hive-auth-state-change', handleAuthChange);
-    return () => window.removeEventListener('hive-auth-state-change', handleAuthChange);
+    window.addEventListener("hive-auth-state-change", handleAuthChange);
+    return () =>
+      window.removeEventListener("hive-auth-state-change", handleAuthChange);
   }, []);
 
   // Map bounds
@@ -275,18 +323,19 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           isLowEndDevice,
           networkSpeed,
           isExtremelySlow,
-          isSlow
+          isSlow,
         };
 
         setPerformanceResult(result);
 
         console.log("📊 Performance Check Results:");
-        console.log(`   Device Type: ${isLowEndDevice ? 'Low-end' : 'High-end'}`);
+        console.log(
+          `   Device Type: ${isLowEndDevice ? "Low-end" : "High-end"}`,
+        );
         console.log(`   Network Speed: ${networkSpeed.toFixed(2)} Kbps`);
         console.log(`   Extremely Slow: ${isExtremelySlow}`);
         console.log(`   Slow Connection: ${isSlow}`);
         console.log("✅ Performance check complete!");
-
       } catch (error) {
         console.error("❌ Performance check failed:", error);
       }
@@ -298,7 +347,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   // Auto-load community pins if initialCommunity is provided
   useEffect(() => {
     if (initialCommunity) {
-      console.log('Auto-loading community pins for:', initialCommunity.name);
+      console.log("Auto-loading community pins for:", initialCommunity.name);
       // Set loading state and load markers for the initial community
       setLoading(true);
       setClustersReady(false);
@@ -326,20 +375,28 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       const { lat, lng, zoom } = event.detail;
       setLocation({
         location: { lat, lng },
-        name: 'Pin Location'
+        name: "Pin Location",
       } as unknown as google.maps.places.Place);
       setMyLocationZoom(zoom || 15);
     };
 
-    window.addEventListener('center-map-on-pin' as any, handleCenterMapOnPin);
+    window.addEventListener("center-map-on-pin" as any, handleCenterMapOnPin);
 
     return () => {
-      window.removeEventListener('center-map-on-pin' as any, handleCenterMapOnPin);
+      window.removeEventListener(
+        "center-map-on-pin" as any,
+        handleCenterMapOnPin,
+      );
     };
   }, []);
 
   // Load markers function
-  async function loadMarkers(reloadExisting = false, filterParams?: SearchParams, community?: Community, forceRefresh = false) {
+  async function loadMarkers(
+    reloadExisting = false,
+    filterParams?: SearchParams,
+    community?: Community,
+    forceRefresh = false,
+  ) {
     try {
       const targetCommunity = community || selectedCommunity;
 
@@ -360,9 +417,12 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
         // Try to get from cache first if not forcing refresh
         if (!forceRefresh) {
-          const cachedData = await pinCache.getCachedPins(targetCommunity.id, params);
+          const cachedData = await pinCache.getCachedPins(
+            targetCommunity.id,
+            params,
+          );
           if (cachedData) {
-            console.log('Using cached pins for', targetCommunity.name);
+            console.log("Using cached pins for", targetCommunity.name);
             setGeojson(cachedData);
             setLoadedCommunity(targetCommunity);
             // If we have cached data, we can return early, but we still need to set loadedCommunity
@@ -372,7 +432,10 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
         if (targetCommunity.isDefault) {
           // Use the original WorldMapPin API for default community
-          const response = await axios.post(`https://worldmappin.com/api/marker/0/150000/`, params);
+          const response = await axios.post(
+            `https://worldmappin.com/api/marker/0/150000/`,
+            params,
+          );
           geoJsonData = await convertDatafromApitoGeojson(response.data);
         } else {
           // Use community-specific API
@@ -380,7 +443,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         }
 
         // Cache the new data
-        if (geoJsonData && geoJsonData.features && geoJsonData.features.length > 0) {
+        if (
+          geoJsonData &&
+          geoJsonData.features &&
+          geoJsonData.features.length > 0
+        ) {
           await pinCache.setCachedPins(targetCommunity.id, params, geoJsonData);
         }
 
@@ -388,7 +455,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         setLoadedCommunity(targetCommunity); // Set the community that actually has loaded pins
       }
     } catch (err) {
-      console.error('Error fetching feature data:', err);
+      console.error("Error fetching feature data:", err);
     } finally {
       // Don't set loading to false here - wait for clusters to be ready
     }
@@ -409,7 +476,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
   // Code mode functions
   const toggleCodeMode = () => {
-    setCodeMode(prevMode => !prevMode);
+    setCodeMode((prevMode) => !prevMode);
     if (codeMode) {
       // Exiting code mode - clear marker and reload geolocations
       setCodeModeMarker(null);
@@ -450,7 +517,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   // Handle starting journey from context menu
   const handleStartJourney = () => {
     if (pendingLocation) {
-      console.log('Starting journey at:', pendingLocation);
+      console.log("Starting journey at:", pendingLocation);
       // Functionality to be implemented later
     }
     setContextMenuVisible(false);
@@ -471,12 +538,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       if (latLng) {
         setCodeModeMarker({
           lat: latLng.lat,
-          lng: latLng.lng
+          lng: latLng.lng,
         });
       }
     }
   };
-
 
   // Close tab
   const closeTab = () => {
@@ -498,7 +564,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     setLoading(true);
 
     // Show community header image for specific communities
-    if (community.id === 'spendhbd' || community.id === 'foodie') {
+    if (community.id === "spendhbd" || community.id === "foodie") {
       setShowCommunityHeader(true);
     }
 
@@ -523,9 +589,9 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
     // Show the selected store's posts
     setInfowindowData({
-      anchor: infowindowData?.anchor || null as any,
+      anchor: infowindowData?.anchor || (null as any),
       features: store.features,
-      isCluster: false
+      isCluster: false,
     });
   };
 
@@ -535,7 +601,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       setInfowindowData({
         ...infowindowData,
         features: originalClusterFeatures,
-        isCluster: true
+        isCluster: true,
       });
     }
   };
@@ -544,13 +610,14 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const handleFilter = (filterData: any) => {
     if (filterData) {
       const newSearchParams: SearchParams = {
-        tags: filterData.tags && filterData.tags.length > 0 ? filterData.tags : [],
-        author: filterData.username || '',
-        post_title: filterData.postTitle || '',
-        permlink: filterData.permlink || '',
-        start_date: filterData.startDate || '',
-        end_date: filterData.endDate || '',
-        curated_only: filterData.isCurated || false
+        tags:
+          filterData.tags && filterData.tags.length > 0 ? filterData.tags : [],
+        author: filterData.username || "",
+        post_title: filterData.postTitle || "",
+        permlink: filterData.permlink || "",
+        start_date: filterData.startDate || "",
+        end_date: filterData.endDate || "",
+        curated_only: filterData.isCurated || false,
       };
 
       setSearchParams(newSearchParams);
@@ -566,40 +633,44 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
   const handleTagChange = (tags: string) => {
     // Handle any special tag change logic if needed
-    console.log('Tags changed:', tags);
+    console.log("Tags changed:", tags);
   };
 
   // Journey handling functions
   const handleJourneyChange = useCallback((journey: Journey | null) => {
-    setJourneyState(prev => ({ ...prev, currentJourney: journey }));
+    setJourneyState((prev) => ({ ...prev, currentJourney: journey }));
   }, []);
 
   const handleJourneyStateChange = useCallback((newState: JourneyState) => {
     setJourneyState(newState);
   }, []);
 
-  const handleShowUserPosts = useCallback((username: string, postClickHandler: (post: any) => void) => {
-    setShowUserPostsOnMap(true);
-    setUserPostsUsername(username);
-    setSelectedStartingPostId(null); // Reset selection
-    // Wrap the post click handler to also track the selected post ID
-    setOnUserPostClick(() => (post: any) => {
-      setSelectedStartingPostId(post.id);
-      postClickHandler(post);
-    });
-  }, []);
+  const handleShowUserPosts = useCallback(
+    (username: string, postClickHandler: (post: any) => void) => {
+      setShowUserPostsOnMap(true);
+      setUserPostsUsername(username);
+      setSelectedStartingPostId(null); // Reset selection
+      // Wrap the post click handler to also track the selected post ID
+      setOnUserPostClick(() => (post: any) => {
+        setSelectedStartingPostId(post.id);
+        postClickHandler(post);
+      });
+    },
+    [],
+  );
 
   // Listen for hide user posts event
   useEffect(() => {
     const handleHideUserPosts = () => {
       setShowUserPostsOnMap(false);
-      setUserPostsUsername('');
+      setUserPostsUsername("");
       setOnUserPostClick(null);
       setSelectedStartingPostId(null);
     };
 
-    window.addEventListener('hide-user-posts-on-map', handleHideUserPosts);
-    return () => window.removeEventListener('hide-user-posts-on-map', handleHideUserPosts);
+    window.addEventListener("hide-user-posts-on-map", handleHideUserPosts);
+    return () =>
+      window.removeEventListener("hide-user-posts-on-map", handleHideUserPosts);
   }, []);
 
   // Map control functions
@@ -618,7 +689,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   };
 
   const handleToggleMapType = () => {
-    const nextType = mapTypeId === 'roadmap' ? 'hybrid' : 'roadmap';
+    const nextType = mapTypeId === "roadmap" ? "hybrid" : "roadmap";
     setMapTypeId(nextType);
   };
 
@@ -629,9 +700,11 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     (window as any).closePopup = closeTab;
   }, []);
 
-
   // State for temporary location highlight
-  const [highlightedLocation, setHighlightedLocation] = useState<{ lat: number, lng: number } | null>(null);
+  const [highlightedLocation, setHighlightedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Refs for custom event handling
   const mapRef = useRef<HTMLDivElement>(null);
@@ -640,16 +713,23 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
 
   // Function to show temporary location highlight
-  const showLocationHighlight = (position: { lat: number, lng: number }) => {
+  const showLocationHighlight = (position: { lat: number; lng: number }) => {
     // Validate position before setting
-    if (typeof position?.lat !== 'number' || typeof position?.lng !== 'number' ||
-      isNaN(position.lat) || isNaN(position.lng)) {
-      console.warn('Invalid position for highlight:', position);
+    if (
+      typeof position?.lat !== "number" ||
+      typeof position?.lng !== "number" ||
+      isNaN(position.lat) ||
+      isNaN(position.lng)
+    ) {
+      console.warn("Invalid position for highlight:", position);
       return;
     }
 
-    console.log('Setting highlight at:', position);
-    console.log('Visual offset position (slightly lower):', { lat: position.lat - 0.0001, lng: position.lng });
+    console.log("Setting highlight at:", position);
+    console.log("Visual offset position (slightly lower):", {
+      lat: position.lat - 0.0001,
+      lng: position.lng,
+    });
     setHighlightedLocation(position);
     // Clear highlight after 3 seconds
     setTimeout(() => {
@@ -663,8 +743,35 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   }, []);
 
   // Function to convert screen coordinates to lat/lng
-  const screenToLatLng = useCallback((x: number, y: number, mapElement: HTMLElement) => {
-    if (!mapInstanceRef.current) {
+  const screenToLatLng = useCallback(
+    (x: number, y: number, mapElement: HTMLElement) => {
+      if (!mapInstanceRef.current) {
+        // Fallback to approximate calculation
+        const rect = mapElement.getBoundingClientRect();
+        const relativeX = x - rect.left;
+        const relativeY = y - rect.top;
+        const lat = 50 - (relativeY / rect.height) * 100;
+        const lng = 20 + (relativeX / rect.width) * 200;
+        return { lat, lng };
+      }
+
+      try {
+        const map = mapInstanceRef.current;
+        const rect = mapElement.getBoundingClientRect();
+        const relativeX = x - rect.left;
+        const relativeY = y - rect.top;
+
+        // Use Google Maps projection to convert pixel coordinates to lat/lng
+        const point = new google.maps.Point(relativeX, relativeY);
+        const latLng = map.getProjection()?.fromPointToLatLng(point);
+
+        if (latLng) {
+          return { lat: latLng.lat(), lng: latLng.lng() };
+        }
+      } catch (error) {
+        console.warn("Error converting coordinates:", error);
+      }
+
       // Fallback to approximate calculation
       const rect = mapElement.getBoundingClientRect();
       const relativeX = x - rect.left;
@@ -672,33 +779,9 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       const lat = 50 - (relativeY / rect.height) * 100;
       const lng = 20 + (relativeX / rect.width) * 200;
       return { lat, lng };
-    }
-
-    try {
-      const map = mapInstanceRef.current;
-      const rect = mapElement.getBoundingClientRect();
-      const relativeX = x - rect.left;
-      const relativeY = y - rect.top;
-
-      // Use Google Maps projection to convert pixel coordinates to lat/lng
-      const point = new google.maps.Point(relativeX, relativeY);
-      const latLng = map.getProjection()?.fromPointToLatLng(point);
-
-      if (latLng) {
-        return { lat: latLng.lat(), lng: latLng.lng() };
-      }
-    } catch (error) {
-      console.warn('Error converting coordinates:', error);
-    }
-
-    // Fallback to approximate calculation
-    const rect = mapElement.getBoundingClientRect();
-    const relativeX = x - rect.left;
-    const relativeY = y - rect.top;
-    const lat = 50 - (relativeY / rect.height) * 100;
-    const lng = 20 + (relativeX / rect.width) * 200;
-    return { lat, lng };
-  }, []);
+    },
+    [],
+  );
 
   // Expose global zoom functions for cluster markers via events
   useEffect(() => {
@@ -713,7 +796,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
     const handleSetZoom = (e: any) => {
       const zoom = e.detail;
-      if (typeof zoom === 'number') {
+      if (typeof zoom === "number") {
         setMyLocationZoom(zoom);
       }
     };
@@ -722,14 +805,17 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       toggleCodeMode();
     };
 
-    window.addEventListener('map-set-location', handleSetLocation);
-    window.addEventListener('map-set-zoom', handleSetZoom);
-    window.addEventListener('map-toggle-code-mode', handleToggleCodeModeEvent);
+    window.addEventListener("map-set-location", handleSetLocation);
+    window.addEventListener("map-set-zoom", handleSetZoom);
+    window.addEventListener("map-toggle-code-mode", handleToggleCodeModeEvent);
 
     return () => {
-      window.removeEventListener('map-set-location', handleSetLocation);
-      window.removeEventListener('map-set-zoom', handleSetZoom);
-      window.removeEventListener('map-toggle-code-mode', handleToggleCodeModeEvent);
+      window.removeEventListener("map-set-location", handleSetLocation);
+      window.removeEventListener("map-set-zoom", handleSetZoom);
+      window.removeEventListener(
+        "map-toggle-code-mode",
+        handleToggleCodeModeEvent,
+      );
     };
   }, []);
 
@@ -772,7 +858,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     if (!mapElement) return;
 
     const handleContextMenu = (e: MouseEvent) => {
-      if (!codeMode) { // Only show context menu when NOT in code mode
+      if (!codeMode) {
+        // Only show context menu when NOT in code mode
         e.preventDefault();
         const x = e.clientX;
         const y = e.clientY;
@@ -788,7 +875,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (!codeMode) { // Only show context menu when NOT in code mode
+      if (!codeMode) {
+        // Only show context menu when NOT in code mode
         touchStartTime.current = Date.now();
 
         longPressTimer.current = setTimeout(() => {
@@ -822,42 +910,62 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
       }
     };
 
-    mapElement.addEventListener('contextmenu', handleContextMenu);
-    mapElement.addEventListener('touchstart', handleTouchStart);
-    mapElement.addEventListener('touchend', handleTouchEnd);
-    mapElement.addEventListener('touchmove', handleTouchMove);
+    mapElement.addEventListener("contextmenu", handleContextMenu);
+    mapElement.addEventListener("touchstart", handleTouchStart);
+    mapElement.addEventListener("touchend", handleTouchEnd);
+    mapElement.addEventListener("touchmove", handleTouchMove);
 
     return () => {
-      mapElement.removeEventListener('contextmenu', handleContextMenu);
-      mapElement.removeEventListener('touchstart', handleTouchStart);
-      mapElement.removeEventListener('touchend', handleTouchEnd);
-      mapElement.removeEventListener('touchmove', handleTouchMove);
+      mapElement.removeEventListener("contextmenu", handleContextMenu);
+      mapElement.removeEventListener("touchstart", handleTouchStart);
+      mapElement.removeEventListener("touchend", handleTouchEnd);
+      mapElement.removeEventListener("touchmove", handleTouchMove);
       if (longPressTimer.current) {
         clearTimeout(longPressTimer.current);
       }
     };
   }, [codeMode, codeModeMarker, screenToLatLng]);
 
-
-
   if (!API_KEY) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-100">
         <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md mx-4">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Google Maps API Key Missing</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            Google Maps API Key Missing
+          </h2>
           <p className="text-gray-600 mb-4">
-            Please set your Google Maps API key in the <code className="bg-gray-100 px-2 py-1 rounded">.env.local</code> file:
+            Please set your Google Maps API key in the{" "}
+            <code className="bg-gray-100 px-2 py-1 rounded">.env.local</code>{" "}
+            file:
           </p>
           <div className="bg-gray-100 p-3 rounded text-sm font-mono text-left">
             NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
           </div>
           <p className="text-sm text-gray-500 mt-3">
-            Get your API key from <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Google Cloud Console</a>
+            Get your API key from{" "}
+            <a
+              href="https://console.cloud.google.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Google Cloud Console
+            </a>
           </p>
         </div>
       </div>
@@ -865,11 +973,14 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
   }
 
   return (
-    <APIProvider apiKey={API_KEY} version={'beta'}>
+    <APIProvider apiKey={API_KEY} version={"beta"}>
       <div className="h-[calc(100vh-3rem)] sm:h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] w-full relative overflow-hidden font-lexend">
         {/* Old Loading Spinner */}
-        {loading && <OldLoadingSpinner message={`Loading ${selectedCommunity.name} pins...`} />}
-
+        {loading && (
+          <OldLoadingSpinner
+            message={`Loading ${selectedCommunity.name} pins...`}
+          />
+        )}
 
         {/* Filter Banners */}
         {/* Username Filter Banner */}
@@ -878,13 +989,13 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
             <div className="bg-orange-500/95 backdrop-blur-sm rounded-full px-3 py-2 shadow-lg border border-orange-300/30 transition-all duration-200 flex items-center space-x-2 max-w-[90vw] md:max-w-md">
               <div className="relative w-6 h-6 rounded-full overflow-hidden border-2 border-white flex-shrink-0">
                 <Image
-                  src={`https://images.hive.blog/u/${searchParams.author}/avatar`}
+                  src={`https://images.ecency.com/u/${searchParams.author}/avatar`}
                   alt={`@${searchParams.author}`}
                   fill
                   className="object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = '/images/default-avatar.svg';
+                    target.src = "/images/default-avatar.svg";
                   }}
                 />
               </div>
@@ -899,8 +1010,18 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                 className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
                 aria-label="Clear filter"
               >
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -911,8 +1032,18 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         {searchParams.permlink && (
           <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30 pointer-events-auto">
             <div className="bg-blue-500/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg border border-blue-300/30 transition-all duration-200 flex items-center space-x-2 max-w-[90vw] md:max-w-md">
-              <svg className="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              <svg
+                className="w-4 h-4 text-white flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                />
               </svg>
               <span className="text-sm font-medium text-white truncate">
                 {searchParams.permlink}
@@ -925,8 +1056,18 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                 className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
                 aria-label="Clear filter"
               >
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -937,11 +1078,21 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         {searchParams.tags && searchParams.tags.length > 0 && (
           <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30 pointer-events-auto">
             <div className="bg-green-500/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg border border-green-300/30 transition-all duration-200 flex items-center space-x-2 max-w-[90vw] md:max-w-md">
-              <svg className="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              <svg
+                className="w-4 h-4 text-white flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                />
               </svg>
               <span className="text-sm font-medium text-white truncate">
-                {searchParams.tags.join(', ')}
+                {searchParams.tags.join(", ")}
               </span>
               <button
                 onClick={() => {
@@ -951,8 +1102,18 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                 className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
                 aria-label="Clear filter"
               >
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -962,12 +1123,14 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
         {/* Community Header Image */}
         {showCommunityHeader && loadedCommunity && (
           <div className="absolute z-25 top-4 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-            <div className="backdrop-blur-md rounded-2xl shadow-2xl border p-2 max-w-sm relative"
+            <div
+              className="backdrop-blur-md rounded-2xl shadow-2xl border p-2 max-w-sm relative"
               style={{
-                backgroundColor: 'var(--card-bg)',
-                borderColor: 'var(--border-subtle)',
-                opacity: 0.95
-              }}>
+                backgroundColor: "var(--card-bg)",
+                borderColor: "var(--border-subtle)",
+                opacity: 0.95,
+              }}
+            >
               {/* Close button */}
               <button
                 onClick={() => setShowCommunityHeader(false)}
@@ -976,14 +1139,14 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                 ×
               </button>
 
-              {loadedCommunity.id === 'spendhbd' && (
+              {loadedCommunity.id === "spendhbd" && (
                 <img
                   src="/images/WMP-x-Distriator.jpg"
                   alt="SpendHBD Community Header"
                   className="w-full h-auto max-h-32 object-contain rounded-xl"
                 />
               )}
-              {loadedCommunity.id === 'foodie' && (
+              {loadedCommunity.id === "foodie" && (
                 <img
                   src="/images/wmp-x-foodie-bee-hive.png"
                   alt="Foodies Bee Hive Community Header"
@@ -994,12 +1157,13 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           </div>
         )}
 
-
         {/* Code Mode Interface - Show when in code mode OR when marker is set from context menu */}
         {(codeMode || codeModeMarker) && (
           <CodeModeInterface
             codeModeMarker={codeModeMarker}
-            onBack={codeMode ? handleBackFromCodeMode : () => setCodeModeMarker(null)}
+            onBack={
+              codeMode ? handleBackFromCodeMode : () => setCodeModeMarker(null)
+            }
             isFullCodeMode={codeMode}
           />
         )}
@@ -1027,7 +1191,9 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           onZoomOut={handleZoomOut}
           onToggleMapType={handleToggleMapType}
           mapTypeId={mapTypeId}
-          onReloadPins={() => loadMarkers(true, searchParams, selectedCommunity, true)}
+          onReloadPins={() =>
+            loadMarkers(true, searchParams, selectedCommunity, true)
+          }
         />
 
         {/* Community Selector Component */}
@@ -1050,7 +1216,6 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
           />
         )}
 
-
         {/* Mobile Map Container */}
         <div ref={mapRef} className="map-wrapper">
           <Map
@@ -1061,7 +1226,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
             minZoom={2}
             maxZoom={20}
             zoomControl={false}
-            gestureHandling={'greedy'}
+            gestureHandling={"greedy"}
             disableDefaultUI={true}
             isFractionalZoomEnabled={false}
             fullscreenControl={false}
@@ -1074,8 +1239,8 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
             zoom={location?.location ? mylocationzoom : undefined}
             onIdle={handleMapIdle}
             onClick={handleMapClick}
-            className={`mobile-map-container ${(codeMode || codeModeMarker) ? 'code-mode-active' : ''}`}
-            styles={theme === 'dark' ? DARK_MAP_STYLE : []}
+            className={`mobile-map-container ${codeMode || codeModeMarker ? "code-mode-active" : ""}`}
+            styles={theme === "dark" ? DARK_MAP_STYLE : []}
           >
             {/* Clustered Markers - Show when not in full code mode and journey controls are hidden */}
             {!codeMode && !showJourneyControls && geojson && (
@@ -1109,34 +1274,49 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
             {/* Code Mode Marker - Show when marker is set */}
             {codeModeMarker && (
-              <AdvancedMarker position={{ lat: codeModeMarker.lat, lng: codeModeMarker.lng }}>
-                <div style={{
-                  width: '20px',
-                  height: '20px',
-                  backgroundColor: '#ff6b6b',
-                  border: '3px solid white',
-                  borderRadius: '50%',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                }} />
+              <AdvancedMarker
+                position={{ lat: codeModeMarker.lat, lng: codeModeMarker.lng }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: "#ff6b6b",
+                    border: "3px solid white",
+                    borderRadius: "50%",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                  }}
+                />
               </AdvancedMarker>
             )}
 
             {/* Temporary Location Highlight - Only Pulsating Animation */}
             {highlightedLocation &&
-              typeof highlightedLocation.lat === 'number' &&
-              typeof highlightedLocation.lng === 'number' &&
+              typeof highlightedLocation.lat === "number" &&
+              typeof highlightedLocation.lng === "number" &&
               !isNaN(highlightedLocation.lat) &&
               !isNaN(highlightedLocation.lng) && (
-                <AdvancedMarker position={{
-                  lat: highlightedLocation.lat,
-                  lng: highlightedLocation.lng
-                }}>
+                <AdvancedMarker
+                  position={{
+                    lat: highlightedLocation.lat,
+                    lng: highlightedLocation.lng,
+                  }}
+                >
                   <div className="location-highlight">
                     {/* Multiple pulsing rings with WorldMapPin orange color */}
                     <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-75"></div>
-                    <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-50" style={{ animationDelay: '0.5s' }}></div>
-                    <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-25" style={{ animationDelay: '1s' }}></div>
-                    <div className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-10" style={{ animationDelay: '1.5s' }}></div>
+                    <div
+                      className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-50"
+                      style={{ animationDelay: "0.5s" }}
+                    ></div>
+                    <div
+                      className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-25"
+                      style={{ animationDelay: "1s" }}
+                    ></div>
+                    <div
+                      className="absolute inset-0 w-12 h-12 bg-orange-500 rounded-full animate-ping opacity-10"
+                      style={{ animationDelay: "1.5s" }}
+                    ></div>
                   </div>
                 </AdvancedMarker>
               )}
@@ -1152,42 +1332,59 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                 {/* Mobile: Bottom Sheet - More rounded and polished */}
                 <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden z-10">
-                  <div className="mobile-post-popup backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t"
+                  <div
+                    className="mobile-post-popup backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t"
                     style={{
-                      backgroundColor: 'var(--card-bg)',
-                      borderColor: 'var(--border-subtle)',
-                      opacity: 0.98
-                    }}>
+                      backgroundColor: "var(--card-bg)",
+                      borderColor: "var(--border-subtle)",
+                      opacity: 0.98,
+                    }}
+                  >
                     {/* Handle Bar - Thicker and more modern */}
                     <div className="flex justify-center pt-4 pb-2">
-                      <div className="w-10 h-1.5 rounded-full" style={{ backgroundColor: 'var(--border-color)' }}></div>
+                      <div
+                        className="w-10 h-1.5 rounded-full"
+                        style={{ backgroundColor: "var(--border-color)" }}
+                      ></div>
                     </div>
 
                     {/* Close Button - More visible and styled */}
                     <button
                       className="absolute top-5 right-5 w-9 h-9 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 z-10 shadow-sm border active:scale-90"
                       style={{
-                        backgroundColor: 'var(--section-bg)',
-                        borderColor: 'var(--border-subtle)',
-                        color: 'var(--text-muted)'
+                        backgroundColor: "var(--section-bg)",
+                        borderColor: "var(--border-subtle)",
+                        color: "var(--text-muted)",
                       }}
                       onClick={closeTab}
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
 
                     {/* Content */}
                     <div className="px-5 pb-8 max-h-[80vh] overflow-y-auto custom-scrollbar">
-                      {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
+                      {loadedCommunity?.id === "spendhbd" &&
+                      infowindowData.isCluster ? (
                         <SpendHBDClusterInfo
                           features={infowindowData.features}
                           onStoreSelect={handleStoreSelect}
                           onClose={closeTab}
                           onViewOnMap={handleViewOnMap}
                         />
-                      ) : loadedCommunity?.id === 'spendhbd' && infowindowData.features[0]?.properties?.name ? (
+                      ) : loadedCommunity?.id === "spendhbd" &&
+                        infowindowData.features[0]?.properties?.name ? (
                         <SpendHBDInfoWindow
                           features={infowindowData.features}
                           onBack={handleBackToCluster}
@@ -1205,27 +1402,59 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
 
                 {/* Desktop: Centered Modal - Premium Glassmorphism Design */}
                 <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-6 z-10">
-                  <div className="w-full max-w-7xl backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border overflow-hidden flex flex-col max-h-[90vh]"
+                  <div
+                    className="w-full max-w-7xl backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border overflow-hidden flex flex-col max-h-[90vh]"
                     style={{
-                      backgroundColor: 'var(--card-bg)',
-                      borderColor: 'var(--border-subtle)',
-                      opacity: 0.95
-                    }}>
+                      backgroundColor: "var(--card-bg)",
+                      borderColor: "var(--border-subtle)",
+                      opacity: 0.95,
+                    }}
+                  >
                     {/* Header - Minimal and elegant */}
-                    <div className="relative flex items-center justify-between px-10 py-7 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <div
+                      className="relative flex items-center justify-between px-10 py-7 border-b"
+                      style={{ borderColor: "var(--border-subtle)" }}
+                    >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner"
-                          style={{ backgroundColor: 'var(--section-bg)' }}>
-                          <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012 2h6a2 2 0 012 2v2M7 7h10" />
+                        <div
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner"
+                          style={{ backgroundColor: "var(--section-bg)" }}
+                        >
+                          <svg
+                            className="w-6 h-6 text-orange-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012 2h6a2 2 0 012 2v2M7 7h10"
+                            />
                           </svg>
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
-                            {loadedCommunity?.id === 'spendhbd' ? 'Business Details' : 'Discover Adventures'}
+                          <h2
+                            className="text-2xl font-bold"
+                            style={{
+                              fontFamily: "var(--font-lexend)",
+                              color: "var(--text-primary)",
+                            }}
+                          >
+                            {loadedCommunity?.id === "spendhbd"
+                              ? "Business Details"
+                              : "Discover Adventures"}
                           </h2>
-                          <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                            {infowindowData.features.length} {infowindowData.features.length === 1 ? 'pin' : 'pins'} found at this location
+                          <p
+                            className="text-sm font-medium mt-0.5"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            {infowindowData.features.length}{" "}
+                            {infowindowData.features.length === 1
+                              ? "pin"
+                              : "pins"}{" "}
+                            found at this location
                           </p>
                         </div>
                       </div>
@@ -1234,14 +1463,24 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                       <button
                         className="w-12 h-12 hover:bg-orange-50 rounded-2xl flex items-center justify-center transition-all duration-300 group border hover:border-orange-100 active:scale-95"
                         style={{
-                          backgroundColor: 'var(--section-bg)',
-                          borderColor: 'var(--border-subtle)',
-                          color: 'var(--text-muted)'
+                          backgroundColor: "var(--section-bg)",
+                          borderColor: "var(--border-subtle)",
+                          color: "var(--text-muted)",
                         }}
                         onClick={closeTab}
                       >
-                        <svg className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                          className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                       </button>
 
@@ -1250,16 +1489,23 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                     </div>
 
                     {/* Content - Scrollable with optimized padding */}
-                    <div className="px-10 py-8 overflow-y-auto custom-scrollbar flex-1"
-                      style={{ background: 'linear-gradient(to bottom, transparent, var(--section-bg))' }}>
-                      {loadedCommunity?.id === 'spendhbd' && infowindowData.isCluster ? (
+                    <div
+                      className="px-10 py-8 overflow-y-auto custom-scrollbar flex-1"
+                      style={{
+                        background:
+                          "linear-gradient(to bottom, transparent, var(--section-bg))",
+                      }}
+                    >
+                      {loadedCommunity?.id === "spendhbd" &&
+                      infowindowData.isCluster ? (
                         <SpendHBDClusterInfo
                           features={infowindowData.features}
                           onStoreSelect={handleStoreSelect}
                           onClose={closeTab}
                           onViewOnMap={handleViewOnMap}
                         />
-                      ) : loadedCommunity?.id === 'spendhbd' && infowindowData.features[0]?.properties?.name ? (
+                      ) : loadedCommunity?.id === "spendhbd" &&
+                        infowindowData.features[0]?.properties?.name ? (
                         <SpendHBDInfoWindow
                           features={infowindowData.features}
                           onBack={handleBackToCluster}
@@ -1269,7 +1515,10 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
                           isCluster={infowindowData.isCluster || false}
                         />
                       ) : (
-                        <InfoWindowContent features={infowindowData.features} hideHeader={true} />
+                        <InfoWindowContent
+                          features={infowindowData.features}
+                          hideHeader={true}
+                        />
                       )}
                     </div>
                   </div>
@@ -1278,9 +1527,7 @@ export default function MapClient({ initialUsername, initialPermlink, initialTag
             )}
           </Map>
         </div>
-
       </div>
     </APIProvider>
   );
 }
-

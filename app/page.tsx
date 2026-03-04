@@ -1,116 +1,171 @@
 export const metadata = {
-  title: 'WorldMapPin — Share Your Travel Adventures',
-  description: 'Join a vibrant community of travelers sharing stories, photos and experiences on the Hive Blockchain',
+  title: "WorldMapPin — Share Your Travel Adventures",
+  description:
+    "Join a vibrant community of travelers sharing stories, photos and experiences on the Hive Blockchain",
 };
 
-import GradientText from '../components/home/GradientText';
-import FeatureCard from '../components/home/FeatureCard';
-import ShowcaseCard from '../components/home/ShowcaseCard';
-import BenefitItem from '../components/home/BenefitItem';
-import TravelDigestSection from '../components/home/TravelDigestSection';
-import HeroBackgroundGrid from '../components/home/HeroBackgroundGrid';
-import Link from 'next/link';
+import GradientText from "../components/home/GradientText";
+import FeatureCard from "../components/home/FeatureCard";
+import ShowcaseCard from "../components/home/ShowcaseCard";
+import BenefitItem from "../components/home/BenefitItem";
+import TravelDigestSection from "../components/home/TravelDigestSection";
+import HeroBackgroundGrid from "../components/home/HeroBackgroundGrid";
+import Link from "next/link";
 
 export default function Home() {
   const features = [
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-12 h-12"
+        >
           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
           <circle cx="12" cy="9" r="2.5" />
         </svg>
       ),
-      title: 'Interactive Travel Map',
-      description: 'Pin your adventures on an interactive global map and visualize your journey across continents.',
-      iconGradient: 'linear-gradient(135deg, #54F7F4 0%, #73FFBB 100%)',
-      cardGradient: 'linear-gradient(135deg, rgba(84, 247, 244, 0.1) 0%, rgba(115, 255, 187, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
-      href: '/map',
+      title: "Interactive Travel Map",
+      description:
+        "Pin your adventures on an interactive global map and visualize your journey across continents.",
+      iconGradient: "linear-gradient(135deg, #54F7F4 0%, #73FFBB 100%)",
+      cardGradient:
+        "linear-gradient(135deg, rgba(84, 247, 244, 0.1) 0%, rgba(115, 255, 187, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)",
+      href: "/map",
     },
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-12 h-12"
+        >
           <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
           <circle cx="12" cy="13" r="3" />
         </svg>
       ),
-      title: 'Rich Media Stories',
-      description: 'Share stunning photos, videos, and detailed narratives of your travel experiences with the community.',
-      iconGradient: 'linear-gradient(135deg, #ED6D28 0%, #FF8C42 100%)',
-      cardGradient: 'linear-gradient(135deg, rgba(237, 109, 40, 0.1) 0%, rgba(255, 140, 66, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
-      href: '/explore',
+      title: "Rich Media Stories",
+      description:
+        "Share stunning photos, videos, and detailed narratives of your travel experiences with the community.",
+      iconGradient: "linear-gradient(135deg, #ED6D28 0%, #FF8C42 100%)",
+      cardGradient:
+        "linear-gradient(135deg, rgba(237, 109, 40, 0.1) 0%, rgba(255, 140, 66, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)",
+      href: "/explore",
     },
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-12 h-12"
+        >
           <rect width="7" height="7" x="3" y="3" rx="1" />
           <rect width="7" height="7" x="14" y="3" rx="1" />
           <rect width="7" height="7" x="14" y="14" rx="1" />
           <rect width="7" height="7" x="3" y="14" rx="1" />
         </svg>
       ),
-      title: 'Blockchain Verified',
-      description: 'Your content is permanently stored on Hive blockchain, ensuring authenticity and ownership.',
-      iconGradient: 'linear-gradient(135deg, #C654F7 0%, #FF737A 100%)',
-      cardGradient: 'linear-gradient(135deg, rgba(198, 84, 247, 0.1) 0%, rgba(255, 115, 154, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)',
-      href: '/about',
+      title: "Blockchain Verified",
+      description:
+        "Your content is permanently stored on Hive blockchain, ensuring authenticity and ownership.",
+      iconGradient: "linear-gradient(135deg, #C654F7 0%, #FF737A 100%)",
+      cardGradient:
+        "linear-gradient(135deg, rgba(198, 84, 247, 0.1) 0%, rgba(255, 115, 154, 0.15) 50%, rgba(255, 255, 255, 0.9) 100%)",
+      href: "/about",
     },
   ];
 
   const showcases = [
     {
-      gradient: 'linear-gradient(104.41deg, rgba(84, 247, 244, 0.6) 7.45%, rgba(115, 255, 187, 0.6) 100%)',
-      bgColor: '#DCFFFE',
-      borderColor: '#00CF6B1A',
+      gradient:
+        "linear-gradient(104.41deg, rgba(84, 247, 244, 0.6) 7.45%, rgba(115, 255, 187, 0.6) 100%)",
+      bgColor: "#DCFFFE",
+      borderColor: "#00CF6B1A",
       title: <GradientText gradient="teal">Discover Hidden Gems</GradientText>,
-      description: 'Explore off-the-beaten-path destinations shared by fellow travelers',
-      image: 'https://images.hive.blog/p/FUkUE5bzkAZT3HzV5tJDiU2ik81PCd4JCyhWnRcDN8XJsVFY3UNB8DCSkoSHcgh1WxsTjmg2qHxCnu41yPReEMEv9PfY7rjPxTa9K9zF8jRzyvVLtkxLcPdP9j7SR3kuNNzqQzvsXLCJHxwNAVtLTcXPMVK5RpsWHuDG?format=match&mode=fit',
+      description:
+        "Explore off-the-beaten-path destinations shared by fellow travelers",
+      image:
+        "https://images.ecency.com/p/FUkUE5bzkAZT3HzV5tJDiU2ik81PCd4JCyhWnRcDN8XJsVFY3UNB8DCSkoSHcgh1WxsTjmg2qHxCnu41yPReEMEv9PfY7rjPxTa9K9zF8jRzyvVLtkxLcPdP9j7SR3kuNNzqQzvsXLCJHxwNAVtLTcXPMVK5RpsWHuDG?format=match&mode=fit",
     },
     {
-      gradient: 'linear-gradient(104.41deg, rgba(237, 109, 40, 0.6) 7.45%, rgba(255, 115, 154, 0.6) 100%)',
-      bgColor: '#FFE2D299',
-      borderColor: '#FB89401A',
+      gradient:
+        "linear-gradient(104.41deg, rgba(237, 109, 40, 0.6) 7.45%, rgba(255, 115, 154, 0.6) 100%)",
+      bgColor: "#FFE2D299",
+      borderColor: "#FB89401A",
       title: <GradientText>Connect with Travelers</GradientText>,
-      description: 'Build meaningful connections with a global community of adventurers',
-      image: 'https://images.ecency.com/DQmdn6qowQPQQGZwhz23JgdcywY2oKub1B7fuPNQe34w71K/dsc09964.jpg',
+      description:
+        "Build meaningful connections with a global community of adventurers",
+      image:
+        "https://images.ecency.com/DQmdn6qowQPQQGZwhz23JgdcywY2oKub1B7fuPNQe34w71K/dsc09964.jpg",
     },
     {
-      gradient: 'linear-gradient(104.41deg, rgba(198, 84, 247, 0.6) 7.45%, rgba(255, 115, 154, 0.6) 100%)',
-      bgColor: '#F9ECFF',
-      borderColor: '#C654F71A',
+      gradient:
+        "linear-gradient(104.41deg, rgba(198, 84, 247, 0.6) 7.45%, rgba(255, 115, 154, 0.6) 100%)",
+      bgColor: "#F9ECFF",
+      borderColor: "#C654F71A",
       title: <GradientText gradient="purple">Earn Crypto Rewards</GradientText>,
-      description: 'Get rewarded in cryptocurrency for sharing your travel content',
-      image: 'https://images.hive.blog/p/FUkUE5bzkAZT3HzV5tJDiU2ik81PCd4JCyhWnRcDN8XJsVFY3UNB8DCSkoSHcgh1WxsUt3WT1F5gb3ARPaNoNZNvqPHGtuLtaGmexBQmFV3eKemGRDEFKZgYUnZFin8da8UyPeiVeCJ5aadmZwQBkFJfpH35zZqT42Cn?format=match&mode=fit',
+      description:
+        "Get rewarded in cryptocurrency for sharing your travel content",
+      image:
+        "https://images.ecency.com/p/FUkUE5bzkAZT3HzV5tJDiU2ik81PCd4JCyhWnRcDN8XJsVFY3UNB8DCSkoSHcgh1WxsUt3WT1F5gb3ARPaNoNZNvqPHGtuLtaGmexBQmFV3eKemGRDEFKZgYUnZFin8da8UyPeiVeCJ5aadmZwQBkFJfpH35zZqT42Cn?format=match&mode=fit",
     },
   ];
 
   const benefits = [
     {
-      title: 'True Content Ownership',
-      description: 'You own your content forever. No platform can delete or censor your travel memories.',
+      title: "True Content Ownership",
+      description:
+        "You own your content forever. No platform can delete or censor your travel memories.",
     },
     {
-      title: 'Earn While You Share',
-      description: 'Receive cryptocurrency rewards when community members upvote your travel stories.',
+      title: "Earn While You Share",
+      description:
+        "Receive cryptocurrency rewards when community members upvote your travel stories.",
     },
     {
-      title: 'Decentralized Discovery',
-      description: 'Explore unique travel posts pinned by users worldwide, all verified on the blockchain for authenticity and transparency.',
+      title: "Decentralized Discovery",
+      description:
+        "Explore unique travel posts pinned by users worldwide, all verified on the blockchain for authenticity and transparency.",
     },
   ];
 
   return (
-    <main className="w-full min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+    <main
+      className="w-full min-h-screen transition-colors duration-300"
+      style={{ backgroundColor: "var(--background)" }}
+    >
       {/* HERO SECTION */}
       <section
         className="w-full min-h-[520px] sm:min-h-[560px] md:min-h-[600px] lg:min-h-[690px] relative overflow-hidden flex items-center justify-center"
-        style={{ background: 'linear-gradient(150.44deg, #ED6D28 20.69%, #FFA600 81.91%)' }}
+        style={{
+          background:
+            "linear-gradient(150.44deg, #ED6D28 20.69%, #FFA600 81.91%)",
+        }}
       >
         {/* Animated background grid */}
         <HeroBackgroundGrid />
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 font-lexend" style={{ lineHeight: 1.15 }}>
+            <h1
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 font-lexend"
+              style={{ lineHeight: 1.15 }}
+            >
               <GradientText gradient="hero">
                 Share your Travel
                 <br />
@@ -120,8 +175,12 @@ export default function Home() {
               </GradientText>
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-white/95 mb-6 max-w-2xl mx-auto font-lexend leading-snug">
-              <span className="block">Join a vibrant community of travelers sharing</span>
-              <span className="block">stories, photos and experiences on the Hive</span>
+              <span className="block">
+                Join a vibrant community of travelers sharing
+              </span>
+              <span className="block">
+                stories, photos and experiences on the Hive
+              </span>
               <span className="block">Blockchain.</span>
             </p>
             {/* CTA Buttons */}
@@ -130,7 +189,7 @@ export default function Home() {
                 href="/signup"
                 suppressHydrationWarning
                 className="inline-flex items-center justify-center text-white font-semibold px-8 py-3 rounded-lg text-base border-2 border-transparent transition-all duration-300 font-lexend w-full sm:w-56 hover:shadow-2xl hover:scale-105 active:scale-95 whitespace-nowrap"
-                style={{ background: '#A74F1A' }}
+                style={{ background: "#A74F1A" }}
               >
                 Join the Community
               </a>
@@ -145,17 +204,24 @@ export default function Home() {
           </div>
         </div>
         {/* Fade-away gradient */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none hero-fade-gradient"
-        />
+        <div className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none hero-fade-gradient" />
       </section>
 
       {/* MAP PREVIEW SECTION */}
-      <section className="w-full py-16 lg:py-24 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+      <section
+        className="w-full py-16 lg:py-24 transition-colors duration-300"
+        style={{ backgroundColor: "var(--background)" }}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left Column: Map Image */}
-            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-500 cursor-pointer" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
+            <div
+              className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-4 shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-500 cursor-pointer"
+              style={{
+                backgroundColor: "var(--card-bg)",
+                borderColor: "var(--border-color)",
+              }}
+            >
               <Link href="/map">
                 <img
                   src="/images/map-preview.png"
@@ -168,13 +234,21 @@ export default function Home() {
 
             {/* Right Column: Text Content */}
             <div className="flex flex-col items-center lg:items-start justify-center text-center lg:text-left space-y-5">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-lexend leading-tight home-gradient-text" style={{ color: 'var(--text-light)' }}>
+              <h2
+                className="text-3xl sm:text-4xl lg:text-5xl font-bold font-lexend leading-tight home-gradient-text"
+                style={{ color: "var(--text-light)" }}
+              >
                 Explore the World
                 <br />
                 One Pin at a Time
               </h2>
-              <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-md home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
-                Navigate our interactive global map to discover hidden gems and travel stories from our community. From bustling cities to remote landscapes, visualize the journey of travelers worldwide.
+              <p
+                className="text-base sm:text-lg lg:text-xl font-lexend max-w-md home-gradient-text"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Navigate our interactive global map to discover hidden gems and
+                travel stories from our community. From bustling cities to
+                remote landscapes, visualize the journey of travelers worldwide.
               </p>
             </div>
           </div>
@@ -185,14 +259,21 @@ export default function Home() {
       <TravelDigestSection className="transition-colors duration-300" />
 
       {/* FEATURES SECTION */}
-      <section className="w-full py-16 lg:py-24 transition-colors duration-300" style={{ backgroundColor: 'var(--section-bg)' }}>
+      <section
+        className="w-full py-16 lg:py-24 transition-colors duration-300"
+        style={{ backgroundColor: "var(--section-bg)" }}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
               <GradientText>Powerful Features for Travelers</GradientText>
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
-              Everything you need to document and share your adventures with the world
+            <p
+              className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Everything you need to document and share your adventures with the
+              world
             </p>
           </div>
 
@@ -205,13 +286,19 @@ export default function Home() {
       </section>
 
       {/* COMMUNITY SHOWCASE SECTION */}
-      <section className="w-full py-16 lg:py-24 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+      <section
+        className="w-full py-16 lg:py-24 transition-colors duration-300"
+        style={{ backgroundColor: "var(--background)" }}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
               <GradientText>Join Our Community</GradientText>
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
+            <p
+              className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text"
+              style={{ color: "var(--text-secondary)" }}
+            >
               See what makes WorldMapPin special for travelers around the globe
             </p>
           </div>
@@ -225,16 +312,21 @@ export default function Home() {
       </section>
 
       {/* WEB3 BENEFITS SECTION */}
-      <section
-        className="w-full py-16 lg:py-24 relative overflow-hidden web3-benefits-section"
-      >
+      <section className="w-full py-16 lg:py-24 relative overflow-hidden web3-benefits-section">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12 lg:mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-lexend mb-4" style={{ color: 'var(--text-primary)' }}>
+            <h2
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold font-lexend mb-4"
+              style={{ color: "var(--text-primary)" }}
+            >
               Why Choose Web3?
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-              Experience the future of travel content creation with blockchain technology
+            <p
+              className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Experience the future of travel content creation with blockchain
+              technology
             </p>
           </div>
 
@@ -247,9 +339,7 @@ export default function Home() {
       </section>
 
       {/* FINAL CTA SECTION */}
-      <section
-        className="w-full py-20 lg:py-28 relative overflow-hidden font-lexend final-cta-section"
-      >
+      <section className="w-full py-20 lg:py-28 relative overflow-hidden font-lexend final-cta-section">
         {/* Subtle decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-300/30 to-transparent" />
         <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-300/30 to-transparent" />
@@ -259,7 +349,10 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 font-lexend tracking-tight leading-tight">
               <GradientText>Ready to Start Your Journey?</GradientText>
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl mb-10 font-lexend leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+            <p
+              className="text-base sm:text-lg lg:text-xl mb-10 font-lexend leading-relaxed max-w-2xl mx-auto"
+              style={{ color: "var(--text-secondary)" }}
+            >
               Every place has a story. Pin yours on the map.
               <br />
               Travel stories, mapped by the community.
@@ -270,7 +363,10 @@ export default function Home() {
                 href="/signup"
                 suppressHydrationWarning
                 className="inline-flex items-center justify-center text-white font-bold px-8 py-3.5 rounded-lg text-base transition-all duration-300 font-lexend hover:shadow-2xl hover:scale-105 active:scale-95 w-full sm:w-52 whitespace-nowrap"
-                style={{ background: 'linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)' }}
+                style={{
+                  background:
+                    "linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)",
+                }}
               >
                 Join the Community
               </a>
@@ -278,7 +374,7 @@ export default function Home() {
                 href="/explore"
                 suppressHydrationWarning
                 className="inline-flex items-center justify-center font-bold px-8 py-3.5 rounded-lg text-base border-2 border-[#ED6D28] transition-all duration-300 font-lexend hover:shadow-xl hover:scale-105 active:scale-95 w-full sm:w-52 whitespace-nowrap"
-                style={{ backgroundColor: 'var(--card-bg)', color: '#ED6D28' }}
+                style={{ backgroundColor: "var(--card-bg)", color: "#ED6D28" }}
               >
                 Explore Stories
               </a>
