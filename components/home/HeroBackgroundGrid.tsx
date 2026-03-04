@@ -1,30 +1,30 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { optimizeImageForExplore } from '@/utils/imageOptimization';
+import React, { useState, useEffect, useMemo } from "react";
+import { optimizeImageForExplore } from "@/utils/imageOptimization";
 
 // Original image URLs (extract base URLs from Hive ImageHoster format)
 const originalImages = [
-  'https://files.peakd.com/file/peakd-hive/sofathana/EqBcB9LmxN2S38qHeTWAvkqFmaKgVaFYrdTcBzroY1PSRJBQ5onsqf6T4SRYRDzPnyo.JPG',
-  'https://files.peakd.com/file/peakd-hive/sofathana/EqjXEkwhoqGj2mqDD1wz1ijmV24z3KhGVTjbAnCkxe6dDgGnCoDW1VT57csPqLrgiVL.JPG',
-  'https://files.peakd.com/file/peakd-hive/ibarra95/243LxnZCJHDkT3RgsEumAHeNCsvbBH7oGa5JTZpNqRtzMAeSgPUD9Tp4541cr4h4Tt7e4.jpeg',
-  'https://files.peakd.com/file/peakd-hive/danavilar/242ruTaCWBWxcqqMi4BRky6hDaccA7sYAPaGvxy3AKPGBLe3X8PSdvpxxmkePTWy1E7hr.jpeg',
-  'https://files.peakd.com/file/peakd-hive/avdesing/23uFPkatb8VafH4RScqPhnYqFazRzUTyBLWm4y88QsvLnVGcVpJW4YX1chbiJ4wsrsUim.jpg',
-  'https://files.peakd.com/file/peakd-hive/biologistbrito/246amwZhYYn2iLD8xfo5HmfjF93QhWSHHSkh87EAwkZ348TxkWP8UcbbtVfSTpS9rK8DJ.JPG',
-  'https://files.peakd.com/file/peakd-hive/livinguktaiwan/2458C3rcJANS76CKb7Py3Cd4jtDhU6r54iX96KaoynYaXXVHsSQyN6khmHsx73scYM1k8.jpg',
-  'https://files.peakd.com/file/peakd-hive/vaynard86/23vi49n6kBTWULAzydX2uKdzPRLDzQSSgLXuDjYZxM8Pb7kVFjDUr9xyhWDmeSVytY7uB.png',
-  'https://files.peakd.com/file/peakd-hive/ramon2024/Eqb3VFRAVPBoYDtqEJ1EPFk9RvL1fYBxdu6MN2RwSU1s6CCvimxUeMrtPLwYQEnLg3Y.jpg',
-  'https://files.peakd.com/file/peakd-hive/ramon2024/Eq7NJPPEtw4uSW9mrm1LWNANmWHQ1ys5TXAu527Z6ftWq8bopVMzP5EocSnUfJ8r5PY.jpg',
-  'https://files.peakd.com/file/peakd-hive/nanixxx/23tbHF25D2v5pa2jWGZ7BuepZD9mvwckoP3pRFzUAPM7SRbrKwdUG1YySENtcToN4R1pq.jpg',
-  'https://images.ecency.com/DQmUmBrkwFX6vmLjjoEBZYerDSbY3Ru5ynnUYCr1mmrtavL/1765162629900.jpg',
-  'https://files.peakd.com/file/peakd-hive/darine.darine/23uaMgW5ZkdCzYqouaTmpsmJKrpRsiqE8f5FVuHyeCfkRQPfX41mJe68KdnvNhMBnmJTn.jpg',
-  'https://files.peakd.com/file/peakd-hive/terresco/EoeCZD7e15WUu914cpzMwEG6xvEiRkYEsPYBckkYGxstwdEPFTHEhhca9858sKMJ7hd.jpg',
-  'https://files.peakd.com/file/peakd-hive/onyfest/242DGWL9bvA1iSjdvomtkVGHKWdRYryQAD2L4FPd3jseQXB1UUsGRMYARqw6satSM2his.jpg',
-  'https://img.leopedia.io/DQmeG6EyXABY1aYPRKJjgRACcrQa2GsrGRi1ux55d3Ha2bb/1764484844328.jpg',
-  'https://files.peakd.com/file/peakd-hive/dodovietnam/23zbKTKuLLsnFHt4kB4VACamNyum1VdmUwqyacX5cw4Sge4QmUCB4pcwW5pjxkQSaS1LD.jpg',
-  'https://files.peakd.com/file/peakd-hive/hindavi/23wMMd3Ht3pfUaedoN7UQm3vfaZHY9KGXPjoX7nL7G7WSwgKp2wc5UUYqt4ruP7m7gEqB.jpg',
-  'https://files.peakd.com/file/peakd-hive/greddyforce/23zv98wxxGqnB9BjGFvKsHwX7eLV7e6bK81FtqLuYd1UjJN2Skot7wr8563DWbGNWT1R5.jpg',
-  'https://files.peakd.com/file/peakd-hive/relf87/EpnAn9ooQ9agFqGvA9hMZZ7JRcYk3Zx2q1amR9DLGg8GDXjurbVnrBC5QCTwbURUkvD.JPG',
+  "https://files.peakd.com/file/peakd-hive/sofathana/EqBcB9LmxN2S38qHeTWAvkqFmaKgVaFYrdTcBzroY1PSRJBQ5onsqf6T4SRYRDzPnyo.JPG",
+  "https://files.peakd.com/file/peakd-hive/sofathana/EqjXEkwhoqGj2mqDD1wz1ijmV24z3KhGVTjbAnCkxe6dDgGnCoDW1VT57csPqLrgiVL.JPG",
+  "https://files.peakd.com/file/peakd-hive/ibarra95/243LxnZCJHDkT3RgsEumAHeNCsvbBH7oGa5JTZpNqRtzMAeSgPUD9Tp4541cr4h4Tt7e4.jpeg",
+  "https://files.peakd.com/file/peakd-hive/danavilar/242ruTaCWBWxcqqMi4BRky6hDaccA7sYAPaGvxy3AKPGBLe3X8PSdvpxxmkePTWy1E7hr.jpeg",
+  "https://files.peakd.com/file/peakd-hive/avdesing/23uFPkatb8VafH4RScqPhnYqFazRzUTyBLWm4y88QsvLnVGcVpJW4YX1chbiJ4wsrsUim.jpg",
+  "https://files.peakd.com/file/peakd-hive/biologistbrito/246amwZhYYn2iLD8xfo5HmfjF93QhWSHHSkh87EAwkZ348TxkWP8UcbbtVfSTpS9rK8DJ.JPG",
+  "https://files.peakd.com/file/peakd-hive/livinguktaiwan/2458C3rcJANS76CKb7Py3Cd4jtDhU6r54iX96KaoynYaXXVHsSQyN6khmHsx73scYM1k8.jpg",
+  "https://files.peakd.com/file/peakd-hive/vaynard86/23vi49n6kBTWULAzydX2uKdzPRLDzQSSgLXuDjYZxM8Pb7kVFjDUr9xyhWDmeSVytY7uB.png",
+  "https://files.peakd.com/file/peakd-hive/ramon2024/Eqb3VFRAVPBoYDtqEJ1EPFk9RvL1fYBxdu6MN2RwSU1s6CCvimxUeMrtPLwYQEnLg3Y.jpg",
+  "https://files.peakd.com/file/peakd-hive/ramon2024/Eq7NJPPEtw4uSW9mrm1LWNANmWHQ1ys5TXAu527Z6ftWq8bopVMzP5EocSnUfJ8r5PY.jpg",
+  "https://files.peakd.com/file/peakd-hive/nanixxx/23tbHF25D2v5pa2jWGZ7BuepZD9mvwckoP3pRFzUAPM7SRbrKwdUG1YySENtcToN4R1pq.jpg",
+  "https://images.ecency.com/DQmUmBrkwFX6vmLjjoEBZYerDSbY3Ru5ynnUYCr1mmrtavL/1765162629900.jpg",
+  "https://files.peakd.com/file/peakd-hive/darine.darine/23uaMgW5ZkdCzYqouaTmpsmJKrpRsiqE8f5FVuHyeCfkRQPfX41mJe68KdnvNhMBnmJTn.jpg",
+  "https://files.peakd.com/file/peakd-hive/terresco/EoeCZD7e15WUu914cpzMwEG6xvEiRkYEsPYBckkYGxstwdEPFTHEhhca9858sKMJ7hd.jpg",
+  "https://files.peakd.com/file/peakd-hive/onyfest/242DGWL9bvA1iSjdvomtkVGHKWdRYryQAD2L4FPd3jseQXB1UUsGRMYARqw6satSM2his.jpg",
+  "https://img.leopedia.io/DQmeG6EyXABY1aYPRKJjgRACcrQa2GsrGRi1ux55d3Ha2bb/1764484844328.jpg",
+  "https://files.peakd.com/file/peakd-hive/dodovietnam/23zbKTKuLLsnFHt4kB4VACamNyum1VdmUwqyacX5cw4Sge4QmUCB4pcwW5pjxkQSaS1LD.jpg",
+  "https://files.peakd.com/file/peakd-hive/hindavi/23wMMd3Ht3pfUaedoN7UQm3vfaZHY9KGXPjoX7nL7G7WSwgKp2wc5UUYqt4ruP7m7gEqB.jpg",
+  "https://files.peakd.com/file/peakd-hive/greddyforce/23zv98wxxGqnB9BjGFvKsHwX7eLV7e6bK81FtqLuYd1UjJN2Skot7wr8563DWbGNWT1R5.jpg",
+  "https://files.peakd.com/file/peakd-hive/relf87/EpnAn9ooQ9agFqGvA9hMZZ7JRcYk3Zx2q1amR9DLGg8GDXjurbVnrBC5QCTwbURUkvD.JPG",
 ];
 
 const HeroBackgroundGrid = () => {
@@ -33,27 +33,27 @@ const HeroBackgroundGrid = () => {
 
   useEffect(() => {
     setIsMounted(true);
-    
+
     // Detect mobile viewport
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   const optimizedImages = useMemo(() => {
-    return originalImages.map(img => {
+    return originalImages.map((img) => {
       let originalUrl = img;
-      if (img.startsWith('https://images.hive.blog/0x0/')) {
-        originalUrl = img.replace('https://images.hive.blog/0x0/', '');
-      } else if (img.startsWith('https://images.ecency.com/')) {
+      if (img.startsWith("https://images.ecency.com/0x0/")) {
+        originalUrl = img.replace("https://images.ecency.com/0x0/", "");
+      } else if (img.startsWith("https://images.ecency.com/")) {
         return img;
-      } else if (img.includes('wsrv.nl')) {
+      } else if (img.includes("wsrv.nl")) {
         return img;
       }
-      
+
       // Optimize with smaller dimensions for background images
       const width = isMobile ? 300 : 400;
       const height = isMobile ? 200 : 300;
@@ -130,7 +130,7 @@ const HeroBackgroundGrid = () => {
         .hero-grid-overlay {
           position: absolute;
           inset: 0;
-          background: 
+          background:
             radial-gradient(
               ellipse 80% 70% at 50% 45%,
               rgba(237, 109, 40, 0.9) 0%,
@@ -191,7 +191,7 @@ const HeroBackgroundGrid = () => {
           }
 
           .hero-grid-overlay {
-            background: 
+            background:
               radial-gradient(
                 ellipse 75% 65% at 50% 45%,
                 rgba(237, 109, 40, 0.87) 0%,
@@ -227,7 +227,7 @@ const HeroBackgroundGrid = () => {
           }
 
           .hero-grid-overlay {
-            background: 
+            background:
               radial-gradient(
                 ellipse 70% 60% at 50% 45%,
                 rgba(237, 109, 40, 0.85) 0%,

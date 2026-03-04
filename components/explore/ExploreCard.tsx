@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ProcessedPost } from '@/types/post';
-import ProgressiveImage from '@/components/shared/ProgressiveImage';
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ProcessedPost } from "@/types/post";
+import ProgressiveImage from "@/components/shared/ProgressiveImage";
 
 interface ExploreCardProps {
   post: ProcessedPost;
@@ -13,10 +13,15 @@ interface ExploreCardProps {
   onViewOnMap?: () => void;
 }
 
-export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = false, onViewOnMap }: ExploreCardProps) {
+export default function ExploreCard({
+  post,
+  hideAvatar = false,
+  showViewOnMap = false,
+  onViewOnMap,
+}: ExploreCardProps) {
   const [avatarError, setAvatarError] = useState(false);
 
-  const profileImageUrl = `https://images.hive.blog/u/${post.author}/avatar`;
+  const profileImageUrl = `https://images.ecency.com/u/${post.author}/avatar`;
 
   const handleViewOnMap = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -28,7 +33,13 @@ export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = 
 
   return (
     <Link href={`/${post.slug}`}>
-      <div className="group rounded-xl sm:rounded-2xl hover:shadow-xl transition-all duration-300 overflow-visible cursor-pointer flex flex-col relative h-full explore-card" style={{ backgroundColor: 'var(--card-bg)', boxShadow: '0px 4px 4px 0px var(--shadow-color)' }}>
+      <div
+        className="group rounded-xl sm:rounded-2xl hover:shadow-xl transition-all duration-300 overflow-visible cursor-pointer flex flex-col relative h-full explore-card"
+        style={{
+          backgroundColor: "var(--card-bg)",
+          boxShadow: "0px 4px 4px 0px var(--shadow-color)",
+        }}
+      >
         {/* Cover Image with Overlay Content */}
         <div className="relative w-full bg-gradient-to-br from-orange-400 to-amber-500 overflow-hidden rounded-t-xl sm:rounded-t-2xl h-[180px] sm:h-[220px] lg:h-[249.6px]">
           {/* Top Gradient Overlay for better text visibility */}
@@ -46,8 +57,18 @@ export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = 
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-amber-500">
-              <svg className="w-16 h-16 text-white opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                className="w-16 h-16 text-white opacity-50"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
           )}
@@ -70,65 +91,147 @@ export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = 
                       unoptimized
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-[10px] sm:text-xs" style={{ fontFamily: 'var(--font-lexend)' }}>
+                    <div
+                      className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-[10px] sm:text-xs"
+                      style={{ fontFamily: "var(--font-lexend)" }}
+                    >
                       {post.author.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
               )}
               {/* Username */}
-              <span className="text-white font-medium text-xs sm:text-sm drop-shadow-md truncate" style={{ fontFamily: 'var(--font-lexend)' }}>
+              <span
+                className="text-white font-medium text-xs sm:text-sm drop-shadow-md truncate"
+                style={{ fontFamily: "var(--font-lexend)" }}
+              >
                 @{post.author}
               </span>
               {/* Rating */}
               {post.reputation && (
-                <span className="text-white font-medium text-[10px] sm:text-xs drop-shadow-md flex-shrink-0" style={{ fontFamily: 'var(--font-lexend)' }}>
+                <span
+                  className="text-white font-medium text-[10px] sm:text-xs drop-shadow-md flex-shrink-0"
+                  style={{ fontFamily: "var(--font-lexend)" }}
+                >
                   {post.reputation}
                 </span>
               )}
             </div>
 
             {/* Right Side - Payout */}
-            <div className="font-bold text-xs sm:text-sm drop-shadow-md flex-shrink-0 ml-2" style={{ fontFamily: 'var(--font-lexend)', color: '#E9FFC7' }}>
-              {post.payout || '$0.00'}
+            <div
+              className="font-bold text-xs sm:text-sm drop-shadow-md flex-shrink-0 ml-2"
+              style={{ fontFamily: "var(--font-lexend)", color: "#E9FFC7" }}
+            >
+              {post.payout || "$0.00"}
             </div>
           </div>
-
         </div>
 
         {/* Like and Comment Ovals - Side by side on left, centered on border */}
-        <div className="absolute left-2 sm:left-4 flex flex-row gap-1 sm:gap-2 z-20 top-[180px] sm:top-[220px] lg:top-[249.6px]" style={{ transform: 'translateY(-50%)' }}>
+        <div
+          className="absolute left-2 sm:left-4 flex flex-row gap-1 sm:gap-2 z-20 top-[180px] sm:top-[220px] lg:top-[249.6px]"
+          style={{ transform: "translateY(-50%)" }}
+        >
           {/* Like Oval */}
-          <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center gap-1 sm:gap-2 explore-card-votes" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#FFE6ED', boxShadow: '0px 2px 4px 0px #B6000026', border: '2px solid #AA2C504D' }}>
-            <svg className="w-3 h-3 sm:w-4 sm:h-4 explore-card-votes-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#DE2056' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          <div
+            className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center gap-1 sm:gap-2 explore-card-votes"
+            style={{
+              fontFamily: "var(--font-lexend)",
+              backgroundColor: "#FFE6ED",
+              boxShadow: "0px 2px 4px 0px #B6000026",
+              border: "2px solid #AA2C504D",
+            }}
+          >
+            <svg
+              className="w-3 h-3 sm:w-4 sm:h-4 explore-card-votes-icon"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              style={{ color: "#DE2056" }}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
             </svg>
-            <span className="text-xs sm:text-sm font-normal explore-card-votes-text" style={{ color: '#560018' }}>{post.votes !== undefined ? post.votes : 0}</span>
+            <span
+              className="text-xs sm:text-sm font-normal explore-card-votes-text"
+              style={{ color: "#560018" }}
+            >
+              {post.votes !== undefined ? post.votes : 0}
+            </span>
           </div>
           {/* Comment Oval */}
-          <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center gap-1 sm:gap-2 shadow-md explore-card-comments" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#E4EDFF', border: '2px solid #18367233' }}>
-            <svg className="w-3 h-3 sm:w-4 sm:h-4 explore-card-comments-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#3B79F4' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          <div
+            className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center gap-1 sm:gap-2 shadow-md explore-card-comments"
+            style={{
+              fontFamily: "var(--font-lexend)",
+              backgroundColor: "#E4EDFF",
+              border: "2px solid #18367233",
+            }}
+          >
+            <svg
+              className="w-3 h-3 sm:w-4 sm:h-4 explore-card-comments-icon"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              style={{ color: "#3B79F4" }}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
-            <span className="text-xs sm:text-sm font-normal explore-card-comments-text" style={{ color: '#001C55' }}>{post.comments !== undefined ? post.comments : 0}</span>
+            <span
+              className="text-xs sm:text-sm font-normal explore-card-comments-text"
+              style={{ color: "#001C55" }}
+            >
+              {post.comments !== undefined ? post.comments : 0}
+            </span>
           </div>
         </div>
 
         {/* Date Oval - Right side, centered on border */}
         {post.created && (
-          <div className="absolute right-2 sm:right-4 flex flex-row gap-2 z-20 top-[180px] sm:top-[220px] lg:top-[249.6px]" style={{ transform: 'translateY(-50%)' }}>
-            <div className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center shadow-md explore-card-date" style={{ fontFamily: 'var(--font-lexend)', backgroundColor: '#E7E7E7', border: '2px solid #00000033' }}>
-              <span className="text-xs sm:text-sm font-normal explore-card-date-text" style={{ color: '#000000' }}>
-                {new Date(post.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          <div
+            className="absolute right-2 sm:right-4 flex flex-row gap-2 z-20 top-[180px] sm:top-[220px] lg:top-[249.6px]"
+            style={{ transform: "translateY(-50%)" }}
+          >
+            <div
+              className="rounded-full px-2 py-0.5 sm:px-3 sm:py-1 flex items-center shadow-md explore-card-date"
+              style={{
+                fontFamily: "var(--font-lexend)",
+                backgroundColor: "#E7E7E7",
+                border: "2px solid #00000033",
+              }}
+            >
+              <span
+                className="text-xs sm:text-sm font-normal explore-card-date-text"
+                style={{ color: "#000000" }}
+              >
+                {new Date(post.created).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </span>
             </div>
           </div>
         )}
 
-
         <div className="p-3 sm:p-4 pb-3 sm:pb-4 flex flex-col flex-1">
-
-          <h3 className="text-base sm:text-lg font-medium mt-1 sm:mt-2 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] group-hover:text-orange-500 transition-colors" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
+          <h3
+            className="text-base sm:text-lg font-medium mt-1 sm:mt-2 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] group-hover:text-orange-500 transition-colors"
+            style={{
+              fontFamily: "var(--font-lexend)",
+              color: "var(--text-primary)",
+            }}
+          >
             {post.title}
           </h3>
 
@@ -141,7 +244,10 @@ export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = 
                     <span
                       key={index}
                       className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 font-semibold italic truncate max-w-[80px]"
-                      style={{ fontFamily: 'var(--font-lexend)', color: '#2090EC' }}
+                      style={{
+                        fontFamily: "var(--font-lexend)",
+                        color: "#2090EC",
+                      }}
                     >
                       #{tag}
                     </span>
@@ -158,15 +264,34 @@ export default function ExploreCard({ post, hideAvatar = false, showViewOnMap = 
                 className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 group/btn"
                 title="View on Map"
               >
-                <svg className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                <svg
+                  className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
                 </svg>
-                <span className="text-[10px] sm:text-xs font-bold" style={{ fontFamily: 'var(--font-lexend)' }}>Map</span>
+                <span
+                  className="text-[10px] sm:text-xs font-bold"
+                  style={{ fontFamily: "var(--font-lexend)" }}
+                >
+                  Map
+                </span>
               </button>
             )}
           </div>
-
         </div>
       </div>
     </Link>
