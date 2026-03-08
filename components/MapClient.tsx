@@ -973,7 +973,7 @@ export default function MapClient({
   }
 
   return (
-    <APIProvider apiKey={API_KEY} version={"beta"}>
+    <APIProvider apiKey={API_KEY} version={"beta"} libraries={["places"]}>
       <div className="h-[calc(100vh-3rem)] sm:h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] w-full relative overflow-hidden font-lexend">
         {/* Old Loading Spinner */}
         {loading && (
@@ -1181,8 +1181,6 @@ export default function MapClient({
         <MapFilterBar
           onFilter={handleFilter}
           searchParams={searchParams}
-          onToggleJourneys={() => setShowJourneyControls(!showJourneyControls)}
-          showJourneys={showJourneyControls}
           onToggleCodeMode={toggleCodeMode}
           isCodeMode={codeMode}
           onOpenCommunitySelector={() => setShowCommunitySelector(true)}
@@ -1374,7 +1372,7 @@ export default function MapClient({
                     </button>
 
                     {/* Content */}
-                    <div className="px-5 pb-8 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                    <div className="px-3 sm:px-5 pb-5 sm:pb-8 max-h-[85vh] overflow-y-auto custom-scrollbar">
                       {loadedCommunity?.id === "spendhbd" &&
                       infowindowData.isCluster ? (
                         <SpendHBDClusterInfo

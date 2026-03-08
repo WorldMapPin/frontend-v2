@@ -20,6 +20,17 @@ export default function MapNavbar() {
   const [pinCount] = useState(142194);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Autocomplete state (uses new AutocompleteSuggestion API)
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const skipAutocompleteRef = useRef(false);
+  const sessionTokenRef = useRef<any>(null);
+
   // User menu state
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -44,14 +55,147 @@ export default function MapNavbar() {
     };
   }, [showUserMenu]);
 
+  // Close search dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  // Debounced autocomplete using the new AutocompleteSuggestion API
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    if (skipAutocompleteRef.current) {
+      skipAutocompleteRef.current = false;
+      return;
+    }
+
+    if (!searchValue || searchValue.length < 2) {
+      setPredictions([]);
+      setIsDropdownOpen(false);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    let cancelled = false;
+
+    debounceRef.current = setTimeout(async () => {
+      if (!window.google?.maps?.places) {
+        setIsSearching(false);
+        return;
+      }
+      try {
+        if (!sessionTokenRef.current) {
+          sessionTokenRef.current =
+            new google.maps.places.AutocompleteSessionToken();
+        }
+
+        const { AutocompleteSuggestion } = (await (
+          google.maps as any
+        ).importLibrary("places")) as any;
+
+        const { suggestions } =
+          await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+            input: searchValue,
+            sessionToken: sessionTokenRef.current,
+          });
+
+        if (cancelled) return;
+
+        const placePredictions = suggestions
+          .map((s: any) => s.placePrediction)
+          .filter(Boolean)
+          .slice(0, 5);
+
+        setPredictions(placePredictions);
+        setIsDropdownOpen(true);
+        setHighlightedIndex(-1);
+        setIsSearching(false);
+      } catch {
+        if (!cancelled) {
+          setIsSearching(false);
+          setPredictions([]);
+        }
+      }
+    }, 150);
+
+    return () => {
+      cancelled = true;
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [searchValue]);
+
   const toggleUserMenu = () => {
     setShowUserMenu(!showUserMenu);
   };
 
+  const handleSelectPlace = async (prediction: any) => {
+    skipAutocompleteRef.current = true;
+    setSearchValue(prediction.mainText?.text || prediction.text?.text || "");
+    setIsDropdownOpen(false);
+    setPredictions([]);
+    setHighlightedIndex(-1);
+
+    try {
+      const place = prediction.toPlace();
+      await place.fetchFields({
+        fields: ["location", "displayName", "formattedAddress"],
+      });
+      const lat = place.location?.lat();
+      const lng = place.location?.lng();
+      if (lat != null && lng != null) {
+        setGlobalLocation({
+          location: { lat, lng },
+          name: place.formattedAddress || place.displayName || "",
+        });
+        setGlobalZoom(12);
+      }
+    } catch {
+      const text = prediction.text?.text || prediction.mainText?.text || "";
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ address: text }, (results, status) => {
+        if (status === "OK" && results?.[0]) {
+          const { location } = results[0].geometry;
+          setGlobalLocation({
+            location: { lat: location.lat(), lng: location.lng() },
+            name: results[0].formatted_address,
+          });
+          setGlobalZoom(12);
+        }
+      });
+    }
+
+    sessionTokenRef.current = null;
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (highlightedIndex >= 0 && predictions[highlightedIndex]) {
+      handleSelectPlace(predictions[highlightedIndex]);
+      return;
+    }
     if (!searchValue) return;
 
+    skipAutocompleteRef.current = true;
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ address: searchValue }, (results, status) => {
       if (status === "OK" && results && results[0]) {
@@ -60,9 +204,38 @@ export default function MapNavbar() {
           location: { lat: location.lat(), lng: location.lng() },
           name: results[0].formatted_address,
         });
-        setGlobalZoom(15);
+        setGlobalZoom(12);
       }
     });
+    setIsDropdownOpen(false);
+    setPredictions([]);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isDropdownOpen || predictions.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev < predictions.length - 1 ? prev + 1 : 0,
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev > 0 ? prev - 1 : predictions.length - 1,
+      );
+    } else if (e.key === "Escape") {
+      setIsDropdownOpen(false);
+      setHighlightedIndex(-1);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchValue("");
+    setPredictions([]);
+    setIsDropdownOpen(false);
+    setHighlightedIndex(-1);
+    inputRef.current?.focus();
   };
 
   return (
@@ -98,34 +271,97 @@ export default function MapNavbar() {
           </Link>
         </div>
 
-        <div className="flex flex-1 max-w-md mx-2 sm:mx-4">
+        <div
+          className="flex flex-1 max-w-md mx-2 sm:mx-4 relative"
+          ref={searchContainerRef}
+        >
           <form onSubmit={handleSearch} className="relative w-full">
             <div
               className="flex items-center w-full rounded-full px-3 sm:px-4 h-9 sm:h-10 transition-colors duration-200"
               style={{ backgroundColor: "var(--section-bg)" }}
             >
-              <svg
-                className="w-4 h-4 mr-2 flex-shrink-0"
-                style={{ color: "var(--text-muted)" }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              {isSearching ? (
+                <svg
+                  className="w-4 h-4 mr-2 flex-shrink-0 animate-spin"
+                  style={{ color: "#ED6D28" }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth={4}
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-4 h-4 mr-2 flex-shrink-0"
+                  style={{ color: "var(--text-muted)" }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              )}
               <input
+                ref={inputRef}
                 type="text"
                 placeholder="Find a Place"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
+                onFocus={() => {
+                  if (predictions.length > 0) setIsDropdownOpen(true);
+                }}
+                onKeyDown={handleKeyDown}
                 className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 w-full text-xs sm:text-sm p-0 placeholder:text-[var(--text-muted)]"
                 style={{ color: "var(--text-primary)" }}
+                autoComplete="off"
+                role="combobox"
+                aria-expanded={isDropdownOpen}
+                aria-autocomplete="list"
+                aria-controls="places-autocomplete-list"
+                aria-activedescendant={
+                  highlightedIndex >= 0
+                    ? `place-option-${highlightedIndex}`
+                    : undefined
+                }
               />
+              {searchValue && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="mr-1 p-0.5 rounded-full hover:opacity-70 transition-opacity flex-shrink-0"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={toggleGlobalCodeMode}
@@ -154,6 +390,95 @@ export default function MapNavbar() {
               </button>
             </div>
           </form>
+
+          {/* Autocomplete Dropdown */}
+          {isDropdownOpen && (
+            <div
+              id="places-autocomplete-list"
+              role="listbox"
+              className="absolute top-full left-0 right-0 mt-1.5 rounded-xl shadow-xl border overflow-hidden z-[200] animate-in fade-in slide-in-from-top-1 duration-150"
+              style={{
+                backgroundColor: "var(--card-bg)",
+                borderColor: "var(--border-subtle)",
+              }}
+            >
+              {predictions.length > 0 ? (
+                <ul className="py-1">
+                  {predictions.map((prediction: any, index: number) => (
+                    <li
+                      key={prediction.placeId || index}
+                      id={`place-option-${index}`}
+                      role="option"
+                      aria-selected={highlightedIndex === index}
+                      className="flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors"
+                      style={{
+                        backgroundColor:
+                          highlightedIndex === index
+                            ? "var(--section-bg)"
+                            : "transparent",
+                      }}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSelectPlace(prediction);
+                      }}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: "var(--section-bg)" }}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          style={{ color: "#ED6D28" }}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="text-sm font-semibold truncate"
+                          style={{ color: "var(--text-primary)" }}
+                        >
+                          {prediction.mainText?.text || ""}
+                        </p>
+                        {prediction.secondaryText?.text && (
+                          <p
+                            className="text-xs truncate"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            {prediction.secondaryText.text}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : !isSearching ? (
+                <div className="px-4 py-3 text-center">
+                  <p
+                    className="text-xs font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    No places found
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/* Right: Desktop Links and Actions */}
@@ -162,6 +487,9 @@ export default function MapNavbar() {
             className="hidden lg:flex items-center space-x-6 font-medium text-sm mr-4"
             style={{ color: "var(--text-secondary)" }}
           >
+            <Link href="/" className="hover:text-[#ED6D28] transition-colors">
+              Home
+            </Link>
             <Link
               href="/explore"
               className="hover:text-[#ED6D28] transition-colors"
@@ -429,6 +757,27 @@ export default function MapNavbar() {
 
             {/* Navigation Links */}
             <div className="space-y-1 flex-1">
+              <Link
+                href="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-between p-4 rounded-xl font-bold transition-all border border-transparent hover:border-orange-100"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                <span>Home</span>
+                <svg
+                  className="w-4 h-4 text-orange-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Link>
               <Link
                 href="/explore"
                 onClick={() => setIsMobileMenuOpen(false)}

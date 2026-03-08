@@ -133,15 +133,23 @@ export default function SignupPage() {
               <p className="font-lexend text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Don't have a Hive account?{' '}
                 <a
-                  href="https://signup.hive.io"
+                  href="https://hive.io/en/join/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-bold hover:underline transition-all"
                   style={{ color: '#ED6D28' }}
                   suppressHydrationWarning
                 >
-                  Create one for free →
+                  Create one for free
                 </a>
+              </p>
+            </div>
+
+            {/* Benefits Heading */}
+            <div className="mb-6">
+              <p className="font-lexend text-sm text-center" style={{ color: 'var(--text-secondary)' }}>
+                Benefits of Joining the{' '}
+                <span className="font-bold" style={{ color: '#ED6D28' }}>Worldmappin Community</span>
               </p>
             </div>
 
@@ -209,19 +217,19 @@ export default function SignupPage() {
             <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--border-color)' }}>
               <div className="flex items-center justify-center gap-6 mb-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-[#ED6D28]"></div>
                   <span className="font-lexend text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                     Secure
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-[#ED6D28]"></div>
                   <span className="font-lexend text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                     Decentralized
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-[#ED6D28]"></div>
                   <span className="font-lexend text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                     Free to Join
                   </span>
