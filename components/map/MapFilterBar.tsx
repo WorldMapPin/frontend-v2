@@ -11,7 +11,6 @@ import {
     X,
     Code,
     Users,
-    Map as MapIcon,
     Plus,
     Minus,
     Search,
@@ -22,8 +21,6 @@ import { SearchParams } from '@/types';
 interface MapFilterBarProps {
     onFilter: (params: any) => void;
     searchParams: SearchParams;
-    onToggleJourneys: () => void;
-    showJourneys: boolean;
     onToggleCodeMode: () => void;
     isCodeMode: boolean;
     onOpenCommunitySelector: () => void;
@@ -38,8 +35,6 @@ interface MapFilterBarProps {
 export default function MapFilterBar({
     onFilter,
     searchParams,
-    onToggleJourneys,
-    showJourneys,
     onToggleCodeMode,
     isCodeMode,
     onOpenCommunitySelector,
@@ -106,62 +101,76 @@ export default function MapFilterBar({
             {/* Top row with action buttons */}
             <div className="flex items-center space-x-3 mb-4 w-full sm:w-auto justify-center sm:justify-end">
                 {/* Get Code Button */}
-                <button
-                    onClick={onToggleCodeMode}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl transition-all ${isCodeMode
-                        ? 'bg-[#ED6D28] text-white ring-4 ring-orange-500/20'
-                        : 'hover:opacity-80'
-                        }`}
-                    style={!isCodeMode ? {
-                        backgroundColor: 'var(--card-bg)',
-                        color: 'var(--text-secondary)'
-                    } : undefined}
-                    title={isCodeMode ? 'Exit Code' : 'Get Code'}
-                >
-                    <Code className="w-5 h-5" />
-                </button>
+                <div className="relative group">
+                    <button
+                        onClick={onToggleCodeMode}
+                        className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl transition-all ${isCodeMode
+                            ? 'bg-[#ED6D28] text-white ring-4 ring-orange-500/20'
+                            : 'hover:opacity-80'
+                            }`}
+                        style={!isCodeMode ? {
+                            backgroundColor: 'var(--card-bg)',
+                            color: 'var(--text-secondary)'
+                        } : undefined}
+                    >
+                        <Code className="w-5 h-5" />
+                    </button>
+                    <span
+                        className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all z-[999]"
+                    >
+                        {isCodeMode ? 'Exit code mode' : 'Get code for this place'}
+                    </span>
+                </div>
 
-                {/* Journeys Toggle */}
-                <button
-                    onClick={onToggleJourneys}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl transition-all ${showJourneys
-                        ? 'bg-[#ED6D28] text-white'
-                        : 'hover:opacity-80'
+                {/* Map Type Toggle */}
+                <div className="relative group">
+                    <button
+                        onClick={onToggleMapType}
+                        className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl border hover:scale-105 active:scale-95 transition-all ${
+                            mapTypeId === 'hybrid'
+                                ? 'bg-[#ED6D28] text-white border-[#ED6D28]'
+                                : ''
                         }`}
-                    style={!showJourneys ? {
-                        backgroundColor: 'var(--card-bg)',
-                        color: 'var(--text-secondary)'
-                    } : undefined}
-                    title="Journeys"
-                >
-                    <MapIcon className="w-5 h-5" />
-                </button>
-
-                {/* Map Type Toggle - Yellow Circle */}
-                <button
-                    onClick={onToggleMapType}
-                    className="w-11 h-11 bg-[#FFD700] rounded-full flex items-center justify-center shadow-xl border-2 hover:scale-105 active:scale-95 transition-all"
-                    style={{ borderColor: 'var(--card-bg)' }}
-                    title="Toggle Terrain/Satellite"
-                >
-                    <Layers className="w-5 h-5 text-white" />
-                </button>
+                        style={
+                            mapTypeId === 'hybrid'
+                                ? undefined
+                                : {
+                                      backgroundColor: 'var(--card-bg)',
+                                      borderColor: 'var(--border-subtle)',
+                                      color: 'var(--text-secondary)',
+                                  }
+                        }
+                    >
+                        <Layers className="w-5 h-5" />
+                    </button>
+                    <span
+                        className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all z-[999]"
+                    >
+                        {mapTypeId === 'hybrid' ? 'Satellite view' : 'Terrain view'}
+                    </span>
+                </div>
 
                 {/* Reload Pins Button */}
-                <button
-                    onClick={onReloadPins}
-                    className="w-11 h-11 rounded-full flex items-center justify-center shadow-xl border hover:scale-105 active:scale-95 transition-all"
-                    style={{
-                        backgroundColor: 'var(--card-bg)',
-                        borderColor: 'var(--border-subtle)',
-                        color: 'var(--text-secondary)'
-                    }}
-                    title="Reload Pins"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                </button>
+                <div className="relative group">
+                    <button
+                        onClick={onReloadPins}
+                        className="w-11 h-11 rounded-full flex items-center justify-center shadow-xl border hover:scale-105 active:scale-95 transition-all"
+                        style={{
+                            backgroundColor: 'var(--card-bg)',
+                            borderColor: 'var(--border-subtle)',
+                            color: 'var(--text-secondary)'
+                        }}
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
+                    <span
+                        className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all z-[999]"
+                    >
+                        Refresh pins
+                    </span>
+                </div>
 
                 {/* Zoom Capsule */}
                 <div className="rounded-full h-11 flex items-center shadow-xl px-1 border"
@@ -169,25 +178,39 @@ export default function MapFilterBar({
                         backgroundColor: 'var(--card-bg)',
                         borderColor: 'var(--border-subtle)'
                     }}>
-                    <button
-                        onClick={onZoomOut}
-                        className="w-9 h-9 flex items-center justify-center hover:text-[#ED6D28] transition-colors"
-                        style={{ color: 'var(--text-muted)' }}
-                    >
-                        <Minus className="w-5 h-5" />
-                    </button>
+                    <div className="relative group">
+                        <button
+                            onClick={onZoomOut}
+                            className="w-9 h-9 flex items-center justify-center hover:text-[#ED6D28] transition-colors"
+                            style={{ color: 'var(--text-muted)' }}
+                        >
+                            <Minus className="w-5 h-5" />
+                        </button>
+                        <span
+                            className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all z-[999]"
+                        >
+                            Zoom out
+                        </span>
+                    </div>
                     <div className="w-[1px] h-4 mx-1" style={{ backgroundColor: 'var(--border-subtle)' }} />
                     <div className="px-2">
                         <Search className="w-4 h-4 stroke-[3]" style={{ color: 'var(--text-muted)' }} />
                     </div>
                     <div className="w-[1px] h-4 mx-1" style={{ backgroundColor: 'var(--border-subtle)' }} />
-                    <button
-                        onClick={onZoomIn}
-                        className="w-9 h-9 flex items-center justify-center hover:text-[#ED6D28] transition-colors"
-                        style={{ color: 'var(--text-muted)' }}
-                    >
-                        <Plus className="w-5 h-5" />
-                    </button>
+                    <div className="relative group">
+                        <button
+                            onClick={onZoomIn}
+                            className="w-9 h-9 flex items-center justify-center hover:text-[#ED6D28] transition-colors"
+                            style={{ color: 'var(--text-muted)' }}
+                        >
+                            <Plus className="w-5 h-5" />
+                        </button>
+                        <span
+                            className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all z-[999]"
+                        >
+                            Zoom in
+                        </span>
+                    </div>
                 </div>
             </div>
 

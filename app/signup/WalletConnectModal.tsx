@@ -341,7 +341,7 @@ export default function WalletConnectModal({ isOpen, onClose, onLoginSuccess }: 
 
                             <div className="pt-6 text-center mt-2">
                                 <a
-                                    href="https://signup.hive.io"
+                                    href="https://hive.io/en/join/"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1.5 text-xs font-bold hover:text-orange-600 transition-colors"
