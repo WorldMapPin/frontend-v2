@@ -7,6 +7,7 @@ import UserPosts from './UserPosts';
 import { fetchUserProfile, HiveUserProfile } from '../../../lib/hiveClient';
 import { fetchUserPins, getUserRank } from '../../../lib/worldmappinApi';
 import WorldCoverageMap from './WorldCoverageMap';
+import UserJourneys from './UserJourneys';
 
 interface UserProfileProps {
   username: string;
@@ -375,6 +376,8 @@ export function UserProfile({ username }: UserProfileProps) {
         username={username}
       />
 
+      {/* User Journeys Section */}
+      <UserJourneys username={username} />
 
       {/* User Posts Section */}
       <UserPosts username={username} initialPins={userPins} />

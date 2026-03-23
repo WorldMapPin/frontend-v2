@@ -13,6 +13,11 @@ type FeatureMarkerProps = {
     marker: google.maps.marker.AdvancedMarkerElement,
     featureId: string
   ) => void;
+  onMarkerContextMenu?: (
+    e: React.MouseEvent | React.TouchEvent | globalThis.MouseEvent,
+    marker: google.maps.marker.AdvancedMarkerElement,
+    featureId: string
+  ) => void;
 };
 
 // Global cache for marker images to avoid refetching
@@ -30,7 +35,8 @@ const markerImageCache = new Map<string, string | null>();
 export const FeatureMarker = ({
   position,
   featureId,
-  onMarkerClick
+  onMarkerClick,
+  onMarkerContextMenu
 }: FeatureMarkerProps) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [imageError, setImageError] = useState(false);
@@ -91,6 +97,29 @@ export const FeatureMarker = ({
     [onMarkerClick, marker, featureId]
   );
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent | globalThis.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onMarkerContextMenu && onMarkerContextMenu(e, marker!, featureId);
+    },
+    [onMarkerContextMenu, marker, featureId]
+  );
+
+  // Set up native context menu listener for desktop right-click
+  useEffect(() => {
+    if (!marker) return;
+    const element = marker.element;
+    if (!element) return;
+
+    // Using a more specific type cast to ensure compatibility
+    const listener = handleContextMenu as EventListener;
+    element.addEventListener('contextmenu', listener);
+    return () => {
+      element.removeEventListener('contextmenu', listener);
+    };
+  }, [marker, handleContextMenu]);
+
   return (
     <AdvancedMarker
       ref={markerRef}
@@ -100,7 +129,22 @@ export const FeatureMarker = ({
     >
       {/* Enhanced marker pin with cover image */}
       <div
-        onTouchStart={handleTouchStart}
+        onTouchStart={(e) => {
+          // Store start time to detect long press vs tap
+          markerImageCache.set(`touch_${featureId}`, Date.now().toString());
+          handleTouchStart(e);
+        }}
+        onTouchEnd={(e) => {
+          const startTime = parseInt(markerImageCache.get(`touch_${featureId}`) || "0");
+          if (startTime > 0 && Date.now() - startTime > 500) {
+            // It was a long press, trigger context menu instead
+            e.preventDefault();
+            e.stopPropagation();
+            onMarkerContextMenu && onMarkerContextMenu(e, marker!, featureId);
+          }
+          markerImageCache.delete(`touch_${featureId}`);
+        }}
+        onContextMenu={handleContextMenu}
         onClick={handleClick}
         style={{
           width: '35px',
