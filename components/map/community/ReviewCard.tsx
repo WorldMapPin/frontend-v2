@@ -2,6 +2,7 @@
 // This component is used by both single store and cluster views
 
 import React from 'react';
+import DOMPurify from 'dompurify';
 
 interface DistriatorReview {
   id: string;
@@ -80,12 +81,17 @@ export const ReviewCard = ({ review, index, onViewOnMap, storeCoordinates }: Rev
           {review.reviewText || 'Review'}
         </h2>
 
-        {/* Post Body */}
         <div className="text-sm text-gray-700 mb-3 line-clamp-3">
           <div 
             className="whitespace-pre-wrap"
             dangerouslySetInnerHTML={{ 
-              __html: (review.reviewBody || '').replace(/\n/g, '<br/>') 
+              __html: DOMPurify.sanitize(
+                (review.reviewBody || '').replace(/\n/g, '<br/>'),
+                {
+                  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p'],
+                  ALLOWED_ATTR: []
+                }
+              )
             }}
           />
         </div>
