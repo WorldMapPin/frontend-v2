@@ -752,6 +752,6 @@ export function clearCache() {
 }
 
 // Make clearCache available globally for debugging
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   (window as any).clearHiveCache = clearCache;
 }

@@ -179,6 +179,7 @@ export default function MapClient({
   initialCommunity,
 }: MapClientProps = {}) {
   const { user: username, isReady: isAuthenticated } = useAiohaSafe();
+  const isAllowedJourney = Boolean(username && ['worldmappin', 'detlev', 'asgarth', 'abinsaji', 'gabrielatravels', 'hariprasadd'].includes(username.toLowerCase()));
 
   // Basic states
   const [geojson, setGeojson] = useState<any>(null);
@@ -1241,7 +1242,7 @@ export default function MapClient({
             loadMarkers(true, searchParams, selectedCommunity, true)
           }
           isJourneyEditMode={showJourneyControls}
-          onToggleJourneyEdit={() => {
+          onToggleJourneyEdit={isAllowedJourney ? () => {
             setShowJourneyControls(prev => {
               const nextState = !prev;
               if (nextState && username) {
@@ -1257,7 +1258,7 @@ export default function MapClient({
               }
               return nextState;
             });
-          }}
+          } : undefined}
         />
 
         {/* Community Selector Component */}

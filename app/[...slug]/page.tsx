@@ -247,8 +247,6 @@ function PostPage({ author, permlink }: { author: string; permlink: string }) {
           "loading",
           "class",
           "className",
-          "style",
-          "id",
         ],
         ALLOW_DATA_ATTR: false,
       });

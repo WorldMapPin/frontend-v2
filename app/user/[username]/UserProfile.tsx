@@ -8,6 +8,7 @@ import { fetchUserProfile, HiveUserProfile } from '../../../lib/hiveClient';
 import { fetchUserPins, getUserRank } from '../../../lib/worldmappinApi';
 import WorldCoverageMap from './WorldCoverageMap';
 import UserJourneys from './UserJourneys';
+import { useAiohaSafe } from '@/hooks/use-aioha-safe';
 
 interface UserProfileProps {
   username: string;
@@ -26,6 +27,9 @@ interface UserProfileData {
 }
 
 export function UserProfile({ username }: UserProfileProps) {
+  const { user: viewerUsername } = useAiohaSafe();
+  const isAllowedJourney = Boolean(viewerUsername && ['worldmappin', 'detlev', 'asgarth', 'abinsaji', 'gabrielatravels', 'hariprasadd'].includes(viewerUsername.toLowerCase()));
+
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [userPins, setUserPins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -377,7 +381,7 @@ export function UserProfile({ username }: UserProfileProps) {
       />
 
       {/* User Journeys Section */}
-      <UserJourneys username={username} />
+      {isAllowedJourney && <UserJourneys username={username} />}
 
       {/* User Posts Section */}
       <UserPosts username={username} initialPins={userPins} />
