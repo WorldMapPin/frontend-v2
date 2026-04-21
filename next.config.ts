@@ -6,18 +6,6 @@ const securityHeaders = [
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-  {
-    key: 'Content-Security-Policy',
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://images.ecency.com https://files.peakd.com https://cdn.steemitimages.com https://img.leopedia.io https://img.travelfeed.io https://ui-avatars.com https://ipfs.io",
-      "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://api.hive.blog https://worldmappin.com https://beta-api.distriator.com wss:",
-      "frame-ancestors 'none'",
-    ].join('; ')
-  }
 ];
 
 const nextConfig: NextConfig = {

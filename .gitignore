@@ -24,6 +24,7 @@
 # misc
 .DS_Store
 *.pem
+.codex
 
 # debug
 npm-debug.log*
@@ -40,10 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# tools
-/.kiro/
-AGENTS.md
 
 # docs
 .docs/

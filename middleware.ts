@@ -7,6 +7,42 @@ const WINDOW_MS = 60_000;
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
 let lastCleanup = Date.now();
 
+function generateNonce(): string {
+  const randomBytes = crypto.getRandomValues(new Uint8Array(16));
+  const nonce = String.fromCharCode(...randomBytes);
+  return btoa(nonce);
+}
+
+function buildCsp(nonce: string): string {
+  const scriptSrcParts = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    "'strict-dynamic'",
+    "https://maps.googleapis.com",
+    "https://maps.gstatic.com",
+    "https://*.googleapis.com",
+    "https://*.gstatic.com",
+  ];
+
+  if (process.env.NODE_ENV === "development") {
+    scriptSrcParts.push("'unsafe-eval'");
+  }
+
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrcParts.join(" ")}`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' data: blob: https://images.ecency.com https://files.peakd.com https://cdn.steemitimages.com https://img.leopedia.io https://img.travelfeed.io https://ui-avatars.com https://ipfs.io https://*.googleapis.com https://*.gstatic.com *.google.com *.googleusercontent.com https://*.ggpht.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "connect-src 'self' https://api.hive.blog https://worldmappin.com https://beta-api.distriator.com wss: https://*.googleapis.com *.google.com https://*.gstatic.com data: blob:",
+    "frame-src *.google.com",
+    "worker-src blob:",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+  ].join("; ");
+}
+
 function cleanupStaleEntries() {
   const now = Date.now();
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
@@ -35,6 +71,29 @@ function getClientIp(request: NextRequest): string {
 }
 
 export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const isApiRoute = pathname === "/api" || pathname.startsWith("/api/");
+
+  if (!isApiRoute) {
+    const nonce = generateNonce();
+    const csp = buildCsp(nonce);
+
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-nonce", nonce);
+    requestHeaders.set("Content-Security-Policy", csp);
+
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+
+    response.headers.set("Content-Security-Policy", csp);
+    response.headers.set("x-nonce", nonce);
+
+    return response;
+  }
+
   cleanupStaleEntries();
 
   const ip = getClientIp(request);
@@ -64,5 +123,8 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: [
+    "/api/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)",
+  ],
 };
