@@ -16,6 +16,7 @@ function generateNonce(): string {
 function buildCsp(nonce: string): string {
   const scriptSrcParts = [
     "'self'",
+    "'unsafe-inline'",
     `'nonce-${nonce}'`,
     "https://maps.googleapis.com",
     "https://maps.gstatic.com",
