@@ -53,10 +53,11 @@ const MAX_CACHE_ENTRIES = 50;
 
 function cacheKey(
   sort: string,
+  limit: number,
   startAuthor?: string,
   startPermlink?: string,
 ): string {
-  return `${sort}:${startAuthor || ""}:${startPermlink || ""}`;
+  return `${sort}:${limit}:${startAuthor || ""}:${startPermlink || ""}`;
 }
 
 function getCached(key: string): PostsResponse | null {
@@ -325,7 +326,7 @@ export async function POST(request: NextRequest) {
     }
     const { sort = "created", limit = 20, start_author, start_permlink } = body;
 
-    const key = cacheKey(sort, start_author, start_permlink);
+    const key = cacheKey(sort, limit, start_author, start_permlink);
     const cached = getCached(key);
     if (cached) {
       console.log(`hive/posts: cache HIT (${Date.now() - t0}ms)`);
@@ -360,7 +361,8 @@ export async function POST(request: NextRequest) {
 
     // Filter out posts muted/grayed by community moderators before processing.
     // Muted posts have stats.gray === true and their title/body are replaced with "error".
-    const visiblePosts = rawPosts.filter((post) => !post.stats?.gray);
+    // Also filter out pinned (sticky) posts to keep the main feed for generic travel stories.
+    const visiblePosts = rawPosts.filter((post) => !post.stats?.gray && !post.stats?.is_pinned);
 
     const processed: ProcessedPost[] = await Promise.all(
       visiblePosts.map((post) => processRankedPost(post)),
