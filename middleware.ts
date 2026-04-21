@@ -17,7 +17,6 @@ function buildCsp(nonce: string): string {
   const scriptSrcParts = [
     "'self'",
     `'nonce-${nonce}'`,
-    "'strict-dynamic'",
     "https://maps.googleapis.com",
     "https://maps.gstatic.com",
     "https://*.googleapis.com",
