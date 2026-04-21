@@ -13,11 +13,10 @@ function generateNonce(): string {
   return btoa(nonce);
 }
 
-function buildCsp(nonce: string): string {
+function buildCsp(): string {
   const scriptSrcParts = [
     "'self'",
     "'unsafe-inline'",
-    `'nonce-${nonce}'`,
     "https://maps.googleapis.com",
     "https://maps.gstatic.com",
     "https://*.googleapis.com",
@@ -76,7 +75,7 @@ export function middleware(request: NextRequest) {
 
   if (!isApiRoute) {
     const nonce = generateNonce();
-    const csp = buildCsp(nonce);
+    const csp = buildCsp();
 
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-nonce", nonce);
