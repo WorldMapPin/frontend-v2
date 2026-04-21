@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAiohaSafe } from '@/hooks/use-aioha-safe';
 import ChallengesHero from '@/components/challenges/ChallengesHero';
 import LeaderboardTable from '@/components/challenges/LeaderboardTable';
 import {
@@ -76,6 +77,41 @@ export default function LeaderboardPage() {
     const currentError = activeTab === 'general' ? generalError : challengesError;
     const currentLoading = activeTab === 'general' ? generalLoading : challengesLoading;
     const currentData = activeTab === 'general' ? generalTableData : challengesTableData;
+
+    const { user: username, isReady } = useAiohaSafe();
+    const isAllowed = Boolean(username && ['worldmappin', 'detlev', 'asgarth', 'abinsaji', 'gabrielatravels', 'hariprasadd'].includes(username.toLowerCase()));
+
+    if (isReady && !isAllowed) {
+        return (
+            <div className="relative min-h-[70vh] flex items-center justify-center">
+                <div className="text-center bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-xl border border-orange-100 max-w-md mx-4">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
+                        <span className="text-2xl">🔒</span>
+                    </div>
+                    <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-primary)' }}>
+                        Restricted Access
+                    </h2>
+                    <p className="text-gray-500 mb-6">
+                        This area is currently restricted to the WorldMapPin development team. Please log in with a team account to view the challenges leaderboard.
+                    </p>
+                    <button 
+                        onClick={() => window.location.href = '/'}
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                    >
+                        Return Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!isReady) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="relative min-h-screen overflow-hidden challenges-page-bg">
