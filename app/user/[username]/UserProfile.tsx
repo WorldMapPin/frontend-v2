@@ -9,6 +9,7 @@ import { fetchUserPins, getUserRank } from '../../../lib/worldmappinApi';
 import WorldCoverageMap from './WorldCoverageMap';
 import UserJourneys from './UserJourneys';
 import { useAiohaSafe } from '@/hooks/use-aioha-safe';
+import { isJourneyEnabled } from '@/lib/featureFlags';
 
 interface UserProfileProps {
   username: string;
@@ -28,7 +29,7 @@ interface UserProfileData {
 
 export function UserProfile({ username }: UserProfileProps) {
   const { user: viewerUsername } = useAiohaSafe();
-  const isAllowedJourney = Boolean(viewerUsername && ['worldmappin', 'detlev', 'asgarth', 'abinsaji', 'gabrielatravels', 'hariprasadd'].includes(viewerUsername.toLowerCase()));
+  const isAllowedJourney = isJourneyEnabled(viewerUsername);
 
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [userPins, setUserPins] = useState<any[]>([]);

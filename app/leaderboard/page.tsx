@@ -79,7 +79,7 @@ export default function LeaderboardPage() {
     const currentData = activeTab === 'general' ? generalTableData : challengesTableData;
 
     const { user: username, isReady } = useAiohaSafe();
-    const isAllowed = Boolean(username && ['worldmappin', 'detlev', 'asgarth', 'abinsaji', 'gabrielatravels', 'hariprasadd'].includes(username.toLowerCase()));
+    const isAllowed = Boolean(username && ['worldmappin', 'detlev', 'asgarth', 'abinsaji4', 'gabrielatravels', 'hariprasadd'].includes(username.toLowerCase()));
 
     if (isReady && !isAllowed) {
         return (

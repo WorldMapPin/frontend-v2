@@ -12,6 +12,7 @@ import axios from "axios";
 
 // Import components
 import { useAiohaSafe } from '@/hooks/use-aioha-safe';
+import { isJourneyEnabled } from '@/lib/featureFlags';
 import { useTheme } from "./ThemeProvider";
 import { ClusteredMarkers } from "@/components/map/ClusteredMarkers";
 import { InfoWindowContent } from "@/components/map/InfoWindowContent";
@@ -179,7 +180,7 @@ export default function MapClient({
   initialCommunity,
 }: MapClientProps = {}) {
   const { user: username, isReady: isAuthenticated } = useAiohaSafe();
-  const isAllowedJourney = Boolean(username && ['worldmappin', 'detlev', 'asgarth', 'abinsaji', 'gabrielatravels', 'hariprasadd'].includes(username.toLowerCase()));
+  const isAllowedJourney = isJourneyEnabled(username);
 
   // Basic states
   const [geojson, setGeojson] = useState<any>(null);
