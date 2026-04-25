@@ -3,7 +3,6 @@
 import { SortType } from '@/types/post';
 
 interface ExploreHeaderProps {
-  postCount?: number;
   sortType?: SortType;
   onSortChange?: (sort: SortType) => void;
   loading?: boolean;
@@ -49,8 +48,7 @@ const SORT_OPTIONS: { value: SortType; label: string; icon: React.ReactNode }[] 
   }
 ];
 
-export default function ExploreHeader({ 
-  postCount, 
+export default function ExploreHeader({
   sortType = 'created', 
   onSortChange,
   loading = false 
@@ -85,44 +83,6 @@ export default function ExploreHeader({
             zIndex: 1
           }}
         />
-        
-        {/* Post count badge - Desktop */}
-        <div 
-          className="absolute hidden sm:flex flex-col items-center justify-center"
-          style={{ 
-            right: '1rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '80px',
-            height: '80px',
-            backgroundColor: '#0000001A',
-            borderRadius: '8px',
-            zIndex: 1
-          }}
-        >
-          {postCount !== undefined && postCount > 0 && (
-            <>
-              <div className="text-white font-bold text-xl sm:text-2xl lg:text-3xl" style={{ fontFamily: 'var(--font-lexend)' }}>
-                {postCount}
-              </div>
-              <div className="text-white text-[10px] sm:text-xs mt-1 text-center px-1" style={{ fontFamily: 'var(--font-lexend)' }}>
-                {postCount === 1 ? 'post' : 'posts'}
-              </div>
-            </>
-          )}
-        </div>
-        
-        {/* Post count badge - Mobile */}
-        {postCount !== undefined && postCount > 0 && (
-          <div className="absolute bottom-2 right-2 sm:hidden flex flex-col items-end z-10">
-            <div className="text-white font-bold text-lg" style={{ fontFamily: 'var(--font-lexend)' }}>
-              {postCount}
-            </div>
-            <div className="text-white text-[10px]" style={{ fontFamily: 'var(--font-lexend)' }}>
-              {postCount === 1 ? 'post' : 'posts'}
-            </div>
-          </div>
-        )}
         
         {/* Header content */}
         <div className="relative px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 z-10 pl-12 sm:pl-20 lg:pl-16">

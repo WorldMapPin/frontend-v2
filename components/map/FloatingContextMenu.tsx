@@ -7,7 +7,10 @@ interface FloatingContextMenuProps {
     isVisible: boolean;
     position: { x: number; y: number };
     onAddPin: () => void;
-    onStartJourney: () => void;
+    onWritePost: () => void;
+    onAddToJourney?: () => void;
+    isJourneyMode?: boolean;
+    hasFeatureId?: boolean;
     onClose: () => void;
 }
 
@@ -15,7 +18,10 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
     isVisible,
     position,
     onAddPin,
-    onStartJourney,
+    onWritePost,
+    onAddToJourney,
+    isJourneyMode = false,
+    hasFeatureId = false,
     onClose
 }) => {
     const menuRef = useRef<HTMLDivElement>(null);
@@ -68,28 +74,45 @@ export const FloatingContextMenu: React.FC<FloatingContextMenuProps> = ({
             }}
         >
             <div className="context-menu-content">
-                <button
-                    className="context-menu-item add-pin-button"
-                    onClick={onAddPin}
-                >
-                    <svg className="context-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span>Get Code Here</span>
-                </button>
+                {isJourneyMode && hasFeatureId && onAddToJourney && (
+                    <button
+                        className="context-menu-item write-post-button"
+                        onClick={() => {
+                            onAddToJourney();
+                            onClose();
+                        }}
+                    >
+                        <svg className="context-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Add To Journey</span>
+                    </button>
+                )}
+
+                {!isJourneyMode && (
+                    <button
+                        className="context-menu-item add-pin-button"
+                        onClick={onAddPin}
+                    >
+                        <svg className="context-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Get Code Here</span>
+                    </button>
+                )}
 
                 <button
-                    className="context-menu-item start-journey-button"
+                    className="context-menu-item write-post-button"
                     onClick={() => {
-                        onStartJourney();
+                        onWritePost();
                         onClose();
                     }}
                 >
                     <svg className="context-menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 4L9 7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
-                    <span>Start Journey Here</span>
+                    <span>Write New Post Here</span>
                 </button>
             </div>
         </div>

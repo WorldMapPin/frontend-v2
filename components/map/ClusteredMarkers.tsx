@@ -35,6 +35,11 @@ type ClusteredMarkersProps = {
   currentZoom?: number;
   onClustersReady?: (clusterCount: number) => void;
   community?: Community;
+  onMarkerContextMenu?: (
+    e: React.MouseEvent | React.TouchEvent | globalThis.MouseEvent,
+    marker: google.maps.marker.AdvancedMarkerElement,
+    featureId: string
+  ) => void;
 };
 
 // Supercluster configuration options
@@ -65,6 +70,7 @@ export const ClusteredMarkers = ({
   currentZoom = 3,
   onClustersReady,
   community,
+  onMarkerContextMenu,
 }: ClusteredMarkersProps) => {
   // For SpendHBD community, group pins by exact coordinates first
   const processedGeojson = React.useMemo(() => {
@@ -114,7 +120,7 @@ export const ClusteredMarkers = ({
     const leaves = getLeaves(clusterId);
 
     // If cluster has more than 100 pins, zoom in instead of showing list
-    if (leaves.length > 100 && map) {
+    if (leaves.length > 20 && map) {
       const expansionZoom = getClusterExpansionZoom(clusterId);
 
       // Get marker position
@@ -211,6 +217,7 @@ export const ClusteredMarkers = ({
             featureId={feature.id as string}
             position={{ lat, lng }}
             onMarkerClick={handleMarkerClick}
+            onMarkerContextMenu={onMarkerContextMenu}
           />
         );
       })}

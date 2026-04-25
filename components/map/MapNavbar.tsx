@@ -20,7 +20,7 @@ export default function MapNavbar() {
   const [pinCount] = useState(142194);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Autocomplete state (uses new AutocompleteSuggestion API)
+  // Autocomplete state (proxied through /api/places/autocomplete)
   const [predictions, setPredictions] = useState<any[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -30,6 +30,9 @@ export default function MapNavbar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const skipAutocompleteRef = useRef(false);
   const sessionTokenRef = useRef<any>(null);
+  const requestTimestampsRef = useRef<number[]>([]);
+  const resultCacheRef = useRef<Map<string, any[]>>(new Map());
+  const [budgetExhausted, setBudgetExhausted] = useState(false);
 
   // User menu state
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -75,7 +78,7 @@ export default function MapNavbar() {
     };
   }, [isDropdownOpen]);
 
-  // Debounced autocomplete using the new AutocompleteSuggestion API
+  // Debounced autocomplete via backend proxy
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -86,43 +89,77 @@ export default function MapNavbar() {
       return;
     }
 
-    if (!searchValue || searchValue.length < 2) {
+    if (!searchValue || searchValue.length < 3) {
       setPredictions([]);
       setIsDropdownOpen(false);
       setIsSearching(false);
+      setBudgetExhausted(false);
       return;
     }
+
+    const cacheKey = searchValue.toLowerCase().trim();
+    const cached = resultCacheRef.current.get(cacheKey);
+    if (cached) {
+      setPredictions(cached);
+      setIsDropdownOpen(true);
+      setHighlightedIndex(-1);
+      setIsSearching(false);
+      setBudgetExhausted(false);
+      return;
+    }
+
+    const now = Date.now();
+    const recentRequests = requestTimestampsRef.current.filter(
+      (t) => t > now - 60000,
+    );
+    requestTimestampsRef.current = recentRequests;
+    if (recentRequests.length >= 10) {
+      setBudgetExhausted(true);
+      setIsSearching(false);
+      return;
+    }
+    setBudgetExhausted(false);
 
     setIsSearching(true);
     let cancelled = false;
 
     debounceRef.current = setTimeout(async () => {
-      if (!window.google?.maps?.places) {
-        setIsSearching(false);
-        return;
-      }
       try {
         if (!sessionTokenRef.current) {
-          sessionTokenRef.current =
-            new google.maps.places.AutocompleteSessionToken();
+          sessionTokenRef.current = crypto.randomUUID();
         }
-
-        const { AutocompleteSuggestion } = (await (
-          google.maps as any
-        ).importLibrary("places")) as any;
-
-        const { suggestions } =
-          await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        const res = await fetch("/api/places/autocomplete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             input: searchValue,
             sessionToken: sessionTokenRef.current,
-          });
+          }),
+        });
 
         if (cancelled) return;
 
-        const placePredictions = suggestions
-          .map((s: any) => s.placePrediction)
-          .filter(Boolean)
-          .slice(0, 5);
+        if (res.status === 429) {
+          setBudgetExhausted(true);
+          setIsSearching(false);
+          return;
+        }
+
+        if (!res.ok) {
+          setIsSearching(false);
+          setPredictions([]);
+          return;
+        }
+
+        const data = await res.json();
+        const placePredictions = data.suggestions || [];
+
+        if (resultCacheRef.current.size >= 20) {
+          const firstKey = resultCacheRef.current.keys().next().value;
+          if (firstKey) resultCacheRef.current.delete(firstKey);
+        }
+        resultCacheRef.current.set(cacheKey, placePredictions);
+        requestTimestampsRef.current.push(Date.now());
 
         setPredictions(placePredictions);
         setIsDropdownOpen(true);
@@ -134,7 +171,7 @@ export default function MapNavbar() {
           setPredictions([]);
         }
       }
-    }, 150);
+    }, 300);
 
     return () => {
       cancelled = true;
@@ -150,29 +187,39 @@ export default function MapNavbar() {
 
   const handleSelectPlace = async (prediction: any) => {
     skipAutocompleteRef.current = true;
-    setSearchValue(prediction.mainText?.text || prediction.text?.text || "");
+    setSearchValue(prediction.mainText || "");
     setIsDropdownOpen(false);
     setPredictions([]);
     setHighlightedIndex(-1);
 
+    const placeId = prediction.placeId;
+    const fallbackText = prediction.mainText || prediction.secondaryText || "";
+
     try {
-      const place = prediction.toPlace();
-      await place.fetchFields({
-        fields: ["location", "displayName", "formattedAddress"],
-      });
-      const lat = place.location?.lat();
-      const lng = place.location?.lng();
-      if (lat != null && lng != null) {
-        setGlobalLocation({
-          location: { lat, lng },
-          name: place.formattedAddress || place.displayName || "",
+      if (placeId && window.google?.maps?.places) {
+        const { Place } = (await (google.maps as any).importLibrary(
+          "places",
+        )) as { Place: any };
+        const place = new Place({ id: placeId });
+        await place.fetchFields({
+          fields: ["location", "displayName", "formattedAddress"],
         });
-        setGlobalZoom(12);
+        const lat = place.location?.lat();
+        const lng = place.location?.lng();
+        if (lat != null && lng != null) {
+          setGlobalLocation({
+            location: { lat, lng },
+            name: place.formattedAddress || place.displayName || "",
+          });
+          setGlobalZoom(12);
+          sessionTokenRef.current = null;
+          return;
+        }
       }
+      throw new Error("Place lookup failed");
     } catch {
-      const text = prediction.text?.text || prediction.mainText?.text || "";
       const geocoder = new window.google.maps.Geocoder();
-      geocoder.geocode({ address: text }, (results, status) => {
+      geocoder.geocode({ address: fallbackText }, (results, status) => {
         if (status === "OK" && results?.[0]) {
           const { location } = results[0].geometry;
           setGlobalLocation({
@@ -392,7 +439,7 @@ export default function MapNavbar() {
           </form>
 
           {/* Autocomplete Dropdown */}
-          {isDropdownOpen && (
+          {(isDropdownOpen || budgetExhausted) && (
             <div
               id="places-autocomplete-list"
               role="listbox"
@@ -402,7 +449,16 @@ export default function MapNavbar() {
                 borderColor: "var(--border-subtle)",
               }}
             >
-              {predictions.length > 0 ? (
+              {budgetExhausted ? (
+                <div className="px-4 py-3 text-center">
+                  <p
+                    className="text-xs font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Try again shortly
+                  </p>
+                </div>
+              ) : predictions.length > 0 ? (
                 <ul className="py-1">
                   {predictions.map((prediction: any, index: number) => (
                     <li
@@ -453,14 +509,14 @@ export default function MapNavbar() {
                           className="text-sm font-semibold truncate"
                           style={{ color: "var(--text-primary)" }}
                         >
-                          {prediction.mainText?.text || ""}
+                          {prediction.mainText || ""}
                         </p>
-                        {prediction.secondaryText?.text && (
+                        {prediction.secondaryText && (
                           <p
                             className="text-xs truncate"
                             style={{ color: "var(--text-muted)" }}
                           >
-                            {prediction.secondaryText.text}
+                            {prediction.secondaryText}
                           </p>
                         )}
                       </div>

@@ -14,7 +14,8 @@ import {
     Plus,
     Minus,
     Search,
-    Layers
+    Layers,
+    MapPin
 } from 'lucide-react';
 import { SearchParams } from '@/types';
 
@@ -30,6 +31,8 @@ interface MapFilterBarProps {
     onToggleMapType: () => void;
     mapTypeId: string;
     onReloadPins: () => void;
+    onToggleJourneyEdit?: () => void;
+    isJourneyEditMode?: boolean;
 }
 
 export default function MapFilterBar({
@@ -43,7 +46,9 @@ export default function MapFilterBar({
     onZoomOut,
     onToggleMapType,
     mapTypeId,
-    onReloadPins
+    onReloadPins,
+    onToggleJourneyEdit,
+    isJourneyEditMode = false
 }: MapFilterBarProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [activeTab, setActiveTab] = useState<'filters' | 'community'>('filters');
@@ -100,6 +105,30 @@ export default function MapFilterBar({
         <div className="fixed bottom-0 left-0 right-0 sm:bottom-6 sm:right-6 sm:left-auto z-50 flex flex-col items-end px-4 sm:px-0">
             {/* Top row with action buttons */}
             <div className="flex items-center space-x-3 mb-4 w-full sm:w-auto justify-center sm:justify-end">
+                {/* Journeys Toggle Button */}
+                {onToggleJourneyEdit && (
+                    <div className="relative group">
+                        <button
+                            onClick={onToggleJourneyEdit}
+                            className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl transition-all ${isJourneyEditMode
+                                ? 'bg-[#ED6D28] text-white ring-4 ring-orange-500/20'
+                                : 'hover:opacity-80'
+                                }`}
+                            style={!isJourneyEditMode ? {
+                                backgroundColor: 'var(--card-bg)',
+                                color: 'var(--text-secondary)'
+                            } : undefined}
+                        >
+                            <MapPin className="w-5 h-5" />
+                        </button>
+                        <span
+                            className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all z-[999]"
+                        >
+                            {isJourneyEditMode ? 'Close Journeys' : 'Create Journey'}
+                        </span>
+                    </div>
+                )}
+
                 {/* Get Code Button */}
                 <div className="relative group">
                     <button
@@ -126,19 +155,18 @@ export default function MapFilterBar({
                 <div className="relative group">
                     <button
                         onClick={onToggleMapType}
-                        className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl border hover:scale-105 active:scale-95 transition-all ${
-                            mapTypeId === 'hybrid'
+                        className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl border hover:scale-105 active:scale-95 transition-all ${mapTypeId === 'hybrid'
                                 ? 'bg-[#ED6D28] text-white border-[#ED6D28]'
                                 : ''
-                        }`}
+                            }`}
                         style={
                             mapTypeId === 'hybrid'
                                 ? undefined
                                 : {
-                                      backgroundColor: 'var(--card-bg)',
-                                      borderColor: 'var(--border-subtle)',
-                                      color: 'var(--text-secondary)',
-                                  }
+                                    backgroundColor: 'var(--card-bg)',
+                                    borderColor: 'var(--border-subtle)',
+                                    color: 'var(--text-secondary)',
+                                }
                         }
                     >
                         <Layers className="w-5 h-5" />

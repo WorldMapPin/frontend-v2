@@ -61,6 +61,11 @@ export async function GET(request: NextRequest) {
 
 // POST: Save stats to cache
 export async function POST(request: NextRequest) {
+  const authHeader = request.headers.get('x-internal-token');
+  if (authHeader !== process.env.STATS_CACHE_SECRET) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { stats, dataType = 'full' } = body; // 'basic' or 'full'

@@ -11,8 +11,12 @@ import { TravelDigest, DigestFetchResult } from '@/types/post';
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const skipCache = searchParams.get('skipCache') === 'true';
-    const clearCache = searchParams.get('clearCache') === 'true';
+    const adminToken = request.headers.get('x-admin-token');
+    
+    // Only allow skipping/clearing cache if an admin token is provided
+    const validAdmin = adminToken === process.env.ADMIN_SECRET;
+    const skipCache = validAdmin && searchParams.get('skipCache') === 'true';
+    const clearCache = validAdmin && searchParams.get('clearCache') === 'true';
 
     if (clearCache) {
       digestCache.clear();

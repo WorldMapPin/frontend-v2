@@ -1,4 +1,4 @@
-'use client';
+
 
 import React, { useState, useEffect } from 'react';
 import UserMapComponent from './UserMapComponent';
@@ -7,6 +7,9 @@ import UserPosts from './UserPosts';
 import { fetchUserProfile, HiveUserProfile } from '../../../lib/hiveClient';
 import { fetchUserPins, getUserRank } from '../../../lib/worldmappinApi';
 import WorldCoverageMap from './WorldCoverageMap';
+import UserJourneys from './UserJourneys';
+import { useAiohaSafe } from '@/hooks/use-aioha-safe';
+import { isJourneyEnabled } from '@/lib/featureFlags';
 
 interface UserProfileProps {
   username: string;
@@ -25,6 +28,9 @@ interface UserProfileData {
 }
 
 export function UserProfile({ username }: UserProfileProps) {
+  const { user: viewerUsername } = useAiohaSafe();
+  const isAllowedJourney = isJourneyEnabled(viewerUsername);
+
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [userPins, setUserPins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -375,6 +381,8 @@ export function UserProfile({ username }: UserProfileProps) {
         username={username}
       />
 
+      {/* User Journeys Section */}
+      {isAllowedJourney && <UserJourneys username={username} />}
 
       {/* User Posts Section */}
       <UserPosts username={username} initialPins={userPins} />

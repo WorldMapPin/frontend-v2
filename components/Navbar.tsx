@@ -264,12 +264,12 @@ export default function Navbar({ className = "" }: NavbarProps) {
                             backgroundColor: "transparent",
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "var(--hover-bg)")
+                          (e.currentTarget.style.backgroundColor =
+                            "var(--hover-bg)")
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "transparent")
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
                           }
                           onClick={() => setShowUserMenu(false)}
                         >
@@ -284,12 +284,12 @@ export default function Navbar({ className = "" }: NavbarProps) {
                             backgroundColor: "transparent",
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "var(--hover-bg)")
+                          (e.currentTarget.style.backgroundColor =
+                            "var(--hover-bg)")
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "transparent")
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
                           }
                           onClick={() => setShowUserMenu(false)}
                         >
@@ -304,12 +304,12 @@ export default function Navbar({ className = "" }: NavbarProps) {
                             backgroundColor: "transparent",
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "var(--hover-bg)")
+                          (e.currentTarget.style.backgroundColor =
+                            "var(--hover-bg)")
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "transparent")
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
                           }
                           onClick={() => setShowUserMenu(false)}
                         >
@@ -333,12 +333,12 @@ export default function Navbar({ className = "" }: NavbarProps) {
                             backgroundColor: "transparent",
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "var(--hover-bg)")
+                          (e.currentTarget.style.backgroundColor =
+                            "var(--hover-bg)")
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "transparent")
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
                           }
                         >
                           Logout
@@ -370,8 +370,51 @@ export default function Navbar({ className = "" }: NavbarProps) {
             </div>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          {/* Mobile menu button & Auth */}
+          <div className="md:hidden flex items-center space-x-3">
+            {isReady && (
+              user ? (
+                // User Avatar - Mobile Header
+                <Link
+                  href={`/@${user}`}
+                  className="flex items-center focus:outline-none"
+                  aria-label="User profile"
+                >
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-orange-500 hover:border-orange-600 transition-colors">
+                    <Image
+                      src={`https://images.ecency.com/u/${user}/avatar`}
+                      alt={`@${user}`}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/images/default-avatar.svg";
+                      }}
+                    />
+                  </div>
+                </Link>
+              ) : (
+                // Login Button - Mobile Header
+                <Link
+                  href="/signup"
+                  className="px-4 py-1.5 text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:scale-105"
+                  style={{
+                    fontFamily: "var(--font-lexend)",
+                    background:
+                      "linear-gradient(92.88deg, #ED6D28 1.84%, #FFA600 100%)",
+                    color: "#FFFFFF",
+                    borderRadius: "20px",
+                    boxShadow: "0px 1px 7px 0px #00000040",
+                  }}
+                >
+                  Login
+                </Link>
+              )
+            )}
+            {!isReady && (
+              <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
+            )}
+
             <button
               type="button"
               className="inline-flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200 hover:bg-orange-50 focus:outline-none"
@@ -421,9 +464,8 @@ export default function Navbar({ className = "" }: NavbarProps) {
 
         {/* Mobile menu */}
         <div
-          className={`md:hidden transition-all duration-200 ease-in-out ${
-            isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible h-0"
-          }`}
+          className={`md:hidden transition-all duration-200 ease-in-out ${isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible h-0"
+            }`}
           id="mobile-menu"
           suppressHydrationWarning={true}
         >
