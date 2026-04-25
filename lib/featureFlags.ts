@@ -14,18 +14,3 @@ export function isJourneyEnabled(username?: string | null): boolean {
   if (!username) return false;
   return beta.includes(username.toLowerCase());
 }
-
-// TEMP DIAGNOSTIC — remove after verifying journey gate works.
-// In the browser DevTools console, run:  __journeyDebug()
-if (typeof window !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__journeyDebug = () => ({
-    masterSwitch: process.env.NEXT_PUBLIC_JOURNEYS_ENABLED ?? "(unset)",
-    betaListRaw: process.env.NEXT_PUBLIC_JOURNEY_BETA_USERS ?? "(unset)",
-    betaListParsed: (process.env.NEXT_PUBLIC_JOURNEY_BETA_USERS ?? "")
-      .split(",")
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean),
-    note: "If betaListRaw shows '(unset)', the dev server didn't pick up .env — kill it and run `pnpm dev` again, then hard-refresh.",
-  });
-}
