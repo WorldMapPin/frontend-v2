@@ -3,6 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useAiohaSafe } from '@/hooks/use-aioha-safe'
 
 interface FooterProps {
   className?: string
@@ -10,6 +11,7 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   const pathname = usePathname()
+  const { user } = useAiohaSafe()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
@@ -36,7 +38,7 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
 
           {/* Brand Section */}
           <div className="lg:col-span-6 space-y-8">
-            <Link href="/" className="flex items-center space-x-3 group">
+            <Link href={user ? "/map" : "/"} className="flex items-center space-x-3 group">
               <div className="p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300" style={{ backgroundColor: 'var(--hover-bg)' }}>
                 <Image
                   src="/images/worldmappin-logo.png"

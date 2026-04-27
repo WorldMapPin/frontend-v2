@@ -14,6 +14,7 @@ import {
   getHiveBlogUrl,
   safeJsonParse,
 } from "./postUtils";
+import { safeCanonicalUrl } from "./safeCanonicalUrl";
 
 // In-memory cache for posts
 const postCache: PostCache = {};
@@ -397,10 +398,13 @@ async function fetchSinglePost(
       payoutValue = `${combinedPayout.toFixed(3)} HBD`;
     }
 
-    // Determine canonical URL - use metadata if available (InLeo, etc.), otherwise default to PeakD
-    const canonicalUrl =
-      metadata.canonical_url ||
-      `https://peakd.com/@${post.author}/${post.permlink}`;
+    // Determine canonical URL — accept only URLs from a known Hive-frontend allowlist.
+    // metadata.canonical_url is user-controlled and was previously a phishing vector.
+    const canonicalUrl = safeCanonicalUrl(
+      metadata.canonical_url,
+      post.author,
+      post.permlink,
+    );
 
     // Muted posts have their title and body replaced with the literal string "error"
     const isMuted =
@@ -650,9 +654,12 @@ function processBridgePost(post: any): ProcessedPost | null {
     payoutValue = `${(authorPay + curatorPay).toFixed(3)} HBD`;
   }
 
-  const canonicalUrl =
-    metadata.canonical_url ||
-    `https://peakd.com/@${post.author}/${post.permlink}`;
+  // metadata.canonical_url is user-controlled — validate against the allowlist
+  const canonicalUrl = safeCanonicalUrl(
+    metadata.canonical_url,
+    post.author,
+    post.permlink,
+  );
 
   const processed: ProcessedPost = {
     title: post.title || "Untitled",

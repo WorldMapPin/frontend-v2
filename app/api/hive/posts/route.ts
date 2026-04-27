@@ -8,6 +8,7 @@ import {
   getHiveBlogUrl,
   safeJsonParse,
 } from "@/utils/postUtils";
+import { safeCanonicalUrl } from "@/utils/safeCanonicalUrl";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -301,9 +302,14 @@ async function processRankedPost(post: any): Promise<ProcessedPost> {
     readingTimeMin: calculateReadingTime(post.body || ""),
     cashoutTime: post.payout_at,
     activeVotesCount: post.active_votes?.length || 0,
-    canonicalUrl:
-      metadata.canonical_url ||
-      `https://peakd.com/@${post.author}/${post.permlink}`,
+    // metadata.canonical_url is user-controlled (set by post author in
+     // json_metadata) — validate against the Hive-frontend allowlist before
+     // using as a link target, otherwise an attacker can phish via this href.
+    canonicalUrl: safeCanonicalUrl(
+      metadata.canonical_url,
+      post.author,
+      post.permlink,
+    ),
     rawJsonUrl: getHiveBlogUrl(post.author, post.permlink),
   };
 }

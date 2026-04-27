@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
+import { useRouter, useSearchParams as useUrlSearchParams } from "next/navigation";
 import {
   APIProvider,
   Map,
@@ -53,6 +54,7 @@ import {
   getDefaultCommunity,
 } from "../utils/communityApi";
 import { pinCache } from "../utils/pinCache";
+import { searchParamsFromQuery, buildMapUrl } from "../utils/mapFilterUrl";
 
 // Global variables for zoom (local to this module)
 export let mapZoom = 2; // Start at zoom 2, skip 3
@@ -182,6 +184,10 @@ export default function MapClient({
   const { user: username, isReady: isAuthenticated } = useAiohaSafe();
   const isAllowedJourney = isJourneyEnabled(username);
 
+  // Routing — used by phase-1 (B-16) URL-backed filter persistence
+  const router = useRouter();
+  const urlQuery = useUrlSearchParams();
+
   // Basic states
   const [geojson, setGeojson] = useState<any>(null);
   const [numClusters, setNumClusters] = useState(0);
@@ -240,6 +246,7 @@ export default function MapClient({
   // Filter states
   const [showFilter, setShowFilter] = useState(false);
   const [searchParams, setSearchParams] = useState<SearchParams>(() => {
+    // Path-based filters (from /map/[...slug]) take precedence
     if (initialUsername) {
       return { author: initialUsername };
     } else if (initialPermlink) {
@@ -247,7 +254,11 @@ export default function MapClient({
     } else if (initialTag) {
       return { tags: [initialTag] };
     }
-    return { curated_only: false };
+    // Otherwise hydrate from query string 
+    const fromUrl = searchParamsFromQuery(
+      new URLSearchParams(urlQuery?.toString() ?? ""),
+    );
+    return Object.keys(fromUrl).length ? fromUrl : { curated_only: false };
   });
 
   // Community states
@@ -604,6 +615,13 @@ export default function MapClient({
       setShowCommunityHeader(true);
     }
 
+    // B-16 (community case): keep community choice in URL so it survives
+    // navigation to a post and back. Use router.replace (not history.replaceState)
+    // so Next's router updates its route state too — otherwise pressing Back
+    // from a post restores Next's stale "/map" route even though the URL bar
+    // shows "/map/c/foodie", and you get all-pins instead of community-filtered.
+    router.replace(buildMapUrl(community, searchParams), { scroll: false });
+
     // Clear existing data and load new markers
     setGeojson({ type: "FeatureCollection", features: [] });
     loadMarkers(false, searchParams, community);
@@ -644,26 +662,35 @@ export default function MapClient({
 
   // Filter handling functions
   const handleFilter = (filterData: any) => {
-    if (filterData) {
-      const newSearchParams: SearchParams = {
-        tags:
-          filterData.tags && filterData.tags.length > 0 ? filterData.tags : [],
-        author: filterData.username || "",
-        post_title: filterData.postTitle || "",
-        permlink: filterData.permlink || "",
-        start_date: filterData.startDate || "",
-        end_date: filterData.endDate || "",
-        curated_only: filterData.isCurated || false,
-      };
+    const next: SearchParams = filterData
+      ? {
+          tags:
+            filterData.tags && filterData.tags.length > 0
+              ? filterData.tags
+              : [],
+          author: filterData.username || "",
+          post_title: filterData.postTitle || "",
+          permlink: filterData.permlink || "",
+          start_date: filterData.startDate || "",
+          end_date: filterData.endDate || "",
+          curated_only: filterData.isCurated || false,
+        }
+      : { curated_only: false };
 
-      setSearchParams(newSearchParams);
-      loadMarkers(false, newSearchParams, selectedCommunity);
-    } else {
-      // Clear filter
-      const clearedParams: SearchParams = { curated_only: false };
-      setSearchParams(clearedParams);
-      loadMarkers(false, clearedParams, selectedCommunity);
+    setSearchParams(next);
+
+    // B-16: keep filter state in URL so it survives navigation.
+    // Build URL from selectedCommunity + filter so we stay correct on
+    // /map/c/[community] pages (would otherwise drop back to /map).
+    if (typeof window !== "undefined") {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        buildMapUrl(selectedCommunity, next),
+      );
     }
+
+    loadMarkers(false, next, selectedCommunity);
     setShowFilter(false);
   };
 
@@ -1041,10 +1068,7 @@ export default function MapClient({
                 @{searchParams.author}
               </span>
               <button
-                onClick={() => {
-                  setSearchParams({ curated_only: false });
-                  loadMarkers(false, { curated_only: false });
-                }}
+                onClick={() => handleFilter(null)}
                 className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
                 aria-label="Clear filter"
               >
@@ -1087,10 +1111,7 @@ export default function MapClient({
                 {searchParams.permlink}
               </span>
               <button
-                onClick={() => {
-                  setSearchParams({ curated_only: false });
-                  loadMarkers(false, { curated_only: false });
-                }}
+                onClick={() => handleFilter(null)}
                 className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
                 aria-label="Clear filter"
               >
@@ -1133,10 +1154,7 @@ export default function MapClient({
                 {searchParams.tags.join(", ")}
               </span>
               <button
-                onClick={() => {
-                  setSearchParams({ curated_only: false });
-                  loadMarkers(false, { curated_only: false });
-                }}
+                onClick={() => handleFilter(null)}
                 className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
                 aria-label="Clear filter"
               >
