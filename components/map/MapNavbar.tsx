@@ -20,7 +20,7 @@ export default function MapNavbar() {
   const [pinCount] = useState(142194);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Autocomplete state (proxied through /api/places/autocomplete)
+  // Autocomplete state (Google Maps Places library, client-side)
   const [predictions, setPredictions] = useState<any[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -29,7 +29,8 @@ export default function MapNavbar() {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const skipAutocompleteRef = useRef(false);
-  const sessionTokenRef = useRef<any>(null);
+  const sessionTokenRef =
+    useRef<google.maps.places.AutocompleteSessionToken | null>(null);
   const requestTimestampsRef = useRef<number[]>([]);
   const resultCacheRef = useRef<Map<string, any[]>>(new Map());
   const [budgetExhausted, setBudgetExhausted] = useState(false);
@@ -125,34 +126,38 @@ export default function MapNavbar() {
 
     debounceRef.current = setTimeout(async () => {
       try {
-        if (!sessionTokenRef.current) {
-          sessionTokenRef.current = crypto.randomUUID();
+        if (!window.google?.maps?.importLibrary) {
+          setIsSearching(false);
+          return;
         }
-        const res = await fetch("/api/places/autocomplete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            input: searchValue,
-            sessionToken: sessionTokenRef.current,
-          }),
+
+        const { AutocompleteService, AutocompleteSessionToken } =
+          (await google.maps.importLibrary(
+            "places",
+          )) as google.maps.PlacesLibrary;
+
+        if (cancelled) return;
+
+        if (!sessionTokenRef.current) {
+          sessionTokenRef.current = new AutocompleteSessionToken();
+        }
+
+        const service = new AutocompleteService();
+        const response = await service.getPlacePredictions({
+          input: searchValue,
+          sessionToken: sessionTokenRef.current,
         });
 
         if (cancelled) return;
 
-        if (res.status === 429) {
-          setBudgetExhausted(true);
-          setIsSearching(false);
-          return;
-        }
-
-        if (!res.ok) {
-          setIsSearching(false);
-          setPredictions([]);
-          return;
-        }
-
-        const data = await res.json();
-        const placePredictions = data.suggestions || [];
+        const placePredictions = (response.predictions ?? [])
+          .slice(0, 5)
+          .map((p) => ({
+            placeId: p.place_id,
+            mainText:
+              p.structured_formatting?.main_text ?? p.description ?? "",
+            secondaryText: p.structured_formatting?.secondary_text ?? "",
+          }));
 
         if (resultCacheRef.current.size >= 20) {
           const firstKey = resultCacheRef.current.keys().next().value;
@@ -165,8 +170,9 @@ export default function MapNavbar() {
         setIsDropdownOpen(true);
         setHighlightedIndex(-1);
         setIsSearching(false);
-      } catch {
+      } catch (err) {
         if (!cancelled) {
+          console.error("Autocomplete failed:", err);
           setIsSearching(false);
           setPredictions([]);
         }
