@@ -145,6 +145,14 @@ export const row4Members: TeamMember[] = [
     category: ["Curation"],
     image: `${HIVE_AVATAR_BASE_URL}glecerioberto/avatar`,
   },
+  {
+    id: "15",
+    name: "Gabriela",
+    username: "@gabrielatravels",
+    role: "Curation",
+    category: ["Curation"],
+    image: `${HIVE_AVATAR_BASE_URL}gabrielatravels/avatar`,
+  },
 ];
 
 export const teamMembers: TeamMember[] = [
