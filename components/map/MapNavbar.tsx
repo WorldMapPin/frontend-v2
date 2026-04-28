@@ -126,7 +126,7 @@ export default function MapNavbar() {
 
     debounceRef.current = setTimeout(async () => {
       try {
-        if (!window.google?.maps?.importLibrary) {
+        if (typeof window.google?.maps?.importLibrary !== "function") {
           setIsSearching(false);
           return;
         }
@@ -202,20 +202,38 @@ export default function MapNavbar() {
     const fallbackText = prediction.mainText || prediction.secondaryText || "";
 
     try {
-      if (placeId && window.google?.maps?.places) {
-        const { Place } = (await (google.maps as any).importLibrary(
-          "places",
-        )) as { Place: any };
-        const place = new Place({ id: placeId });
-        await place.fetchFields({
-          fields: ["location", "displayName", "formattedAddress"],
-        });
-        const lat = place.location?.lat();
-        const lng = place.location?.lng();
+      if (
+        placeId &&
+        typeof window.google?.maps?.importLibrary === "function"
+      ) {
+        const { PlacesService, PlacesServiceStatus } =
+          (await google.maps.importLibrary(
+            "places",
+          )) as google.maps.PlacesLibrary;
+
+        const service = new PlacesService(document.createElement("div"));
+        const result =
+          await new Promise<google.maps.places.PlaceResult | null>(
+            (resolve) => {
+              service.getDetails(
+                {
+                  placeId,
+                  fields: ["geometry", "formatted_address", "name"],
+                  sessionToken: sessionTokenRef.current ?? undefined,
+                },
+                (place, status) => {
+                  resolve(status === PlacesServiceStatus.OK ? place : null);
+                },
+              );
+            },
+          );
+
+        const lat = result?.geometry?.location?.lat();
+        const lng = result?.geometry?.location?.lng();
         if (lat != null && lng != null) {
           setGlobalLocation({
             location: { lat, lng },
-            name: place.formattedAddress || place.displayName || "",
+            name: result?.formatted_address || result?.name || "",
           });
           setGlobalZoom(12);
           sessionTokenRef.current = null;
