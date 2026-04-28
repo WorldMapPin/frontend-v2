@@ -2,7 +2,10 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams as useUrlSearchParams } from "next/navigation";
+import {
+  useRouter,
+  useSearchParams as useUrlSearchParams,
+} from "next/navigation";
 import {
   APIProvider,
   Map,
@@ -12,8 +15,8 @@ import {
 import axios from "axios";
 
 // Import components
-import { useAiohaSafe } from '@/hooks/use-aioha-safe';
-import { isJourneyEnabled } from '@/lib/featureFlags';
+import { useAiohaSafe } from "@/hooks/use-aioha-safe";
+import { isJourneyEnabled } from "@/lib/featureFlags";
 import { useTheme } from "./ThemeProvider";
 import { ClusteredMarkers } from "@/components/map/ClusteredMarkers";
 import { InfoWindowContent } from "@/components/map/InfoWindowContent";
@@ -215,7 +218,9 @@ export default function MapClient({
     lat: number;
     lng: number;
   } | null>(null);
-  const [contextMenuFeatureId, setContextMenuFeatureId] = useState<string | null>(null);
+  const [contextMenuFeatureId, setContextMenuFeatureId] = useState<
+    string | null
+  >(null);
 
   // Location and zoom states
   const [location, setLocation] = useState<
@@ -254,7 +259,7 @@ export default function MapClient({
     } else if (initialTag) {
       return { tags: [initialTag] };
     }
-    // Otherwise hydrate from query string 
+    // Otherwise hydrate from query string
     const fromUrl = searchParamsFromQuery(
       new URLSearchParams(urlQuery?.toString() ?? ""),
     );
@@ -415,12 +420,17 @@ export default function MapClient({
 
       const bounds = new window.google.maps.LatLngBounds();
       pins.forEach((pin: any) => {
-        bounds.extend(new window.google.maps.LatLng(pin.position.lat, pin.position.lng));
+        bounds.extend(
+          new window.google.maps.LatLng(pin.position.lat, pin.position.lng),
+        );
       });
 
       // We offset the left side by ~420px to account for the new full-height sidebar
       mapInstanceRef.current.fitBounds(bounds, {
-        top: 50, right: 50, bottom: 50, left: 450
+        top: 50,
+        right: 50,
+        bottom: 50,
+        left: 450,
       });
     };
 
@@ -474,7 +484,7 @@ export default function MapClient({
         if (targetCommunity.isDefault) {
           // Use the original WorldMapPin API for default community
           const response = await axios.post(
-            `https://worldmappin.com/api/marker/0/150000/`,
+            `https://api.worldmappin.com/marker/0/150000/`,
             params,
           );
           geoJsonData = await convertDatafromApitoGeojson(response.data);
@@ -560,12 +570,15 @@ export default function MapClient({
     if (pendingLocation) {
       console.log("Write new post at:", pendingLocation);
       const coordStr = `${pendingLocation.lat.toFixed(6)}, ${pendingLocation.lng.toFixed(6)}`;
-      navigator.clipboard.writeText(coordStr).then(() => {
-        window.open('https://peakd.com/submit', '_blank');
-      }).catch(err => {
-        console.error("Could not copy text: ", err);
-        window.open('https://peakd.com/submit', '_blank');
-      });
+      navigator.clipboard
+        .writeText(coordStr)
+        .then(() => {
+          window.open("https://peakd.com/submit", "_blank");
+        })
+        .catch((err) => {
+          console.error("Could not copy text: ", err);
+          window.open("https://peakd.com/submit", "_blank");
+        });
     }
     setContextMenuVisible(false);
   };
@@ -1239,7 +1252,7 @@ export default function MapClient({
               window.dispatchEvent(
                 new CustomEvent("add-pin-to-journey", {
                   detail: { featureId: contextMenuFeatureId },
-                })
+                }),
               );
             }
           }}
@@ -1261,23 +1274,35 @@ export default function MapClient({
             loadMarkers(true, searchParams, selectedCommunity, true)
           }
           isJourneyEditMode={showJourneyControls}
-          onToggleJourneyEdit={isAllowedJourney ? () => {
-            setShowJourneyControls(prev => {
-              const nextState = !prev;
-              if (nextState && username) {
-                // If opening journey controls, filter by current user
-                const authorParams = { curated_only: false, author: username };
-                setSearchParams(authorParams);
-                loadMarkers(false, authorParams, selectedCommunity, true);
-              } else if (!nextState && searchParams.author === username) {
-                // If closing and was filtered by current user, clear filter
-                const clearedParams = { curated_only: false };
-                setSearchParams(clearedParams);
-                loadMarkers(false, clearedParams, selectedCommunity, true);
-              }
-              return nextState;
-            });
-          } : undefined}
+          onToggleJourneyEdit={
+            isAllowedJourney
+              ? () => {
+                  setShowJourneyControls((prev) => {
+                    const nextState = !prev;
+                    if (nextState && username) {
+                      // If opening journey controls, filter by current user
+                      const authorParams = {
+                        curated_only: false,
+                        author: username,
+                      };
+                      setSearchParams(authorParams);
+                      loadMarkers(false, authorParams, selectedCommunity, true);
+                    } else if (!nextState && searchParams.author === username) {
+                      // If closing and was filtered by current user, clear filter
+                      const clearedParams = { curated_only: false };
+                      setSearchParams(clearedParams);
+                      loadMarkers(
+                        false,
+                        clearedParams,
+                        selectedCommunity,
+                        true,
+                      );
+                    }
+                    return nextState;
+                  });
+                }
+              : undefined
+          }
         />
 
         {/* Community Selector Component */}
@@ -1301,7 +1326,10 @@ export default function MapClient({
         )}
 
         {/* Map Container - Hidden on mobile when journey sidebar is open to save processing */}
-        <div ref={mapRef} className={`map-wrapper ${showJourneyControls ? 'hidden md:block' : ''}`}>
+        <div
+          ref={mapRef}
+          className={`map-wrapper ${showJourneyControls ? "hidden md:block" : ""}`}
+        >
           <Map
             mapId={MAP_CONFIG.mapId}
             mapTypeId={mapTypeId}
@@ -1341,10 +1369,10 @@ export default function MapClient({
                   let clientX = 0;
                   let clientY = 0;
 
-                  if ('touches' in e && e.touches && e.touches.length > 0) {
+                  if ("touches" in e && e.touches && e.touches.length > 0) {
                     clientX = e.touches[0].clientX;
                     clientY = e.touches[0].clientY;
-                  } else if ('clientX' in e) {
+                  } else if ("clientX" in e) {
                     clientX = e.clientX;
                     clientY = e.clientY;
                   }
@@ -1358,9 +1386,7 @@ export default function MapClient({
 
             {/* Simple Journey Map - Show when journey controls are visible */}
             {showJourneyControls && !showUserPostsOnMap && (
-              <SimpleJourneyMap
-                journey={journeyState.currentJourney}
-              />
+              <SimpleJourneyMap journey={journeyState.currentJourney} />
             )}
 
             {/* User Posts on Map - Show when selecting starting post */}
@@ -1476,7 +1502,7 @@ export default function MapClient({
                     {/* Content */}
                     <div className="px-3 sm:px-5 pb-5 sm:pb-8 max-h-[85vh] overflow-y-auto custom-scrollbar">
                       {loadedCommunity?.id === "spendhbd" &&
-                        infowindowData.isCluster ? (
+                      infowindowData.isCluster ? (
                         <SpendHBDClusterInfo
                           features={infowindowData.features}
                           onStoreSelect={handleStoreSelect}
@@ -1597,7 +1623,7 @@ export default function MapClient({
                       }}
                     >
                       {loadedCommunity?.id === "spendhbd" &&
-                        infowindowData.isCluster ? (
+                      infowindowData.isCluster ? (
                         <SpendHBDClusterInfo
                           features={infowindowData.features}
                           onStoreSelect={handleStoreSelect}
