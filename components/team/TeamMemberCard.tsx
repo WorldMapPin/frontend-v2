@@ -7,7 +7,6 @@ import { PEAKD_PROFILE_BASE_URL } from '@/data/team';
 import { ExternalLink } from 'lucide-react';
 
 interface TeamMemberProps {
-  id: string;
   name: string;
   username: string;
   role: string;
@@ -16,7 +15,6 @@ interface TeamMemberProps {
 }
 
 export const TeamMemberCard: React.FC<TeamMemberProps> = ({
-  id,
   name,
   username,
   role,
