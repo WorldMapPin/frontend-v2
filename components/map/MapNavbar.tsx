@@ -567,7 +567,7 @@ export default function MapNavbar() {
             className="hidden lg:flex items-center space-x-6 font-medium text-sm mr-4"
             style={{ color: "var(--text-secondary)" }}
           >
-            <Link href={user ? "/map" : "/"} className="hover:text-[#ED6D28] transition-colors">
+            <Link href="/" className="hover:text-[#ED6D28] transition-colors">
               Home
             </Link>
             <Link
@@ -838,7 +838,7 @@ export default function MapNavbar() {
             {/* Navigation Links */}
             <div className="space-y-1 flex-1">
               <Link
-                href={user ? "/map" : "/"}
+                href="/"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center justify-between p-4 rounded-xl font-bold transition-all border border-transparent hover:border-orange-100"
                 style={{ color: "var(--text-secondary)" }}

@@ -563,7 +563,7 @@ export default function Navbar({ className = "" }: NavbarProps) {
             </button>
 
             <Link
-              href={user ? "/map" : "/"}
+              href="/"
               className="block px-3 py-2 rounded-md text-sm"
               style={{
                 fontFamily: "var(--font-lexend)",
