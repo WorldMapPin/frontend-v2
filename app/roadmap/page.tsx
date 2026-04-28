@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 
 type Status = "complete" | "active" | "planned";
@@ -314,12 +315,12 @@ export default function RoadmapPage() {
               >
                 Introduce yourself
               </a>
-              <a
+              <Link
                 href="/team"
                 className="inline-flex items-center justify-center rounded-full border border-white/60 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 Meet the team
-              </a>
+              </Link>
             </div>
           </div>
         </div>

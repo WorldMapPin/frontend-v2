@@ -2,13 +2,8 @@
 // This component renders store-themed cluster markers that are obviously store clusters
 // Uses shopping bag/store building icons instead of generic circles
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { AdvancedMarker, useAdvancedMarkerRef } from '@vis.gl/react-google-maps';
-
-// Import global state setters for map navigation
-import { mapZoom } from '../../MapClient';
-
-const maxClickableCluster = 50;
 
 type StoreClusterMarkerProps = {
   clusterId: number;
@@ -66,7 +61,7 @@ export const StoreClusterMarker = ({
 
   // Store cluster colors - different from single stores for better distinction
   let backgroundColor: string;
-  let iconColor: string = '#ffffff';
+  const iconColor = '#ffffff';
 
   if (size < 10) {
     backgroundColor = 'linear-gradient(135deg, #06b6d4, #0891b2)'; // Cyan for small store clusters

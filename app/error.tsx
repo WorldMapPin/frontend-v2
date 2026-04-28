@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 
 export default function Error({
   error,
@@ -24,7 +25,7 @@ export default function Error({
           Something went wrong
         </h2>
         <p className="text-gray-600 mb-8">
-          We encountered an unexpected error. Don't worry, our team has been notified and we're working to fix it.
+          We encountered an unexpected error. Don&apos;t worry, our team has been notified and we&apos;re working to fix it.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
@@ -33,12 +34,12 @@ export default function Error({
           >
             Try again
           </button>
-          <a
+          <Link
             href="/"
             className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
           >
             Go home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

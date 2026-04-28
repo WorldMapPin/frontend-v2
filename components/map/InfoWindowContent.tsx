@@ -451,4 +451,6 @@ export const InfoWindowContent = memo(({ features, showRank = true, hideHeader =
   return null;
 });
 
+InfoWindowContent.displayName = 'InfoWindowContent';
+
 export default InfoWindowContent;

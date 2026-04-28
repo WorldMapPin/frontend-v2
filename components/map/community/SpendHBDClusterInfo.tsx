@@ -481,3 +481,5 @@ export const SpendHBDClusterInfo = memo(({
     </div>
   );
 });
+
+SpendHBDClusterInfo.displayName = 'SpendHBDClusterInfo';

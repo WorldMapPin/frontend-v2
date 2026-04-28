@@ -1,11 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import * as countryCoder from '@rapideditor/country-coder';
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
 import { fetchUserPins, ApiPinData } from '../../../lib/worldmappinApi';
-
-// Country reverse geocoding import - using @rapideditor/country-coder
-const countryCoder = require('@rapideditor/country-coder');
 
 interface WorldCoverageSectionProps {
     coveragePercentage: number;
@@ -82,10 +80,19 @@ function getCountryFromCoordinates(lat: number, lng: number): { name: string; is
 
         if (!feature || !feature.properties) return null;
 
-        const nameEn = feature.properties.nameEn || feature.properties.name_en || feature.properties.NAME_EN;
-        const iso1A2 = feature.properties.iso1A2 || feature.properties.iso_1A2 || feature.properties.ISO1_A2;
-        const name = feature.properties.name || feature.properties.NAME;
-        const iso31661 = feature.properties['ISO3166-1'] || feature.properties['iso3166-1'];
+        const props = feature.properties as Record<string, unknown>;
+        const nameEn = [props.nameEn, props.name_en, props.NAME_EN].find(
+            (value): value is string => typeof value === 'string' && value.length > 0
+        );
+        const iso1A2 = [props.iso1A2, props.iso_1A2, props.ISO1_A2].find(
+            (value): value is string => typeof value === 'string' && value.length > 0
+        );
+        const name = [props.name, props.NAME].find(
+            (value): value is string => typeof value === 'string' && value.length > 0
+        );
+        const iso31661 = [props['ISO3166-1'], props['iso3166-1']].find(
+            (value): value is string => typeof value === 'string' && value.length > 0
+        );
 
         if (iso1A2 === 'GL' || iso31661 === 'GL') return { name: 'Greenland', isoCode: 'GL' };
 

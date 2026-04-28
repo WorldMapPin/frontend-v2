@@ -74,7 +74,7 @@ function normalizeCountryName(name: string): string {
     return normalizations[name];
   }
 
-  let normalized = name
+  const normalized = name
     .replace(/^Republic of /i, '')
     .replace(/^Kingdom of /i, '')
     .replace(/^State of /i, '')
@@ -1217,4 +1217,3 @@ export default function StatsPage() {
     </div>
   );
 }
-

@@ -2,14 +2,8 @@
 // This component renders cluster markers that represent multiple data points
 // Handles click events to either expand clusters or show cluster info
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { AdvancedMarker, useAdvancedMarkerRef } from '@vis.gl/react-google-maps';
-
-// Import global state setters for map navigation
-// Global functions will be available on window object
-import { mapZoom } from '../MapClient';
-
-const maxClickableCluster = 50;
 
 type ClusterMarkerProps = {
   clusterId: number;
@@ -27,7 +21,7 @@ type ClusterMarkerProps = {
  * Renders a cluster marker that represents multiple data points
  * Handles click events to either expand the cluster or show cluster details
  * Uses different colors and sizes based on cluster size
- * 
+ *
  * @param clusterId - Unique identifier for the cluster
  * @param onMarkerClick - Callback function when cluster is clicked
  * @param position - Geographic coordinates for the cluster center

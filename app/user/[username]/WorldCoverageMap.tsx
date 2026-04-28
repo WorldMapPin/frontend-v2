@@ -1,11 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import * as countryCoder from '@rapideditor/country-coder';
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
 import { fetchUserPins, ApiPinData } from '../../../lib/worldmappinApi';
-
-// Country reverse geocoding import - using @rapideditor/country-coder
-const countryCoder = require('@rapideditor/country-coder');
 
 interface WorldCoverageMapProps {
   coveragePercentage: number;
@@ -57,7 +55,7 @@ function normalizeCountryName(name: string): string {
   }
   
   // Remove common prefixes/suffixes
-  let normalized = name
+  const normalized = name
     .replace(/^Republic of /i, '')
     .replace(/^Kingdom of /i, '')
     .replace(/^State of /i, '')
@@ -119,10 +117,19 @@ function getCountryFromCoordinates(lat: number, lng: number): { name: string; is
     }
     
     // Check all possible property names
-    const nameEn = feature.properties.nameEn || feature.properties.name_en || feature.properties.NAME_EN;
-    const iso1A2 = feature.properties.iso1A2 || feature.properties.iso_1A2 || feature.properties.ISO1_A2 || feature.properties.iso1a2;
-    const name = feature.properties.name || feature.properties.NAME;
-    const iso31661 = feature.properties['ISO3166-1'] || feature.properties['iso3166-1'];
+    const props = feature.properties as Record<string, unknown>;
+    const nameEn = [props.nameEn, props.name_en, props.NAME_EN].find(
+      (value): value is string => typeof value === 'string' && value.length > 0
+    );
+    const iso1A2 = [props.iso1A2, props.iso_1A2, props.ISO1_A2, props.iso1a2].find(
+      (value): value is string => typeof value === 'string' && value.length > 0
+    );
+    const name = [props.name, props.NAME].find(
+      (value): value is string => typeof value === 'string' && value.length > 0
+    );
+    const iso31661 = [props['ISO3166-1'], props['iso3166-1']].find(
+      (value): value is string => typeof value === 'string' && value.length > 0
+    );
     
     // Check if any property contains Greenland-related terms
     const allValues = Object.values(feature.properties).map(v => String(v).toLowerCase()).join(' ');
@@ -618,7 +625,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
         {/* Text below circle - Centered */}
         <div className="text-center mt-2 sm:mt-4" style={{ color: 'var(--text-primary)' }}>
           <p className="text-[10px] sm:text-xs md:text-sm font-medium">of the world explored!</p>
-          <p className="text-[10px] sm:text-xs md:text-sm font-medium">That's</p>
+          <p className="text-[10px] sm:text-xs md:text-sm font-medium">That&apos;s</p>
           <p 
             className="text-sm sm:text-lg md:text-2xl font-semibold mt-1 sm:mt-2"
             style={{ 
@@ -654,7 +661,7 @@ export function WorldCoverageMap({ coveragePercentage, username }: WorldCoverage
             <div className="flex items-start justify-between p-4 sm:p-6 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
               <div className="flex-1 pr-2">
                 <h3 className="text-lg sm:text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                  {username.charAt(0).toUpperCase() + username.slice(1)}'s World Coverage
+                  {username.charAt(0).toUpperCase() + username.slice(1)}&apos;s World Coverage
                 </h3>
                 <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                   <span className="font-semibold text-orange-600">{userPins.length}</span> pins across{' '}

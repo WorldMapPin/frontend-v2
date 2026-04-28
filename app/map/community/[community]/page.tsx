@@ -1,6 +1,7 @@
 'use client';
 
 import dynamicImport from 'next/dynamic';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Community } from '../../../../types';
@@ -58,12 +59,12 @@ export default function CommunityMapPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Community Not Found</h1>
           <p className="text-gray-600 mb-4">The requested community could not be found.</p>
-          <a 
-            href="/map" 
+          <Link
+            href="/map"
             className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors duration-200"
           >
             Go to Main Map
-          </a>
+          </Link>
         </div>
       </div>
     );
