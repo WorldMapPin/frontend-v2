@@ -296,7 +296,7 @@ export default function MapNavbar() {
       >
         {/* Left: Logo */}
         <div className="flex items-center flex-shrink-0">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href={user ? "/map" : "/"} className="flex items-center space-x-2">
             <Image
               src="/images/worldmappin-logo.png"
               alt="WorldMappin"
@@ -543,7 +543,7 @@ export default function MapNavbar() {
             className="hidden lg:flex items-center space-x-6 font-medium text-sm mr-4"
             style={{ color: "var(--text-secondary)" }}
           >
-            <Link href="/" className="hover:text-[#ED6D28] transition-colors">
+            <Link href={user ? "/map" : "/"} className="hover:text-[#ED6D28] transition-colors">
               Home
             </Link>
             <Link
@@ -814,7 +814,7 @@ export default function MapNavbar() {
             {/* Navigation Links */}
             <div className="space-y-1 flex-1">
               <Link
-                href="/"
+                href={user ? "/map" : "/"}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center justify-between p-4 rounded-xl font-bold transition-all border border-transparent hover:border-orange-100"
                 style={{ color: "var(--text-secondary)" }}

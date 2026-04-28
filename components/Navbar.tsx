@@ -83,7 +83,7 @@ export default function Navbar({ className = "" }: NavbarProps) {
         >
           <div className="flex-shrink-0">
             <Link
-              href="/"
+              href={user ? "/map" : "/"}
               className="flex items-center space-x-4"
               suppressHydrationWarning={true}
             >
@@ -563,7 +563,7 @@ export default function Navbar({ className = "" }: NavbarProps) {
             </button>
 
             <Link
-              href="/"
+              href={user ? "/map" : "/"}
               className="block px-3 py-2 rounded-md text-sm"
               style={{
                 fontFamily: "var(--font-lexend)",
