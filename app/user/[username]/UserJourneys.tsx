@@ -127,7 +127,7 @@ export default function UserJourneys({ username }: { username: string }) {
                         </div>
                         <h3 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>No journeys found</h3>
                         <p className="text-sm max-w-md mx-auto" style={{ color: 'var(--text-secondary)' }}>
-                            We couldn't find any journeys matching your search.
+                            We couldn&apos;t find any journeys matching your search.
                         </p>
                     </div>
                 )}

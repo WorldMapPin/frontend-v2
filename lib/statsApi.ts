@@ -2,10 +2,8 @@
 // Fetches and processes pin data to generate comprehensive statistics
 
 import axios from 'axios';
+import * as countryCoder from '@rapideditor/country-coder';
 import { BasicPinData } from './worldmappinApi';
-
-// Import country-coder for reverse geocoding
-const countryCoder = require('@rapideditor/country-coder');
 
 // Base API URL
 const BASE_API_URL = 'https://worldmappin.com/api';
@@ -429,7 +427,7 @@ function normalizeCountryName(name: string): string {
     return normalizations[name];
   }
   
-  let normalized = name
+  const normalized = name
     .replace(/^Republic of /i, '')
     .replace(/^Kingdom of /i, '')
     .replace(/^State of /i, '')
@@ -463,13 +461,22 @@ function getCountryFromCoordinates(lat: number, lng: number): string | null {
     
     if (feature && feature.properties) {
       // Check all possible property names
-      const nameEn = feature.properties.nameEn || feature.properties.name_en || feature.properties.NAME_EN;
-      const iso1A2 = feature.properties.iso1A2 || feature.properties.iso_1A2 || feature.properties.ISO1_A2 || feature.properties.iso1a2;
-      const name = feature.properties.name || feature.properties.NAME;
-      const iso31661 = feature.properties['ISO3166-1'] || feature.properties['iso3166-1'];
+      const props = feature.properties as Record<string, unknown>;
+      const nameEn = [props.nameEn, props.name_en, props.NAME_EN].find(
+        (value): value is string => typeof value === 'string' && value.length > 0
+      );
+      const iso1A2 = [props.iso1A2, props.iso_1A2, props.ISO1_A2, props.iso1a2].find(
+        (value): value is string => typeof value === 'string' && value.length > 0
+      );
+      const name = [props.name, props.NAME].find(
+        (value): value is string => typeof value === 'string' && value.length > 0
+      );
+      const iso31661 = [props['ISO3166-1'], props['iso3166-1']].find(
+        (value): value is string => typeof value === 'string' && value.length > 0
+      );
       
       // Check if any property contains Greenland-related terms
-      const allValues = Object.values(feature.properties).map(v => String(v).toLowerCase()).join(' ');
+      const allValues = Object.values(props).map(v => String(v).toLowerCase()).join(' ');
       const isGreenland = iso1A2 === 'GL' || 
                           iso31661 === 'GL' ||
                           allValues.includes('greenland') || 
@@ -919,9 +926,9 @@ export async function fetchPinStats(onProgress?: ProgressCallback): Promise<PinS
     const curatedDailyMap = new Map<string, number>(persisted?.curatedDailyEntries ?? []);
     const curatedMonthlyMap = new Map<string, number>(persisted?.curatedMonthlyEntries ?? []);
 
-    let topPostsByPayout: TopPost[] = persisted?.topPostsByPayout ?? [];
-    let topPostsByVotes: TopPost[] = persisted?.topPostsByVotes ?? [];
-    let topPostsByComments: TopPost[] = persisted?.topPostsByComments ?? [];
+    const topPostsByPayout: TopPost[] = persisted?.topPostsByPayout ?? [];
+    const topPostsByVotes: TopPost[] = persisted?.topPostsByVotes ?? [];
+    const topPostsByComments: TopPost[] = persisted?.topPostsByComments ?? [];
 
     let totalPayout = persisted?.totals.payout ?? 0;
     let totalVotes = persisted?.totals.votes ?? 0;
@@ -1186,4 +1193,3 @@ export async function fetchPinStats(onProgress?: ProgressCallback): Promise<PinS
     throw error;
   }
 }
-

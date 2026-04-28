@@ -328,3 +328,5 @@ export const SpendHBDInfoWindow = memo(({
     </div>
   );
 });
+
+SpendHBDInfoWindow.displayName = 'SpendHBDInfoWindow';

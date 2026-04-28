@@ -131,7 +131,7 @@ export default function SignupPage() {
             {/* New to Hive */}
             <div className="text-center mb-10">
               <p className="font-lexend text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Don't have a Hive account?{' '}
+                Don&apos;t have a Hive account?{' '}
                 <a
                   href="https://hive.io/en/join/"
                   target="_blank"

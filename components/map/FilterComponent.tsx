@@ -148,7 +148,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const applyFilter = () => {
     // Remove @ symbol if present, as the API expects usernames without @
     const formattedUsername = username.startsWith('@') ? username.slice(1) : username;
-    let dates = calculateDates(selectedRange);
+    const dates = calculateDates(selectedRange);
 
     onFilter({
       tags: tags?.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
@@ -268,7 +268,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
               placeholder="post-name (will create /map/p/post-name)"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200"
             />
-            <p className="text-xs text-gray-500">Enter just the post name, e.g., "my-awesome-post"</p>
+            <p className="text-xs text-gray-500">Enter just the post name, e.g., &quot;my-awesome-post&quot;</p>
           </div>
 
           {/* Date Range */}

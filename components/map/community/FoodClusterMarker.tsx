@@ -2,13 +2,8 @@
 // This component renders food-themed cluster markers that are obviously food clusters
 // Uses fork/knife and plate icons instead of generic circles
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { AdvancedMarker, useAdvancedMarkerRef } from '@vis.gl/react-google-maps';
-
-// Import global state setters for map navigation
-import { mapZoom } from '../../MapClient';
-
-const maxClickableCluster = 50;
 
 type FoodClusterMarkerProps = {
   clusterId: number;
@@ -25,7 +20,7 @@ type FoodClusterMarkerProps = {
  * Food cluster marker component for Foodies Bee Hive food clusters
  * Renders a food-themed cluster marker that represents multiple food locations
  * Uses fork/knife and plate icons to make it obviously a food cluster
- * 
+ *
  * @param clusterId - Unique identifier for the cluster
  * @param onMarkerClick - Callback function when cluster is clicked
  * @param position - Geographic coordinates for the cluster center

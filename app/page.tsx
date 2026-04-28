@@ -185,21 +185,19 @@ export default function Home() {
             </p>
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full mx-auto">
-              <a
+              <Link
                 href="/signup"
-                suppressHydrationWarning
                 className="inline-flex items-center justify-center text-white font-semibold px-8 py-3 rounded-lg text-base border-2 border-transparent transition-all duration-300 font-lexend w-full sm:w-56 hover:shadow-2xl hover:scale-105 active:scale-95 whitespace-nowrap"
                 style={{ background: "#A74F1A" }}
               >
                 Join the Community
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/explore"
-                suppressHydrationWarning
                 className="inline-flex items-center justify-center bg-transparent text-white font-semibold px-8 py-3 rounded-lg text-base border-2 border-white transition-all duration-300 font-lexend w-full sm:w-56 hover:bg-white hover:text-orange-500 hover:shadow-2xl hover:scale-105 active:scale-95 whitespace-nowrap"
               >
                 Explore Stories
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -359,9 +357,8 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a
+              <Link
                 href="/signup"
-                suppressHydrationWarning
                 className="inline-flex items-center justify-center text-white font-bold px-8 py-3.5 rounded-lg text-base transition-all duration-300 font-lexend hover:shadow-2xl hover:scale-105 active:scale-95 w-full sm:w-52 whitespace-nowrap"
                 style={{
                   background:
@@ -369,15 +366,14 @@ export default function Home() {
                 }}
               >
                 Join the Community
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/explore"
-                suppressHydrationWarning
                 className="inline-flex items-center justify-center font-bold px-8 py-3.5 rounded-lg text-base border-2 border-[#ED6D28] transition-all duration-300 font-lexend hover:shadow-xl hover:scale-105 active:scale-95 w-full sm:w-52 whitespace-nowrap"
                 style={{ backgroundColor: "var(--card-bg)", color: "#ED6D28" }}
               >
                 Explore Stories
-              </a>
+              </Link>
             </div>
           </div>
         </div>

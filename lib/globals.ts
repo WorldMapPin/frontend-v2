@@ -4,8 +4,8 @@
 // Global state setters (for external access)
 export let setGlobalLocation: (location: google.maps.places.Place | undefined) => void;
 export let setGlobalZoom: (zoom: number | undefined) => void;
-export let mapZoom = 2; // Start at zoom 2, skip 3
-export let isMenuOpen = false;
+export const mapZoom = 2; // Start at zoom 2, skip 3
+export const isMenuOpen = false;
 
 // Initialize global setters
 export const initializeGlobals = (
@@ -15,4 +15,3 @@ export const initializeGlobals = (
   setGlobalLocation = locationSetter;
   setGlobalZoom = zoomSetter;
 };
-

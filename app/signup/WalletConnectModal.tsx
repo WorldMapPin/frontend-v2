@@ -347,7 +347,7 @@ export default function WalletConnectModal({ isOpen, onClose, onLoginSuccess }: 
                                     className="inline-flex items-center gap-1.5 text-xs font-bold hover:text-orange-600 transition-colors"
                                     style={{ color: 'var(--text-muted)' }}
                                 >
-                                    <span>Don't have a wallet?</span>
+                                    <span>Don&apos;t have a wallet?</span>
                                     <span className="underline decoration-2 decoration-orange-200 hover:decoration-orange-500 underline-offset-2 hover:text-orange-600" style={{ color: 'var(--text-secondary)' }}>Create one for free</span>
                                 </a>
                             </div>

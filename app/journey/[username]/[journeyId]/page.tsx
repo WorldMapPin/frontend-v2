@@ -45,7 +45,7 @@ export default function JourneyDetailPage() {
           <div className="text-6xl mb-4">🗺️</div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Journey Not Found</h1>
           <p className="text-gray-600 mb-8">
-            The journey you're looking for doesn't exist or has been deleted.
+            The journey you&apos;re looking for doesn&apos;t exist or has been deleted.
           </p>
           <Link
             href="/journeys"
@@ -333,7 +333,7 @@ export default function JourneyDetailPage() {
                                     💬 Caption
                                   </div>
                                   <div className="text-sm text-gray-800 italic">
-                                    "{pin.imageCaption}"
+                                    &quot;{pin.imageCaption}&quot;
                                   </div>
                                 </div>
                               )}
@@ -370,4 +370,3 @@ export default function JourneyDetailPage() {
     </div>
   );
 }
-

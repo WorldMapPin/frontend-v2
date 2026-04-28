@@ -53,7 +53,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
-              <GradientText>Today's Featured Travel Posts</GradientText>
+              <GradientText>Today&apos;s Featured Travel Posts</GradientText>
           </h2>
             <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               Handpicked stories from the WorldMapPin community, updated daily
@@ -85,7 +85,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
-              <GradientText>Today's Featured Travel Posts</GradientText>
+              <GradientText>Today&apos;s Featured Travel Posts</GradientText>
           </h2>
             <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               Handpicked stories from the WorldMapPin community, updated daily
@@ -123,7 +123,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
-              <GradientText>Today's Featured Travel Posts</GradientText>
+              <GradientText>Today&apos;s Featured Travel Posts</GradientText>
           </h2>
             <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
               Handpicked stories from the WorldMapPin community, updated daily
@@ -140,7 +140,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
               No featured posts available
             </h3>
             <p style={{ fontFamily: 'var(--font-lexend)', color: 'var(--text-secondary)' }}>
-              Check back later for today's curated travel content.
+              Check back later for today&apos;s curated travel content.
             </p>
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function TravelDigestSection({ className = '' }: TravelDigestSect
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 lg:mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-lexend home-gradient-text">
-            <GradientText>Today's Featured Travel Posts</GradientText>
+            <GradientText>Today&apos;s Featured Travel Posts</GradientText>
         </h2>
           <p className="text-base sm:text-lg lg:text-xl font-lexend max-w-2xl mx-auto home-gradient-text" style={{ color: 'var(--text-secondary)' }}>
             Handpicked stories from the WorldMapPin community, updated daily
