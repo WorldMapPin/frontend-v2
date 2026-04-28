@@ -2,21 +2,24 @@
 // This component renders individual markers on the map and handles click events
 // Used for non-clustered markers that represent single data points
 
-import React, { useCallback, useState, useEffect } from 'react';
-import { AdvancedMarker, useAdvancedMarkerRef } from '@vis.gl/react-google-maps';
-import axios from 'axios';
+import React, { useCallback, useState, useEffect } from "react";
+import {
+  AdvancedMarker,
+  useAdvancedMarkerRef,
+} from "@vis.gl/react-google-maps";
+import axios from "axios";
 
 type FeatureMarkerProps = {
   position: google.maps.LatLngLiteral;
   featureId: string;
   onMarkerClick?: (
     marker: google.maps.marker.AdvancedMarkerElement,
-    featureId: string
+    featureId: string,
   ) => void;
   onMarkerContextMenu?: (
     e: React.MouseEvent | React.TouchEvent | globalThis.MouseEvent,
     marker: google.maps.marker.AdvancedMarkerElement,
-    featureId: string
+    featureId: string,
   ) => void;
 };
 
@@ -36,7 +39,7 @@ export const FeatureMarker = ({
   position,
   featureId,
   onMarkerClick,
-  onMarkerContextMenu
+  onMarkerContextMenu,
 }: FeatureMarkerProps) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [imageError, setImageError] = useState(false);
@@ -53,15 +56,19 @@ export const FeatureMarker = ({
     // Fetch post data to get image
     const fetchImage = async () => {
       try {
-        const response = await axios.post("https://worldmappin.com/api/marker/ids", {
-          marker_ids: [featureId],
-        });
+        const response = await axios.post(
+          "https://api.worldmappin.com/marker/ids",
+          {
+            marker_ids: [featureId],
+          },
+        );
 
         if (response.data && response.data.length > 0) {
           const postData = response.data[0];
-          const imageUrl = postData.postImageLink && postData.postImageLink !== "No image"
-            ? `https://images.ecency.com/150x0/${postData.postImageLink}`
-            : null;
+          const imageUrl =
+            postData.postImageLink && postData.postImageLink !== "No image"
+              ? `https://images.ecency.com/150x0/${postData.postImageLink}`
+              : null;
 
           // Cache the result
           markerImageCache.set(featureId, imageUrl);
@@ -78,12 +85,9 @@ export const FeatureMarker = ({
     fetchImage();
   }, [featureId]);
 
-  const handleClick = useCallback(
-    () => {
-      onMarkerClick && onMarkerClick(marker!, featureId);
-    },
-    [onMarkerClick, marker, featureId]
-  );
+  const handleClick = useCallback(() => {
+    onMarkerClick && onMarkerClick(marker!, featureId);
+  }, [onMarkerClick, marker, featureId]);
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
@@ -94,7 +98,7 @@ export const FeatureMarker = ({
         onMarkerClick && onMarkerClick(marker!, featureId);
       }, 100);
     },
-    [onMarkerClick, marker, featureId]
+    [onMarkerClick, marker, featureId],
   );
 
   const handleContextMenu = useCallback(
@@ -103,7 +107,7 @@ export const FeatureMarker = ({
       e.stopPropagation();
       onMarkerContextMenu && onMarkerContextMenu(e, marker!, featureId);
     },
-    [onMarkerContextMenu, marker, featureId]
+    [onMarkerContextMenu, marker, featureId],
   );
 
   // Set up native context menu listener for desktop right-click
@@ -114,9 +118,9 @@ export const FeatureMarker = ({
 
     // Using a more specific type cast to ensure compatibility
     const listener = handleContextMenu as EventListener;
-    element.addEventListener('contextmenu', listener);
+    element.addEventListener("contextmenu", listener);
     return () => {
-      element.removeEventListener('contextmenu', listener);
+      element.removeEventListener("contextmenu", listener);
     };
   }, [marker, handleContextMenu]);
 
@@ -125,7 +129,7 @@ export const FeatureMarker = ({
       ref={markerRef}
       position={position}
       onClick={handleClick}
-      className={''}
+      className={""}
     >
       {/* Enhanced marker pin with cover image */}
       <div
@@ -135,7 +139,9 @@ export const FeatureMarker = ({
           handleTouchStart(e);
         }}
         onTouchEnd={(e) => {
-          const startTime = parseInt(markerImageCache.get(`touch_${featureId}`) || "0");
+          const startTime = parseInt(
+            markerImageCache.get(`touch_${featureId}`) || "0",
+          );
           if (startTime > 0 && Date.now() - startTime > 500) {
             // It was a long press, trigger context menu instead
             e.preventDefault();
@@ -147,59 +153,62 @@ export const FeatureMarker = ({
         onContextMenu={handleContextMenu}
         onClick={handleClick}
         style={{
-          width: '35px',
-          height: '35px',
-          touchAction: 'manipulation',
-          cursor: 'pointer',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          WebkitTouchCallout: 'none',
-          background: '#ed6d28',
-          borderRadius: '50% 50% 50% 0',
-          transform: 'rotate(-45deg)',
-          border: '2px solid white',
-          boxShadow: '0 3px 6px rgba(0,0,0,0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-          position: 'relative'
+          width: "35px",
+          height: "35px",
+          touchAction: "manipulation",
+          cursor: "pointer",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitTouchCallout: "none",
+          background: "#ed6d28",
+          borderRadius: "50% 50% 50% 0",
+          transform: "rotate(-45deg)",
+          border: "2px solid white",
+          boxShadow: "0 3px 6px rgba(0,0,0,0.4)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          position: "relative",
         }}
       >
         {/* Cover image if available */}
         {coverImage && !imageError ? (
-          <div style={{
-            position: 'absolute',
-            inset: '2px',
-            transform: 'rotate(45deg)',
-            transformOrigin: 'center',
-            overflow: 'hidden',
-            borderRadius: '50%'
-          }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: "2px",
+              transform: "rotate(45deg)",
+              transformOrigin: "center",
+              overflow: "hidden",
+              borderRadius: "50%",
+            }}
+          >
             <img
               src={coverImage}
               alt="Post"
               style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
               }}
               onError={() => setImageError(true)}
             />
           </div>
         ) : (
           /* White dot in center as fallback */
-          <div style={{
-            width: '8px',
-            height: '8px',
-            background: 'white',
-            borderRadius: '50%',
-            transform: 'rotate(45deg)',
-            zIndex: 1
-          }}></div>
+          <div
+            style={{
+              width: "8px",
+              height: "8px",
+              background: "white",
+              borderRadius: "50%",
+              transform: "rotate(45deg)",
+              zIndex: 1,
+            }}
+          ></div>
         )}
       </div>
     </AdvancedMarker>
   );
 };
-

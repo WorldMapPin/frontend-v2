@@ -1,11 +1,32 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, BarElement } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
-import { fetchBasicPinStats, fetchPinStats, PinStats, CountryStats, UserStats } from '../../lib/statsApi';
-import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
-import { useTheme } from '@/components/ThemeProvider';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+import {
+  fetchBasicPinStats,
+  fetchPinStats,
+  PinStats,
+  CountryStats,
+  UserStats,
+} from "../../lib/statsApi";
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  ZoomableGroup,
+} from "react-simple-maps";
+import { useTheme } from "@/components/ThemeProvider";
 import {
   MapPin,
   Globe,
@@ -21,8 +42,8 @@ import {
   Waves,
   ChevronDown,
   Calendar,
-  Award
-} from 'lucide-react';
+  Award,
+} from "lucide-react";
 
 // Register Chart.js components
 ChartJS.register(
@@ -33,41 +54,42 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 // World map GeoJSON URL
-const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+const GEO_URL =
+  "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 // Helper functions for country name matching
 function normalizeCountryName(name: string): string {
   if (!name) return name;
 
   const normalizations: { [key: string]: string } = {
-    'United States of America': 'United States',
-    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
-    'Russian Federation': 'Russia',
-    'Republic of Korea': 'South Korea',
-    "Democratic People's Republic of Korea": 'North Korea',
-    "People's Republic of China": 'China',
-    'Islamic Republic of Iran': 'Iran',
-    'Syrian Arab Republic': 'Syria',
-    'Lao People\'s Democratic Republic': 'Laos',
-    'Myanmar': 'Myanmar',
-    'The Bahamas': 'Bahamas',
-    'The Gambia': 'Gambia',
-    'Republic of the Congo': 'Congo',
-    'Democratic Republic of the Congo': 'Congo, Democratic Republic of the',
-    'Dem. Rep. Congo': 'Congo, Democratic Republic of the',
-    'Dem Rep Congo': 'Congo, Democratic Republic of the',
-    'DR Congo': 'Congo, Democratic Republic of the',
-    'D.R. Congo': 'Congo, Democratic Republic of the',
-    'Republic of Moldova': 'Moldova',
-    'Republic of the Philippines': 'Philippines',
-    'United Republic of Tanzania': 'Tanzania',
-    'Bolivarian Republic of Venezuela': 'Venezuela',
-    'Kalaallit Nunaat': 'Greenland',
-    'Grønland': 'Greenland',
+    "United States of America": "United States",
+    "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
+    "Russian Federation": "Russia",
+    "Republic of Korea": "South Korea",
+    "Democratic People's Republic of Korea": "North Korea",
+    "People's Republic of China": "China",
+    "Islamic Republic of Iran": "Iran",
+    "Syrian Arab Republic": "Syria",
+    "Lao People's Democratic Republic": "Laos",
+    Myanmar: "Myanmar",
+    "The Bahamas": "Bahamas",
+    "The Gambia": "Gambia",
+    "Republic of the Congo": "Congo",
+    "Democratic Republic of the Congo": "Congo, Democratic Republic of the",
+    "Dem. Rep. Congo": "Congo, Democratic Republic of the",
+    "Dem Rep Congo": "Congo, Democratic Republic of the",
+    "DR Congo": "Congo, Democratic Republic of the",
+    "D.R. Congo": "Congo, Democratic Republic of the",
+    "Republic of Moldova": "Moldova",
+    "Republic of the Philippines": "Philippines",
+    "United Republic of Tanzania": "Tanzania",
+    "Bolivarian Republic of Venezuela": "Venezuela",
+    "Kalaallit Nunaat": "Greenland",
+    Grønland: "Greenland",
   };
 
   if (normalizations[name]) {
@@ -75,12 +97,12 @@ function normalizeCountryName(name: string): string {
   }
 
   const normalized = name
-    .replace(/^Republic of /i, '')
-    .replace(/^Kingdom of /i, '')
-    .replace(/^State of /i, '')
-    .replace(/^The /i, '')
-    .replace(/ of America$/, '')
-    .replace(/ of Great Britain and Northern Ireland$/, '')
+    .replace(/^Republic of /i, "")
+    .replace(/^Kingdom of /i, "")
+    .replace(/^State of /i, "")
+    .replace(/^The /i, "")
+    .replace(/ of America$/, "")
+    .replace(/ of Great Britain and Northern Ireland$/, "")
     .trim();
 
   return normalized;
@@ -88,30 +110,52 @@ function normalizeCountryName(name: string): string {
 
 function isCountryInStats(
   mapCountryName: string,
-  countries: CountryStats[]
+  countries: CountryStats[],
 ): boolean {
   if (!mapCountryName) return false;
 
   const lowerMapName = mapCountryName.toLowerCase().trim();
 
   // Special handling for Greenland
-  if (lowerMapName.includes('greenland') || lowerMapName.includes('kalaallit') || lowerMapName.includes('grønland')) {
+  if (
+    lowerMapName.includes("greenland") ||
+    lowerMapName.includes("kalaallit") ||
+    lowerMapName.includes("grønland")
+  ) {
     for (const country of countries) {
       const countryLower = country.country.toLowerCase();
-      if (countryLower.includes('greenland') || countryLower.includes('kalaallit') || countryLower.includes('grønland')) {
+      if (
+        countryLower.includes("greenland") ||
+        countryLower.includes("kalaallit") ||
+        countryLower.includes("grønland")
+      ) {
         return true;
       }
     }
   }
 
   // Special handling for Democratic Republic of the Congo
-  const drcVariations = ['dem. rep. congo', 'dem rep congo', 'dr congo', 'd.r. congo', 'democratic republic of the congo', 'congo, democratic republic of the'];
-  const isDRC = drcVariations.some(v => lowerMapName.includes(v) || lowerMapName === v);
+  const drcVariations = [
+    "dem. rep. congo",
+    "dem rep congo",
+    "dr congo",
+    "d.r. congo",
+    "democratic republic of the congo",
+    "congo, democratic republic of the",
+  ];
+  const isDRC = drcVariations.some(
+    (v) => lowerMapName.includes(v) || lowerMapName === v,
+  );
   if (isDRC) {
     for (const country of countries) {
       const countryLower = country.country.toLowerCase();
-      if (drcVariations.some(v => countryLower.includes(v) || countryLower === v) ||
-        countryLower.includes('congo') && (countryLower.includes('democratic') || countryLower.includes('dem'))) {
+      if (
+        drcVariations.some(
+          (v) => countryLower.includes(v) || countryLower === v,
+        ) ||
+        (countryLower.includes("congo") &&
+          (countryLower.includes("democratic") || countryLower.includes("dem")))
+      ) {
         return true;
       }
     }
@@ -121,10 +165,16 @@ function isCountryInStats(
     if (country.country.toLowerCase().trim() === lowerMapName) {
       return true;
     }
-    if (normalizeCountryName(country.country).toLowerCase().trim() === lowerMapName) {
+    if (
+      normalizeCountryName(country.country).toLowerCase().trim() ===
+      lowerMapName
+    ) {
       return true;
     }
-    if (normalizeCountryName(mapCountryName).toLowerCase().trim() === country.country.toLowerCase().trim()) {
+    if (
+      normalizeCountryName(mapCountryName).toLowerCase().trim() ===
+      country.country.toLowerCase().trim()
+    ) {
       return true;
     }
   }
@@ -134,30 +184,52 @@ function isCountryInStats(
 
 function getCountryPinCount(
   mapCountryName: string,
-  countries: CountryStats[]
+  countries: CountryStats[],
 ): number {
   if (!mapCountryName) return 0;
 
   const lowerMapName = mapCountryName.toLowerCase().trim();
 
   // Special handling for Greenland
-  if (lowerMapName.includes('greenland') || lowerMapName.includes('kalaallit') || lowerMapName.includes('grønland')) {
+  if (
+    lowerMapName.includes("greenland") ||
+    lowerMapName.includes("kalaallit") ||
+    lowerMapName.includes("grønland")
+  ) {
     for (const country of countries) {
       const countryLower = country.country.toLowerCase();
-      if (countryLower.includes('greenland') || countryLower.includes('kalaallit') || countryLower.includes('grønland')) {
+      if (
+        countryLower.includes("greenland") ||
+        countryLower.includes("kalaallit") ||
+        countryLower.includes("grønland")
+      ) {
         return country.count;
       }
     }
   }
 
   // Special handling for Democratic Republic of the Congo
-  const drcVariations = ['dem. rep. congo', 'dem rep congo', 'dr congo', 'd.r. congo', 'democratic republic of the congo', 'congo, democratic republic of the'];
-  const isDRC = drcVariations.some(v => lowerMapName.includes(v) || lowerMapName === v);
+  const drcVariations = [
+    "dem. rep. congo",
+    "dem rep congo",
+    "dr congo",
+    "d.r. congo",
+    "democratic republic of the congo",
+    "congo, democratic republic of the",
+  ];
+  const isDRC = drcVariations.some(
+    (v) => lowerMapName.includes(v) || lowerMapName === v,
+  );
   if (isDRC) {
     for (const country of countries) {
       const countryLower = country.country.toLowerCase();
-      if (drcVariations.some(v => countryLower.includes(v) || countryLower === v) ||
-        countryLower.includes('congo') && (countryLower.includes('democratic') || countryLower.includes('dem'))) {
+      if (
+        drcVariations.some(
+          (v) => countryLower.includes(v) || countryLower === v,
+        ) ||
+        (countryLower.includes("congo") &&
+          (countryLower.includes("democratic") || countryLower.includes("dem")))
+      ) {
         return country.count;
       }
     }
@@ -167,10 +239,16 @@ function getCountryPinCount(
     if (country.country.toLowerCase().trim() === lowerMapName) {
       return country.count;
     }
-    if (normalizeCountryName(country.country).toLowerCase().trim() === lowerMapName) {
+    if (
+      normalizeCountryName(country.country).toLowerCase().trim() ===
+      lowerMapName
+    ) {
       return country.count;
     }
-    if (normalizeCountryName(mapCountryName).toLowerCase().trim() === country.country.toLowerCase().trim()) {
+    if (
+      normalizeCountryName(mapCountryName).toLowerCase().trim() ===
+      country.country.toLowerCase().trim()
+    ) {
       return country.count;
     }
   }
@@ -179,32 +257,42 @@ function getCountryPinCount(
 }
 
 // Get color based on pin count
-function getCountryColor(pinCount: number, maxPins: number, isDark: boolean = false): string {
-  if (pinCount === 0) return isDark ? '#2d2d2d' : '#d1d5db'; // gray for countries with no pins
+function getCountryColor(
+  pinCount: number,
+  maxPins: number,
+  isDark: boolean = false,
+): string {
+  if (pinCount === 0) return isDark ? "#2d2d2d" : "#d1d5db"; // gray for countries with no pins
 
   // Color gradient from light orange to dark orange
   const intensity = Math.min(pinCount / maxPins, 1);
 
-  if (intensity < 0.2) return '#FED7AA'; // orange-200
-  if (intensity < 0.4) return '#FDBA74'; // orange-300
-  if (intensity < 0.6) return '#FB923C'; // orange-400
-  if (intensity < 0.8) return '#F97316'; // orange-500
-  return '#EA580C'; // orange-600
+  if (intensity < 0.2) return "#FED7AA"; // orange-200
+  if (intensity < 0.4) return "#FDBA74"; // orange-300
+  if (intensity < 0.6) return "#FB923C"; // orange-400
+  if (intensity < 0.8) return "#F97316"; // orange-500
+  return "#EA580C"; // orange-600
 }
 
 // World Map Component for Countries
-function CountriesWorldMap({ countries, isDark = false }: { countries: CountryStats[], isDark?: boolean }) {
-  const [tooltipContent, setTooltipContent] = useState('');
-  const maxPins = Math.max(...countries.map(c => c.count), 1);
+function CountriesWorldMap({
+  countries,
+  isDark = false,
+}: {
+  countries: CountryStats[];
+  isDark?: boolean;
+}) {
+  const [tooltipContent, setTooltipContent] = useState("");
+  const maxPins = Math.max(...countries.map((c) => c.count), 1);
 
   return (
     <div className="relative overflow-hidden">
-      <div className="relative" style={{ width: '100%', height: '400px' }}>
+      <div className="relative" style={{ width: "100%", height: "400px" }}>
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{
             scale: 130,
-            center: [0, 20]
+            center: [0, 20],
           }}
           className="w-full h-full"
         >
@@ -222,26 +310,30 @@ function CountriesWorldMap({ countries, isDark = false }: { countries: CountrySt
                       key={geo.rsmKey}
                       geography={geo}
                       fill={fillColor}
-                      stroke={isDark ? '#1a1a1a' : '#ffffff'}
+                      stroke={isDark ? "#1a1a1a" : "#ffffff"}
                       strokeWidth={0.5}
                       style={{
-                        default: { outline: 'none' },
+                        default: { outline: "none" },
                         hover: {
-                          fill: hasData ? '#B45309' : (isDark ? '#404040' : '#9ca3af'),
-                          outline: 'none',
-                          cursor: 'pointer'
+                          fill: hasData
+                            ? "#B45309"
+                            : isDark
+                              ? "#404040"
+                              : "#9ca3af",
+                          outline: "none",
+                          cursor: "pointer",
                         },
-                        pressed: { outline: 'none' }
+                        pressed: { outline: "none" },
                       }}
                       onMouseEnter={() => {
                         setTooltipContent(
                           hasData
-                            ? `${countryName}: ${pinCount} ${pinCount === 1 ? 'pin' : 'pins'}`
-                            : `${countryName}: No pins`
+                            ? `${countryName}: ${pinCount} ${pinCount === 1 ? "pin" : "pins"}`
+                            : `${countryName}: No pins`,
                         );
                       }}
                       onMouseLeave={() => {
-                        setTooltipContent('');
+                        setTooltipContent("");
                       }}
                     />
                   );
@@ -256,9 +348,9 @@ function CountriesWorldMap({ countries, isDark = false }: { countries: CountrySt
           <div
             className="absolute px-3 py-1.5 rounded-lg text-xs font-medium pointer-events-none z-50 shadow-xl stats-map-tooltip"
             style={{
-              left: '50%',
-              top: '10px',
-              transform: 'translateX(-50%)'
+              left: "50%",
+              top: "10px",
+              transform: "translateX(-50%)",
             }}
           >
             {tooltipContent}
@@ -269,20 +361,32 @@ function CountriesWorldMap({ countries, isDark = false }: { countries: CountrySt
       {/* Legend */}
       <div className="flex items-center justify-center gap-4 mt-2 text-xs flex-wrap px-4 pb-2">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FDE68A' }}></div>
-          <span style={{ color: 'var(--text-muted)' }}>Low</span>
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: "#FDE68A" }}
+          ></div>
+          <span style={{ color: "var(--text-muted)" }}>Low</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FB923C' }}></div>
-          <span style={{ color: 'var(--text-muted)' }}>Medium</span>
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: "#FB923C" }}
+          ></div>
+          <span style={{ color: "var(--text-muted)" }}>Medium</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#B45309' }}></div>
-          <span style={{ color: 'var(--text-muted)' }}>High</span>
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: "#B45309" }}
+          ></div>
+          <span style={{ color: "var(--text-muted)" }}>High</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--skeleton-bg)' }}></div>
-          <span style={{ color: 'var(--text-muted)' }}>No pins</span>
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: "var(--skeleton-bg)" }}
+          ></div>
+          <span style={{ color: "var(--text-muted)" }}>No pins</span>
         </div>
       </div>
     </div>
@@ -291,19 +395,19 @@ function CountriesWorldMap({ countries, isDark = false }: { countries: CountrySt
 
 export default function StatsPage() {
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const isDark = theme === "dark";
   const [stats, setStats] = useState<PinStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'daily' | 'monthly'>('daily');
+  const [activeTab, setActiveTab] = useState<"daily" | "monthly">("daily");
   const [progress, setProgress] = useState(0);
-  const [progressMessage, setProgressMessage] = useState('');
+  const [progressMessage, setProgressMessage] = useState("");
   const [isLoadingHiveData, setIsLoadingHiveData] = useState(false);
   const [hiveProgress, setHiveProgress] = useState(0);
-  const [hiveProgressMessage, setHiveProgressMessage] = useState('');
+  const [hiveProgressMessage, setHiveProgressMessage] = useState("");
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [isCachedData, setIsCachedData] = useState(false);
-  const [dataType, setDataType] = useState<'basic' | 'full'>('basic');
+  const [dataType, setDataType] = useState<"basic" | "full">("basic");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
   const loadingHiveRef = useRef(false);
@@ -317,75 +421,77 @@ export default function StatsPage() {
       setLoading(true);
       setError(null);
       setProgress(0);
-      setProgressMessage('Checking for cached data...');
+      setProgressMessage("Checking for cached data...");
 
       // Step 1: Try to load cached data (unless forcing refresh)
       if (!forceRefresh) {
-        console.log('📦 Checking cache...');
-        const cacheResponse = await fetch('/api/stats-cache');
+        console.log("📦 Checking cache...");
+        const cacheResponse = await fetch("/api/stats-cache");
         const cacheResult = await cacheResponse.json();
 
         if (cacheResult.success && cacheResult.data) {
-          console.log('✅ Loaded cached data from:', cacheResult.lastUpdated);
+          console.log("✅ Loaded cached data from:", cacheResult.lastUpdated);
           setStats(cacheResult.data);
           setLastUpdated(cacheResult.lastUpdated);
           setIsCachedData(true);
-          setDataType(cacheResult.dataType || 'full');
+          setDataType(cacheResult.dataType || "full");
           setLoading(false);
-          setProgressMessage('Loaded from cache');
+          setProgressMessage("Loaded from cache");
 
           // If we only have basic stats cached, start loading full stats in background
-          if (cacheResult.dataType === 'basic' && !loadingHiveRef.current) {
+          if (cacheResult.dataType === "basic" && !loadingHiveRef.current) {
             loadFullStatsInBackground();
           }
           return; // Show cached data immediately
         }
       } else {
-        console.log('🔄 Force refresh requested, skipping cache...');
+        console.log("🔄 Force refresh requested, skipping cache...");
       }
 
       // Step 2: No cache or force refresh, load basic stats first (fast)
-      console.log('⚡ Loading basic stats...');
-      setProgressMessage('Loading basic statistics...');
+      console.log("⚡ Loading basic stats...");
+      setProgressMessage("Loading basic statistics...");
 
       const basicStats = await fetchBasicPinStats((percent, message) => {
         setProgress(percent);
         setProgressMessage(message);
       });
 
-      console.log('✅ Basic stats loaded, displaying now');
+      console.log("✅ Basic stats loaded, displaying now");
       setStats(basicStats);
-      setDataType('basic');
+      setDataType("basic");
       setIsCachedData(false);
       setLoading(false);
 
       // Cache the basic stats
-      console.log('💾 Caching basic stats...');
-      await fetch('/api/stats-cache', {
-        method: 'POST',
+      console.log("💾 Caching basic stats...");
+      await fetch("/api/stats-cache", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ stats: basicStats, dataType: 'basic' }),
+        body: JSON.stringify({ stats: basicStats, dataType: "basic" }),
       });
       setLastUpdated(new Date().toISOString());
       setIsCachedData(true);
-      console.log('✅ Basic stats cached');
+      console.log("✅ Basic stats cached");
 
       // Step 3: Start loading full stats with Hive data in background
       if (!loadingHiveRef.current) {
         loadFullStatsInBackground();
       }
     } catch (err) {
-      console.error('❌ Error loading stats:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load statistics');
+      console.error("❌ Error loading stats:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load statistics",
+      );
       setLoading(false);
     }
   };
 
   const loadFullStatsInBackground = async () => {
     if (loadingHiveRef.current) {
-      console.log('⚠️ Already loading full stats');
+      console.log("⚠️ Already loading full stats");
       return;
     }
 
@@ -393,36 +499,36 @@ export default function StatsPage() {
       loadingHiveRef.current = true;
       setIsLoadingHiveData(true);
       setHiveProgress(0);
-      setHiveProgressMessage('Starting Hive data fetch...');
+      setHiveProgressMessage("Starting Hive data fetch...");
 
-      console.log('🔄 Loading full stats with Hive data...');
+      console.log("🔄 Loading full stats with Hive data...");
 
       const fullStats = await fetchPinStats((percent, message) => {
         setHiveProgress(percent);
         setHiveProgressMessage(message);
       });
 
-      console.log('✅ Full stats loaded with Hive data');
+      console.log("✅ Full stats loaded with Hive data");
       setStats(fullStats);
-      setDataType('full');
+      setDataType("full");
       setIsLoadingHiveData(false);
 
       // Save to cache
-      console.log('💾 Saving full stats to cache...');
-      await fetch('/api/stats-cache', {
-        method: 'POST',
+      console.log("💾 Saving full stats to cache...");
+      await fetch("/api/stats-cache", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ stats: fullStats, dataType: 'full' }),
+        body: JSON.stringify({ stats: fullStats, dataType: "full" }),
       });
 
       const now = new Date().toISOString();
       setLastUpdated(now);
       setIsCachedData(true);
-      console.log('✅ Full stats cached successfully');
+      console.log("✅ Full stats cached successfully");
     } catch (err) {
-      console.error('❌ Error loading full stats:', err);
+      console.error("❌ Error loading full stats:", err);
       setIsLoadingHiveData(false);
     } finally {
       loadingHiveRef.current = false;
@@ -430,10 +536,10 @@ export default function StatsPage() {
   };
 
   const handleRefreshBasicData = async () => {
-    console.log('🔄 Manual refresh of basic data triggered');
+    console.log("🔄 Manual refresh of basic data triggered");
     setIsRefreshing(true);
     setIsCachedData(false);
-    setDataType('basic');
+    setDataType("basic");
 
     try {
       // Force refresh basic stats
@@ -444,9 +550,9 @@ export default function StatsPage() {
   };
 
   const handleRefreshHiveData = async () => {
-    console.log('🔄 Manual refresh of Hive data triggered');
+    console.log("🔄 Manual refresh of Hive data triggered");
     if (loadingHiveRef.current) {
-      console.log('⚠️ Already loading Hive data');
+      console.log("⚠️ Already loading Hive data");
       return;
     }
 
@@ -455,18 +561,18 @@ export default function StatsPage() {
   };
 
   const handleRefreshAllData = async () => {
-    console.log('🧹 Manual refresh of all data triggered');
+    console.log("🧹 Manual refresh of all data triggered");
     setIsRefreshingAll(true);
 
     try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem('worldmappin:hive-progress:v1');
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("worldmappin:hive-progress:v1");
       }
 
       try {
-        await fetch('/api/stats-cache', { method: 'DELETE' });
+        await fetch("/api/stats-cache", { method: "DELETE" });
       } catch (err) {
-        console.warn('Failed to clear stats cache on server:', err);
+        console.warn("Failed to clear stats cache on server:", err);
       }
 
       await loadStatsProgressive(true);
@@ -480,7 +586,7 @@ export default function StatsPage() {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
-      mode: 'index' as const,
+      mode: "index" as const,
       intersect: false,
     },
     plugins: {
@@ -488,26 +594,28 @@ export default function StatsPage() {
         display: false, // We have a custom legend or the title area handles it
       },
       tooltip: {
-        backgroundColor: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        titleColor: isDark ? '#F5E6D3' : '#1e293b',
-        bodyColor: isDark ? '#C9B8A8' : '#475569',
-        borderColor: isDark ? '#FFA600' : '#e2e8f0',
+        backgroundColor: isDark
+          ? "rgba(30, 30, 30, 0.95)"
+          : "rgba(255, 255, 255, 0.95)",
+        titleColor: isDark ? "#F5E6D3" : "#1e293b",
+        bodyColor: isDark ? "#C9B8A8" : "#475569",
+        borderColor: isDark ? "#FFA600" : "#e2e8f0",
         borderWidth: 1,
         padding: 12,
         boxPadding: 4,
         usePointStyle: true,
         callbacks: {
           label: function (context: any) {
-            let label = context.dataset.label || '';
+            let label = context.dataset.label || "";
             if (label) {
-              label += ': ';
+              label += ": ";
             }
             if (context.parsed.y !== null) {
               label += context.parsed.y;
             }
             return label;
-          }
-        }
+          },
+        },
       },
       title: {
         display: false,
@@ -524,15 +632,15 @@ export default function StatsPage() {
           maxTicksLimit: 8,
           font: {
             size: 11,
-            weight: 'bold' as const,
+            weight: "bold" as const,
           },
-          color: isDark ? '#C9B8A8' : '#94a3b8',
-        }
+          color: isDark ? "#C9B8A8" : "#94a3b8",
+        },
       },
       y: {
         beginAtZero: true,
         grid: {
-          color: isDark ? 'rgba(255, 255, 255, 0.1)' : '#f1f5f9',
+          color: isDark ? "rgba(255, 255, 255, 0.1)" : "#f1f5f9",
         },
         border: {
           display: false,
@@ -541,9 +649,9 @@ export default function StatsPage() {
         ticks: {
           font: {
             size: 11,
-            weight: 'bold' as const,
+            weight: "bold" as const,
           },
-          color: isDark ? '#C9B8A8' : '#94a3b8',
+          color: isDark ? "#C9B8A8" : "#94a3b8",
           padding: 10,
         },
       },
@@ -553,42 +661,49 @@ export default function StatsPage() {
   const getPostsChartData = () => {
     if (!stats) return null;
 
-    const timeStats = activeTab === 'daily' ? stats.dailyStats : stats.monthlyStats;
-    const curatedStats = activeTab === 'daily' ? stats.curatedDailyStats : stats.curatedMonthlyStats;
+    const timeStats =
+      activeTab === "daily" ? stats.dailyStats : stats.monthlyStats;
+    const curatedStats =
+      activeTab === "daily"
+        ? stats.curatedDailyStats
+        : stats.curatedMonthlyStats;
 
     return {
-      labels: timeStats.map(stat => {
+      labels: timeStats.map((stat) => {
         const date = new Date(stat.date);
-        return activeTab === 'daily'
-          ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          : date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        return activeTab === "daily"
+          ? date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+          : date.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+            });
       }),
       datasets: [
         {
-          label: 'All Posts',
-          data: timeStats.map(stat => stat.count),
-          borderColor: '#F97316',
-          backgroundColor: 'rgba(249, 115, 22, 0.08)',
+          label: "All Posts",
+          data: timeStats.map((stat) => stat.count),
+          borderColor: "#F97316",
+          backgroundColor: "rgba(249, 115, 22, 0.08)",
           fill: true,
           tension: 0.4,
           pointRadius: 0,
           pointHoverRadius: 6,
-          pointHoverBackgroundColor: '#fff',
-          pointHoverBorderColor: '#F97316',
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "#F97316",
           pointHoverBorderWidth: 3,
           borderWidth: 3,
         },
         {
-          label: 'Curated Posts',
-          data: curatedStats.map(stat => stat.count),
-          borderColor: '#10B981',
-          backgroundColor: 'rgba(16, 185, 129, 0.08)',
+          label: "Curated Posts",
+          data: curatedStats.map((stat) => stat.count),
+          borderColor: "#10B981",
+          backgroundColor: "rgba(16, 185, 129, 0.08)",
           fill: true,
           tension: 0.4,
           pointRadius: 0,
           pointHoverRadius: 6,
-          pointHoverBackgroundColor: '#fff',
-          pointHoverBorderColor: '#10B981',
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "#10B981",
           pointHoverBorderWidth: 3,
           borderWidth: 3,
         },
@@ -602,34 +717,34 @@ export default function StatsPage() {
     const topCountries = stats.countries.slice(0, 10);
 
     return {
-      labels: topCountries.map(country => country.country),
+      labels: topCountries.map((country) => country.country),
       datasets: [
         {
-          label: 'Number of Pins',
-          data: topCountries.map(country => country.count),
+          label: "Number of Pins",
+          data: topCountries.map((country) => country.count),
           backgroundColor: [
-            'rgba(255, 99, 132, 0.8)',
-            'rgba(54, 162, 235, 0.8)',
-            'rgba(255, 205, 86, 0.8)',
-            'rgba(75, 192, 192, 0.8)',
-            'rgba(153, 102, 255, 0.8)',
-            'rgba(255, 159, 64, 0.8)',
-            'rgba(199, 199, 199, 0.8)',
-            'rgba(83, 102, 255, 0.8)',
-            'rgba(255, 99, 255, 0.8)',
-            'rgba(99, 255, 132, 0.8)',
+            "rgba(255, 99, 132, 0.8)",
+            "rgba(54, 162, 235, 0.8)",
+            "rgba(255, 205, 86, 0.8)",
+            "rgba(75, 192, 192, 0.8)",
+            "rgba(153, 102, 255, 0.8)",
+            "rgba(255, 159, 64, 0.8)",
+            "rgba(199, 199, 199, 0.8)",
+            "rgba(83, 102, 255, 0.8)",
+            "rgba(255, 99, 255, 0.8)",
+            "rgba(99, 255, 132, 0.8)",
           ],
           borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 205, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)',
-            'rgba(199, 199, 199, 1)',
-            'rgba(83, 102, 255, 1)',
-            'rgba(255, 99, 255, 1)',
-            'rgba(99, 255, 132, 1)',
+            "rgba(255, 99, 132, 1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(255, 205, 86, 1)",
+            "rgba(75, 192, 192, 1)",
+            "rgba(153, 102, 255, 1)",
+            "rgba(255, 159, 64, 1)",
+            "rgba(199, 199, 199, 1)",
+            "rgba(83, 102, 255, 1)",
+            "rgba(255, 99, 255, 1)",
+            "rgba(99, 255, 132, 1)",
           ],
           borderWidth: 1,
         },
@@ -645,13 +760,13 @@ export default function StatsPage() {
       .slice(0, 10);
 
     return {
-      labels: topCountries.map(country => country.country),
+      labels: topCountries.map((country) => country.country),
       datasets: [
         {
-          label: 'Total Payout ($)',
-          data: topCountries.map(country => country.totalPayout),
-          backgroundColor: 'rgba(255, 169, 123, 0.8)',
-          borderColor: 'rgba(255, 140, 90, 1)',
+          label: "Total Payout ($)",
+          data: topCountries.map((country) => country.totalPayout),
+          backgroundColor: "rgba(255, 169, 123, 0.8)",
+          borderColor: "rgba(255, 140, 90, 1)",
           borderWidth: 1,
         },
       ],
@@ -664,13 +779,13 @@ export default function StatsPage() {
     const topUsers = stats.users.slice(0, 10);
 
     return {
-      labels: topUsers.map(user => user.username),
+      labels: topUsers.map((user) => user.username),
       datasets: [
         {
-          label: 'Number of Pins',
-          data: topUsers.map(user => user.pinCount),
-          backgroundColor: 'rgba(79, 70, 229, 0.8)',
-          borderColor: 'rgba(79, 70, 229, 1)',
+          label: "Number of Pins",
+          data: topUsers.map((user) => user.pinCount),
+          backgroundColor: "rgba(79, 70, 229, 0.8)",
+          borderColor: "rgba(79, 70, 229, 1)",
           borderWidth: 1,
         },
       ],
@@ -679,29 +794,54 @@ export default function StatsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+      <div
+        className="min-h-screen flex items-center justify-center p-4 transition-colors duration-300"
+        style={{ backgroundColor: "var(--background)" }}
+      >
         <div className="w-full max-w-md">
-          <div className="rounded-lg shadow-lg p-8 transition-colors duration-300" style={{ backgroundColor: 'var(--card-bg)', boxShadow: '0 10px 15px -3px var(--shadow-color)' }}>
+          <div
+            className="rounded-lg shadow-lg p-8 transition-colors duration-300"
+            style={{
+              backgroundColor: "var(--card-bg)",
+              boxShadow: "0 10px 15px -3px var(--shadow-color)",
+            }}
+          >
             <div className="text-center mb-6">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-              <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Loading Statistics</h2>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{progressMessage || 'Initializing...'}</p>
+              <h2
+                className="text-xl font-bold mb-2"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Loading Statistics
+              </h2>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                {progressMessage || "Initializing..."}
+              </p>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full rounded-full h-3 mb-2 overflow-hidden" style={{ backgroundColor: 'var(--skeleton-bg)' }}>
+            <div
+              className="w-full rounded-full h-3 mb-2 overflow-hidden"
+              style={{ backgroundColor: "var(--skeleton-bg)" }}
+            >
               <div
                 className="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${Math.max(progress, 1)}%` }}
               ></div>
             </div>
 
-            <div className="flex justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
+            <div
+              className="flex justify-between text-xs"
+              style={{ color: "var(--text-muted)" }}
+            >
               <span>{Math.round(progress)}%</span>
-              <span>{progressMessage ? 'Loading...' : 'Please wait...'}</span>
+              <span>{progressMessage ? "Loading..." : "Please wait..."}</span>
             </div>
 
-            <div className="mt-6 text-xs text-center" style={{ color: 'var(--text-muted)' }}>
+            <div
+              className="mt-6 text-xs text-center"
+              style={{ color: "var(--text-muted)" }}
+            >
               <p>Fetching data from WorldMapPin API</p>
               <p className="mt-1">Loading basic statistics first...</p>
             </div>
@@ -713,11 +853,21 @@ export default function StatsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+      <div
+        className="min-h-screen flex items-center justify-center transition-colors duration-300"
+        style={{ backgroundColor: "var(--background)" }}
+      >
         <div className="text-center">
           <div className="text-red-600 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Error Loading Statistics</h2>
-          <p className="mb-4" style={{ color: 'var(--text-muted)' }}>{error}</p>
+          <h2
+            className="text-2xl font-bold mb-2"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Error Loading Statistics
+          </h2>
+          <p className="mb-4" style={{ color: "var(--text-muted)" }}>
+            {error}
+          </p>
           <button
             onClick={() => loadStatsProgressive()}
             className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors"
@@ -731,18 +881,33 @@ export default function StatsPage() {
 
   if (!stats) {
     return (
-      <div className="min-h-screen flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+      <div
+        className="min-h-screen flex items-center justify-center transition-colors duration-300"
+        style={{ backgroundColor: "var(--background)" }}
+      >
         <div className="text-center">
-          <div className="text-6xl mb-4" style={{ color: 'var(--text-muted)' }}>📊</div>
-          <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Statistics Available</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Unable to load statistics data.</p>
+          <div className="text-6xl mb-4" style={{ color: "var(--text-muted)" }}>
+            📊
+          </div>
+          <h2
+            className="text-2xl font-bold mb-2"
+            style={{ color: "var(--text-primary)" }}
+          >
+            No Statistics Available
+          </h2>
+          <p style={{ color: "var(--text-muted)" }}>
+            Unable to load statistics data.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen font-lexend transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
+    <div
+      className="min-h-screen font-lexend transition-colors duration-300"
+      style={{ backgroundColor: "var(--background)" }}
+    >
       {/* Header Card Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
         <div className="rounded-2xl sm:rounded-3xl shadow-xl relative overflow-hidden bg-gradient-to-br from-[#F97316] to-[#F59E0B] p-6 sm:p-12">
@@ -764,13 +929,22 @@ export default function StatsPage() {
             {/* Last Updated Card */}
             {lastUpdated && (
               <div className="bg-[#B45309]/30 backdrop-blur-md rounded-2xl p-4 sm:p-6 md:p-8 text-white text-center md:text-right shadow-lg border border-white/10 w-full sm:w-auto min-w-[200px] md:min-w-[240px]">
-                <p className="text-[10px] font-bold tracking-widest opacity-80 mb-2 uppercase">Last Updated</p>
+                <p className="text-[10px] font-bold tracking-widest opacity-80 mb-2 uppercase">
+                  Last Updated
+                </p>
                 <div className="flex flex-col gap-1">
                   <p className="text-xl sm:text-2xl font-bold leading-tight">
-                    {new Date(lastUpdated).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(lastUpdated).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
                   </p>
                   <p className="text-xs sm:text-sm font-bold opacity-80">
-                    {new Date(lastUpdated).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                    {new Date(lastUpdated).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </div>
               </div>
@@ -788,7 +962,9 @@ export default function StatsPage() {
               disabled={isRefreshing || loading || isRefreshingAll}
               className="group flex items-center justify-center gap-2 px-4 py-2.5 text-[11px] font-bold tracking-tight stats-refresh-btn rounded-xl transition-all disabled:opacity-50"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`}
+              />
               <span>Refresh Stats</span>
             </button>
 
@@ -797,7 +973,9 @@ export default function StatsPage() {
               disabled={isRefreshingAll || loading || isLoadingHiveData}
               className="group flex items-center justify-center gap-2 px-4 py-2.5 text-[11px] font-bold tracking-tight text-white bg-gradient-to-r from-[#F97316] to-[#FB923C] hover:shadow-lg hover:shadow-orange-500/20 rounded-xl transition-all disabled:opacity-50"
             >
-              <Zap className={`w-3.5 h-3.5 ${isRefreshingAll ? 'animate-spin' : ''}`} />
+              <Zap
+                className={`w-3.5 h-3.5 ${isRefreshingAll ? "animate-spin" : ""}`}
+              />
               <span>Refresh All Data</span>
             </button>
 
@@ -806,7 +984,9 @@ export default function StatsPage() {
               disabled={isLoadingHiveData || loading || isRefreshingAll}
               className="group flex items-center justify-center gap-2 px-4 py-2.5 text-[11px] font-bold tracking-tight stats-hive-btn rounded-xl transition-all disabled:opacity-50"
             >
-              <Database className={`w-3.5 h-3.5 ${isLoadingHiveData ? 'animate-spin' : ''}`} />
+              <Database
+                className={`w-3.5 h-3.5 ${isLoadingHiveData ? "animate-spin" : ""}`}
+              />
               <span>Load Hive Data</span>
             </button>
           </div>
@@ -818,19 +998,43 @@ export default function StatsPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center stats-hive-loading-icon">
-                  <Database className="w-5 h-5" style={{ color: isDark ? '#60A5FA' : '#2563EB' }} />
+                  <Database
+                    className="w-5 h-5"
+                    style={{ color: isDark ? "#60A5FA" : "#2563EB" }}
+                  />
                 </div>
                 <div>
-                  <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Fetching Hive blockchain data...</span>
-                  <p className="text-[10px] font-bold tracking-tighter" style={{ color: isDark ? '#93C5FD' : '#3B82F6' }}>{hiveProgressMessage}</p>
+                  <span
+                    className="text-sm font-bold tracking-tight"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Fetching Hive blockchain data...
+                  </span>
+                  <p
+                    className="text-[10px] font-bold tracking-tighter"
+                    style={{ color: isDark ? "#93C5FD" : "#3B82F6" }}
+                  >
+                    {hiveProgressMessage}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-2xl font-bold" style={{ color: isDark ? '#60A5FA' : '#2563EB' }}>{Math.round(hiveProgress)}%</span>
+                <span
+                  className="text-2xl font-bold"
+                  style={{ color: isDark ? "#60A5FA" : "#2563EB" }}
+                >
+                  {Math.round(hiveProgress)}%
+                </span>
               </div>
             </div>
-            <div className="w-full rounded-full h-3 overflow-hidden" style={{ backgroundColor: 'var(--skeleton-bg)' }}>
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${hiveProgress}%` }}></div>
+            <div
+              className="w-full rounded-full h-3 overflow-hidden"
+              style={{ backgroundColor: "var(--skeleton-bg)" }}
+            >
+              <div
+                className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-700 ease-out"
+                style={{ width: `${hiveProgress}%` }}
+              ></div>
             </div>
           </div>
         )}
@@ -843,8 +1047,12 @@ export default function StatsPage() {
               <MapPin className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-sm font-bold mb-1 stats-metric-label-orange">Total Pins</p>
-              <p className="text-3xl font-bold leading-none stats-metric-value-orange">{stats.totalPins.toLocaleString()}</p>
+              <p className="text-sm font-bold mb-1 stats-metric-label-orange">
+                Total Pins
+              </p>
+              <p className="text-3xl font-bold leading-none stats-metric-value-orange">
+                {stats.totalPins.toLocaleString()}
+              </p>
             </div>
           </div>
 
@@ -854,8 +1062,12 @@ export default function StatsPage() {
               <Globe className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-sm font-bold mb-1 stats-metric-label-orange">Countries</p>
-              <p className="text-3xl font-bold leading-none stats-metric-value-orange">{stats.totalCountries.toLocaleString()}</p>
+              <p className="text-sm font-bold mb-1 stats-metric-label-orange">
+                Countries
+              </p>
+              <p className="text-3xl font-bold leading-none stats-metric-value-orange">
+                {stats.totalCountries.toLocaleString()}
+              </p>
             </div>
           </div>
 
@@ -865,8 +1077,12 @@ export default function StatsPage() {
               <Users className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-sm font-bold mb-1 stats-metric-label-orange">Active Users</p>
-              <p className="text-3xl font-bold leading-none stats-metric-value-orange">{stats.totalUsers.toLocaleString()}</p>
+              <p className="text-sm font-bold mb-1 stats-metric-label-orange">
+                Active Users
+              </p>
+              <p className="text-3xl font-bold leading-none stats-metric-value-orange">
+                {stats.totalUsers.toLocaleString()}
+              </p>
             </div>
           </div>
 
@@ -876,8 +1092,15 @@ export default function StatsPage() {
               <Wallet className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-sm font-bold mb-1 stats-metric-label-orange">Total Payout</p>
-              <p className="text-3xl font-bold leading-none stats-metric-value-orange">${stats.totalPayout.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              <p className="text-sm font-bold mb-1 stats-metric-label-orange">
+                Total Payout
+              </p>
+              <p className="text-3xl font-bold leading-none stats-metric-value-orange">
+                $
+                {stats.totalPayout.toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </p>
             </div>
           </div>
 
@@ -887,8 +1110,12 @@ export default function StatsPage() {
               <Heart className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-sm font-bold mb-1 stats-metric-label-sky">Total Votes</p>
-              <p className="text-3xl font-bold leading-none stats-metric-value-sky">{stats.totalVotes.toLocaleString()}</p>
+              <p className="text-sm font-bold mb-1 stats-metric-label-sky">
+                Total Votes
+              </p>
+              <p className="text-3xl font-bold leading-none stats-metric-value-sky">
+                {stats.totalVotes.toLocaleString()}
+              </p>
             </div>
           </div>
 
@@ -898,8 +1125,12 @@ export default function StatsPage() {
               <MessageSquare className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-sm font-bold mb-1 stats-metric-label-purple">Total Comments</p>
-              <p className="text-3xl font-bold leading-none stats-metric-value-purple">{stats.totalComments.toLocaleString()}</p>
+              <p className="text-sm font-bold mb-1 stats-metric-label-purple">
+                Total Comments
+              </p>
+              <p className="text-3xl font-bold leading-none stats-metric-value-purple">
+                {stats.totalComments.toLocaleString()}
+              </p>
             </div>
           </div>
 
@@ -909,8 +1140,12 @@ export default function StatsPage() {
               <BarChart3 className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-sm font-bold mb-1 stats-metric-label-green">Avg. Payout/Post</p>
-              <p className="text-3xl font-bold leading-none stats-metric-value-green">${stats.avgPayoutPerPost.toFixed(2)}</p>
+              <p className="text-sm font-bold mb-1 stats-metric-label-green">
+                Avg. Payout/Post
+              </p>
+              <p className="text-3xl font-bold leading-none stats-metric-value-green">
+                ${stats.avgPayoutPerPost.toFixed(2)}
+              </p>
             </div>
           </div>
 
@@ -920,10 +1155,13 @@ export default function StatsPage() {
               <Waves className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-sm font-bold mb-1 stats-metric-label-cyan">Avg. Engagement</p>
+              <p className="text-sm font-bold mb-1 stats-metric-label-cyan">
+                Avg. Engagement
+              </p>
               <div className="flex flex-col">
                 <p className="text-3xl font-bold leading-none stats-metric-value-cyan">
-                  {stats.avgVotesPerPost.toFixed(1)} <span className="text-xs font-bold opacity-70">votes</span>
+                  {stats.avgVotesPerPost.toFixed(1)}{" "}
+                  <span className="text-xs font-bold opacity-70">votes</span>
                 </p>
                 <p className="text-xs font-bold mt-1 stats-metric-sublabel-cyan">
                   {stats.avgCommentsPerPost.toFixed(1)} comments
@@ -941,26 +1179,38 @@ export default function StatsPage() {
             <div className="stats-card rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-8 overflow-hidden relative">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-6 mb-8">
                 <div className="text-center sm:text-left">
-                  <h2 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Posts Over Time</h2>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Daily Posts and Curated Posts</p>
+                  <h2
+                    className="text-xl font-bold tracking-tight"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Posts Over Time
+                  </h2>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Daily Posts and Curated Posts
+                  </p>
                 </div>
 
                 <div className="stats-tab-container p-1 rounded-xl flex sm:inline-flex gap-1 shadow-inner w-full sm:w-auto">
                   <button
-                    onClick={() => setActiveTab('daily')}
-                    className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'daily'
-                      ? 'stats-tab-active'
-                      : 'stats-tab-inactive'
-                      }`}
+                    onClick={() => setActiveTab("daily")}
+                    className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                      activeTab === "daily"
+                        ? "stats-tab-active"
+                        : "stats-tab-inactive"
+                    }`}
                   >
                     Daily
                   </button>
                   <button
-                    onClick={() => setActiveTab('monthly')}
-                    className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'monthly'
-                      ? 'stats-tab-active'
-                      : 'stats-tab-inactive'
-                      }`}
+                    onClick={() => setActiveTab("monthly")}
+                    className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                      activeTab === "monthly"
+                        ? "stats-tab-active"
+                        : "stats-tab-inactive"
+                    }`}
                   >
                     Monthly
                   </button>
@@ -971,7 +1221,7 @@ export default function StatsPage() {
                 <div className="h-[400px]">
                   <Line
                     data={getPostsChartData()!}
-                    options={getChartOptions('')}
+                    options={getChartOptions("")}
                   />
                 </div>
               )}
@@ -981,8 +1231,18 @@ export default function StatsPage() {
             <div className="stats-card rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-8 overflow-hidden relative">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                 <div className="text-center sm:text-left w-full sm:w-auto">
-                  <h2 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Top 10 Countries by Pin Count</h2>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Ranked by number of pins</p>
+                  <h2
+                    className="text-xl font-bold tracking-tight"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Top 10 Countries by Pin Count
+                  </h2>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Ranked by number of pins
+                  </p>
                 </div>
               </div>
 
@@ -991,7 +1251,7 @@ export default function StatsPage() {
                   <div className="h-[400px]">
                     <Bar
                       data={getCountriesChartData()!}
-                      options={getChartOptions('')}
+                      options={getChartOptions("")}
                     />
                   </div>
                 )}
@@ -1002,20 +1262,38 @@ export default function StatsPage() {
             <div className="stats-card rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-8 overflow-hidden relative">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                 <div className="text-center sm:text-left w-full sm:w-auto">
-                  <h2 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Global Pin Distribution</h2>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Ranked by number of pins per country</p>
+                  <h2
+                    className="text-xl font-bold tracking-tight"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Global Pin Distribution
+                  </h2>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Ranked by number of pins per country
+                  </p>
                 </div>
               </div>
 
               {stats.countries.length > 0 && (
-                <CountriesWorldMap countries={stats.countries} isDark={isDark} />
+                <CountriesWorldMap
+                  countries={stats.countries}
+                  isDark={isDark}
+                />
               )}
             </div>
 
             {/* Top Tags Section (Grid) */}
             {stats.tags.length > 0 && (
               <div className="stats-card rounded-2xl sm:rounded-3xl shadow-xl p-8 overflow-hidden relative">
-                <h2 className="text-xl font-bold tracking-tight mb-8" style={{ color: 'var(--text-primary)' }}>Top Tags</h2>
+                <h2
+                  className="text-xl font-bold tracking-tight mb-8"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Top Tags
+                </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {stats.tags.slice(0, 10).map((tag, index) => (
                     <div
@@ -1023,11 +1301,26 @@ export default function StatsPage() {
                       className="stats-tag-card rounded-xl p-4 hover:shadow-lg transition-all group"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-orange-500 tracking-[0.2em]">#{tag.tag}</span>
-                        <span className="w-5 h-5 bg-orange-500 text-white rounded-lg flex items-center justify-center text-[10px] font-bold">{index + 1}</span>
+                        <span className="text-[10px] font-bold text-orange-500 tracking-[0.2em]">
+                          #{tag.tag}
+                        </span>
+                        <span className="w-5 h-5 bg-orange-500 text-white rounded-lg flex items-center justify-center text-[10px] font-bold">
+                          {index + 1}
+                        </span>
                       </div>
-                      <div className="text-lg font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>{tag.count} <span className="text-[10px] opacity-40">posts</span></div>
-                      <div className="text-[10px] font-semibold tracking-widest mt-1" style={{ color: 'var(--text-muted)' }}>${tag.totalPayout.toFixed(0)} total</div>
+                      <div
+                        className="text-lg font-bold tracking-tight"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {tag.count}{" "}
+                        <span className="text-[10px] opacity-40">posts</span>
+                      </div>
+                      <div
+                        className="text-[10px] font-semibold tracking-widest mt-1"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        ${tag.totalPayout.toFixed(0)} total
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1038,27 +1331,45 @@ export default function StatsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Top Posts by Payout */}
               <div className="stats-post-card rounded-2xl shadow-sm p-6">
-                <h3 className="text-sm font-bold tracking-widest mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <h3
+                  className="text-sm font-bold tracking-widest mb-6 flex items-center gap-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   <Wallet className="w-4 h-4 text-amber-500" />
                   Top by Payout
                 </h3>
                 <div className="space-y-4">
                   {stats.topPostsByPayout.slice(0, 5).map((post, index) => (
-                    <div key={`${post.author}-${post.permlink}`} className="flex items-start gap-3 group">
-                      <span className="text-[10px] font-bold group-hover:text-orange-300 mt-1" style={{ color: 'var(--text-muted)' }}>{index + 1}</span>
+                    <div
+                      key={`${post.author}-${post.permlink}`}
+                      className="flex items-start gap-3 group"
+                    >
+                      <span
+                        className="text-[10px] font-bold group-hover:text-orange-300 mt-1"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {index + 1}
+                      </span>
                       <div className="flex-1 min-w-0">
                         <a
                           href={`https://peakd.com/@${post.author}/${post.permlink}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs font-bold hover:text-orange-600 line-clamp-2 leading-snug transition-colors"
-                          style={{ color: 'var(--text-primary)' }}
+                          style={{ color: "var(--text-primary)" }}
                         >
                           {post.title}
                         </a>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>@{post.author}</span>
-                          <span className="text-[10px] font-bold text-amber-600">${post.payout.toFixed(2)}</span>
+                          <span
+                            className="text-[10px] font-bold"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            @{post.author}
+                          </span>
+                          <span className="text-[10px] font-bold text-amber-600">
+                            ${post.payout.toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1068,27 +1379,46 @@ export default function StatsPage() {
 
               {/* Top Posts by Votes */}
               <div className="stats-post-card rounded-2xl shadow-sm p-6">
-                <h3 className="text-sm font-bold tracking-widest mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <h3
+                  className="text-sm font-bold tracking-widest mb-6 flex items-center gap-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   <Heart className="w-4 h-4 text-sky-500" />
                   Top by Votes
                 </h3>
                 <div className="space-y-4">
                   {stats.topPostsByVotes.slice(0, 5).map((post, index) => (
-                    <div key={`${post.author}-${post.permlink}`} className="flex items-start gap-3 group">
-                      <span className="text-[10px] font-bold group-hover:text-orange-300 mt-1" style={{ color: 'var(--text-muted)' }}>{index + 1}</span>
+                    <div
+                      key={`${post.author}-${post.permlink}`}
+                      className="flex items-start gap-3 group"
+                    >
+                      <span
+                        className="text-[10px] font-bold group-hover:text-orange-300 mt-1"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {index + 1}
+                      </span>
                       <div className="flex-1 min-w-0">
                         <a
                           href={`https://peakd.com/@${post.author}/${post.permlink}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs font-bold hover:text-orange-600 line-clamp-2 leading-snug transition-colors"
-                          style={{ color: 'var(--text-primary)' }}
+                          style={{ color: "var(--text-primary)" }}
                         >
                           {post.title}
                         </a>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>@{post.author}</span>
-                          <span className="text-[10px] font-bold text-sky-600">{post.votes} <span className="text-[8px] opacity-60">votes</span></span>
+                          <span
+                            className="text-[10px] font-bold"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            @{post.author}
+                          </span>
+                          <span className="text-[10px] font-bold text-sky-600">
+                            {post.votes}{" "}
+                            <span className="text-[8px] opacity-60">votes</span>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1098,27 +1428,48 @@ export default function StatsPage() {
 
               {/* Top Posts by Comments */}
               <div className="stats-post-card rounded-2xl shadow-sm p-6">
-                <h3 className="text-sm font-bold tracking-widest mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <h3
+                  className="text-sm font-bold tracking-widest mb-6 flex items-center gap-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   <MessageSquare className="w-4 h-4 text-purple-500" />
                   Top by Comments
                 </h3>
                 <div className="space-y-4">
                   {stats.topPostsByComments.slice(0, 5).map((post, index) => (
-                    <div key={`${post.author}-${post.permlink}`} className="flex items-start gap-3 group">
-                      <span className="text-[10px] font-bold group-hover:text-orange-300 mt-1" style={{ color: 'var(--text-muted)' }}>{index + 1}</span>
+                    <div
+                      key={`${post.author}-${post.permlink}`}
+                      className="flex items-start gap-3 group"
+                    >
+                      <span
+                        className="text-[10px] font-bold group-hover:text-orange-300 mt-1"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {index + 1}
+                      </span>
                       <div className="flex-1 min-w-0">
                         <a
                           href={`https://peakd.com/@${post.author}/${post.permlink}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs font-bold hover:text-orange-600 line-clamp-2 leading-snug transition-colors"
-                          style={{ color: 'var(--text-primary)' }}
+                          style={{ color: "var(--text-primary)" }}
                         >
                           {post.title}
                         </a>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>@{post.author}</span>
-                          <span className="text-[10px] font-bold text-purple-600">{post.comments} <span className="text-[8px] opacity-60">replies</span></span>
+                          <span
+                            className="text-[10px] font-bold"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            @{post.author}
+                          </span>
+                          <span className="text-[10px] font-bold text-purple-600">
+                            {post.comments}{" "}
+                            <span className="text-[8px] opacity-60">
+                              replies
+                            </span>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1133,37 +1484,68 @@ export default function StatsPage() {
             <div className="stats-card rounded-2xl sm:rounded-3xl shadow-xl p-6 sticky top-8">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center stats-user-icon-bg">
-                  <Award className="w-6 h-6" style={{ color: 'var(--text-muted)' }} />
+                  <Award
+                    className="w-6 h-6"
+                    style={{ color: "var(--text-muted)" }}
+                  />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Top Users</h2>
-                  <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>by Pins</p>
+                  <h2
+                    className="text-xl font-bold tracking-tight"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Top Users
+                  </h2>
+                  <p
+                    className="text-xs font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    by Pins
+                  </p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 {stats.users.slice(0, 10).map((user, index) => (
-                  <div key={user.username} className="stats-user-item rounded-xl p-3 flex items-center gap-3 transition-colors group">
-                    <div className="w-6 text-[10px] font-bold group-hover:text-orange-300 text-center" style={{ color: 'var(--text-muted)' }}>{index + 1}</div>
+                  <div
+                    key={user.username}
+                    className="stats-user-item rounded-xl p-3 flex items-center gap-3 transition-colors group"
+                  >
+                    <div
+                      className="w-6 text-[10px] font-bold group-hover:text-orange-300 text-center"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {index + 1}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <a
                         href={`/@${user.username}`}
                         className="text-xs font-bold truncate block hover:text-orange-600 transition-colors"
-                        style={{ color: 'var(--text-primary)' }}
+                        style={{ color: "var(--text-primary)" }}
                       >
                         @{user.username}
                       </a>
-                      <p className="text-[10px] font-bold text-orange-600 tracking-widest">{user.pinCount.toLocaleString()} Pins</p>
+                      <p className="text-[10px] font-bold text-orange-600 tracking-widest">
+                        {user.pinCount.toLocaleString()} Pins
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-bold leading-none" style={{ color: 'var(--text-muted)', opacity: 0.5 }}>{user.countries}</p>
-                      <p className="text-[8px] font-bold tracking-tighter" style={{ color: 'var(--text-muted)' }}>Countries</p>
+                      <p
+                        className="text-[10px] font-bold leading-none"
+                        style={{ color: "var(--text-muted)", opacity: 0.5 }}
+                      >
+                        {user.countries}
+                      </p>
+                      <p
+                        className="text-[8px] font-bold tracking-tighter"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        Countries
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
-
-
             </div>
           </div>
         </div>
@@ -1174,40 +1556,80 @@ export default function StatsPage() {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center stats-info-icon-bg">
               <Database className="w-5 h-5 text-orange-600" />
             </div>
-            <h3 className="text-lg font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Data Sources & Methodology</h3>
+            <h3
+              className="text-lg font-bold tracking-tight"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Data Sources & Methodology
+            </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div>
-                <p className="text-[10px] font-bold tracking-widest text-orange-600 mb-2">Loading Strategy</p>
-                <ul className="space-y-2 text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
-                  <li className="flex gap-2"><span className="text-orange-400">01.</span> Basic Data: Fast load via WorldMapPin API</li>
-                  <li className="flex gap-2"><span className="text-orange-400">02.</span> Enhanced Data: Hive blockchain data (votes, comments, payouts)</li>
+                <p className="text-[10px] font-bold tracking-widest text-orange-600 mb-2">
+                  Loading Strategy
+                </p>
+                <ul
+                  className="space-y-2 text-xs font-bold"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  <li className="flex gap-2">
+                    <span className="text-orange-400">01.</span> Basic Data:
+                    Fast load via WorldMapPin API
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-orange-400">02.</span> Enhanced Data:
+                    Hive blockchain data (votes, comments, payouts)
+                  </li>
                 </ul>
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-widest text-orange-600 mb-2">Countries & Users</p>
-                <p className="text-xs font-bold leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                  Countries determined using reverse geocoding via @rapideditor/country-coder.
-                  Users extracted from post links in the @username/permlink format.
+                <p className="text-[10px] font-bold tracking-widest text-orange-600 mb-2">
+                  Countries & Users
+                </p>
+                <p
+                  className="text-xs font-bold leading-relaxed"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  Countries determined using reverse geocoding via
+                  @rapideditor/country-coder. Users extracted from post links in
+                  the @username/permlink format.
                 </p>
               </div>
             </div>
 
             <div className="space-y-6">
               <div>
-                <p className="text-[10px] font-bold tracking-widest text-orange-600 mb-2">API Endpoints</p>
+                <p className="text-[10px] font-bold tracking-widest text-orange-600 mb-2">
+                  API Endpoints
+                </p>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-mono overflow-hidden text-ellipsis" style={{ color: 'var(--text-muted)' }}>worldmappin.com/api/marker</p>
-                  <p className="text-[10px] font-mono overflow-hidden text-ellipsis" style={{ color: 'var(--text-muted)' }}>hive.blog (via API proxy)</p>
+                  <p
+                    className="text-[10px] font-mono overflow-hidden text-ellipsis"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    api.worldmappin.com/marker
+                  </p>
+                  <p
+                    className="text-[10px] font-mono overflow-hidden text-ellipsis"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    hive.blog (via API proxy)
+                  </p>
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-bold tracking-widest text-orange-600 mb-2">Processing</p>
-                <p className="text-xs font-bold leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                  Data fetched in batches of 2000 pins. Hive data fetched in batches of 10 to avoid rate limiting.
-                  Payouts include pending and total values.
+                <p className="text-[10px] font-bold tracking-widest text-orange-600 mb-2">
+                  Processing
+                </p>
+                <p
+                  className="text-xs font-bold leading-relaxed"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  Data fetched in batches of 2000 pins. Hive data fetched in
+                  batches of 10 to avoid rate limiting. Payouts include pending
+                  and total values.
                 </p>
               </div>
             </div>

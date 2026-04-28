@@ -33,7 +33,7 @@ function buildCsp(): string {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: blob: https://images.hive.blog https://images.ecency.com https://proxy.peakd.com https://files.peakd.com https://cdn.steemitimages.com https://img.leopedia.io https://img.travelfeed.io https://ui-avatars.com https://ipfs.io https://*.googleapis.com https://*.gstatic.com *.google.com *.googleusercontent.com https://*.ggpht.com https://flagcdn.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' https://api.hive.blog https://worldmappin.com https://beta-api.distriator.com wss: https://*.googleapis.com *.google.com https://*.gstatic.com https://cdn.jsdelivr.net data: blob:",
+    "connect-src 'self' https://api.hive.blog https://worldmappin.com https://*.worldmappin.com https://beta-api.distriator.com wss: https://*.googleapis.com *.google.com https://*.gstatic.com https://cdn.jsdelivr.net data: blob:",
     "frame-src *.google.com",
     "worker-src blob:",
     "base-uri 'self'",
