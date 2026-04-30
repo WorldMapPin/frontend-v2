@@ -513,9 +513,10 @@ export default function MapClient({
   }
 
   // Callback to track when clusters are ready (called from ClusteredMarkers)
-  const handleClustersReady = (clusterCount: number) => {
-    // Only stop loading if we have actual clusters (not empty data)
-    if (clusterCount > 0) {
+  const handleClustersReady = (_clusterCount: number) => {
+    // Clear loading once data is loaded — viewport may be empty (zoomed into
+    // a region with no pins), but that's not a reason to keep spinning.
+    if (geojson && geojson.features && geojson.features.length > 0) {
       setClustersReady(true);
 
       // Add delay like in OLDMAPCODE (100ms delay)
