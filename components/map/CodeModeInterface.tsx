@@ -18,6 +18,7 @@ export const CodeModeInterface: React.FC<CodeModeInterfaceProps> = ({
     const { user } = useAiohaSafe();
     const [copied, setCopied] = useState(false);
     const [mount, setMount] = useState(false);
+    const [description, setDescription] = useState('');
 
     useEffect(() => {
         setMount(true);
@@ -25,7 +26,9 @@ export const CodeModeInterface: React.FC<CodeModeInterfaceProps> = ({
 
     const getLocationCode = () => {
         if (!codeModeMarker) return '';
-        return `${codeModeMarker.lat.toFixed(6)},${codeModeMarker.lng.toFixed(6)}`;
+        const lat = codeModeMarker.lat.toFixed(5);
+        const lng = codeModeMarker.lng.toFixed(5);
+        return `[//]:# (!worldmappin ${lat} lat ${lng} long ${description} d3scr)`;
     };
 
     const handleCopy = () => {
@@ -65,16 +68,33 @@ export const CodeModeInterface: React.FC<CodeModeInterfaceProps> = ({
                 <div className="p-5 space-y-4">
                     <div className="space-y-1.5">
                         <label className="text-[10px] uppercase font-bold opacity-70 tracking-wider ml-1" style={{ color: 'var(--text-muted)' }}>Current Coordinates</label>
-                        <div className="rounded-xl p-3 flex items-center space-x-3 border" 
-                            style={{ 
+                        <div className="rounded-xl p-3 flex items-center space-x-3 border"
+                            style={{
                                 backgroundColor: 'var(--section-bg)',
-                                borderColor: 'var(--border-subtle)' 
+                                borderColor: 'var(--border-subtle)'
                             }}>
                             <div className="w-2 h-2 rounded-full bg-[#ED6D28] animate-pulse" />
                             <span className="font-mono text-sm font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                                 {codeModeMarker ? `${codeModeMarker.lat.toFixed(5)}, ${codeModeMarker.lng.toFixed(5)}` : 'Click on map to select'}
                             </span>
                         </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold opacity-70 tracking-wider ml-1" style={{ color: 'var(--text-muted)' }}>Description (optional)</label>
+                        <input
+                            type="text"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            maxLength={250}
+                            placeholder="Short description"
+                            className="w-full rounded-xl p-3 text-sm border outline-none focus:ring-2 focus:ring-[#ED6D28]/40 transition-all"
+                            style={{
+                                backgroundColor: 'var(--section-bg)',
+                                borderColor: 'var(--border-subtle)',
+                                color: 'var(--text-primary)',
+                            }}
+                        />
                     </div>
                 </div>
 
