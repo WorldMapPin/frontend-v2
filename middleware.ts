@@ -69,7 +69,25 @@ function getClientIp(request: NextRequest): string {
   return request.headers.get("x-forwarded-host") || "unknown";
 }
 
+function redirectLegacyMapRequest(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
+
+  if (!pathname.startsWith("/maps/") || !pathname.endsWith(".png")) {
+    return null;
+  }
+
+  return NextResponse.redirect(
+    new URL(`${pathname}${search}`, "https://api.worldmappin.com"),
+    308,
+  );
+}
+
 export function middleware(request: NextRequest) {
+  const legacyMapRedirect = redirectLegacyMapRequest(request);
+  if (legacyMapRedirect) {
+    return legacyMapRedirect;
+  }
+
   const pathname = request.nextUrl.pathname;
   const isApiRoute = pathname === "/api" || pathname.startsWith("/api/");
 
@@ -124,6 +142,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/api/:path*",
+    "/maps/:path*",
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)",
   ],
 };
