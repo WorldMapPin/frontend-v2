@@ -1,11 +1,11 @@
 // Utility functions for post processing and formatting
 
 /**
- * Parse PeakD URL to extract author and permlink
- * @param url - Full PeakD URL like https://peakd.com/@author/permlink
+ * Parse a Hive frontend post URL to extract author and permlink
+ * @param url - Full post URL like https://peakd.com/@author/permlink
  * @returns Object with author and permlink
  */
-export function parsePeakDUrl(url: string): { author: string; permlink: string } | null {
+export function parseHiveUrl(url: string): { author: string; permlink: string } | null {
   try {
     const match = url.match(/@([^/]+)\/([^/?#]+)/);
     if (match) {
@@ -16,7 +16,7 @@ export function parsePeakDUrl(url: string): { author: string; permlink: string }
     }
     return null;
   } catch (error) {
-    console.error('Error parsing PeakD URL:', error);
+    console.error('Error parsing Hive URL:', error);
     return null;
   }
 }

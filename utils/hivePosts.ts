@@ -6,7 +6,7 @@ import {
   PostCache,
 } from "@/types/post";
 import {
-  parsePeakDUrl,
+  parseHiveUrl,
   formatReputation,
   formatRelativeTime,
   calculateReadingTime,
@@ -563,7 +563,7 @@ export async function loadCuratedPosts(): Promise<CuratedPost[]> {
     // Parse URLs if author/permlink are missing
     return posts.map((post) => {
       if (!post.author || !post.permlink) {
-        const parsed = parsePeakDUrl(post.url);
+        const parsed = parseHiveUrl(post.url);
         if (parsed) {
           return {
             ...post,

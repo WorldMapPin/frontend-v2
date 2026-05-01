@@ -2,6 +2,7 @@
 // This module handles API calls to the WorldMapPin backend
 
 import axios from "axios";
+import { parseHiveUrl } from "@/utils/postUtils";
 
 // Base API URL
 const BASE_API_URL = "https://api.worldmappin.com";
@@ -50,6 +51,73 @@ export interface RankingData {
   rank: number;
   author: string;
   tds: number;
+}
+
+export interface CanonicalPostRef {
+  author: string;
+  permlink: string;
+}
+
+interface MarkerDetailsResponse {
+  postLink?: string;
+}
+
+export async function resolvePermlinkToCanonicalPost(
+  permlink: string,
+): Promise<CanonicalPostRef | null> {
+  const normalizedPermlink = permlink.trim();
+
+  if (!normalizedPermlink) {
+    return null;
+  }
+
+  try {
+    const basicResponse = await axios.post(
+      `${BASE_API_URL}/marker/0/150000/`,
+      { permlink: normalizedPermlink },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    const basicPins: BasicPinData[] = basicResponse.data;
+    const firstPin = basicPins[0];
+
+    if (!firstPin?.id) {
+      return null;
+    }
+
+    const detailsResponse = await axios.post(
+      `${BASE_API_URL}/marker/ids`,
+      { marker_ids: [firstPin.id] },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    const markerDetails = detailsResponse.data?.[0] as
+      | MarkerDetailsResponse
+      | undefined;
+    const parsedPost = markerDetails?.postLink
+      ? parseHiveUrl(markerDetails.postLink)
+      : null;
+
+    if (!parsedPost?.author || !parsedPost.permlink) {
+      return null;
+    }
+
+    return parsedPost;
+  } catch (error) {
+    console.error(
+      `Error resolving legacy /p/${normalizedPermlink} URL to canonical post:`,
+      error,
+    );
+    return null;
+  }
 }
 
 // Function to fetch user pin data with full details
