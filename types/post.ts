@@ -138,7 +138,7 @@ export interface DigestFetchResult {
 
 // Hive Comment/Reply interfaces
 export interface HiveComment {
-  id: number;
+  id: string;
   author: string;
   permlink: string;
   parentAuthor: string;

@@ -19,7 +19,6 @@ export default function SignupPage() {
   };
 
   const handleLogin = (result: any) => {
-    console.log('User logged in:', result);
     setModalDisplayed(false);
     
     // Manually refresh user state immediately

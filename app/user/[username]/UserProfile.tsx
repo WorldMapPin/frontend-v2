@@ -10,6 +10,7 @@ import WorldCoverageMap from './WorldCoverageMap';
 import UserJourneys from './UserJourneys';
 import { useAiohaSafe } from '@/hooks/use-aioha-safe';
 import { isJourneyEnabled } from '@/lib/featureFlags';
+import { safeProfileUrl } from '@/utils/safeProfileUrl';
 
 interface UserProfileProps {
   username: string;
@@ -224,7 +225,7 @@ export function UserProfile({ username }: UserProfileProps) {
                           {profileData.location}
                         </p>
                         <a
-                          href={profileData.website}
+                          href={safeProfileUrl(profileData.website) ?? `https://peakd.com/@${username}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block text-xs sm:text-sm lg:text-base text-[#0657C1] hover:text-[#05479c] font-medium transition-colors text-center sm:text-left break-all"
