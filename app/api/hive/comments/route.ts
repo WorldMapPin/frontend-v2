@@ -96,7 +96,7 @@ function processComment(rawComment: any): ProcessedComment {
   }
 
   return {
-    id: rawComment.id,
+    id: `${rawComment.author}/${rawComment.permlink}`,
     author: rawComment.author,
     permlink: rawComment.permlink,
     parentAuthor: rawComment.parent_author,
@@ -113,7 +113,7 @@ function processComment(rawComment: any): ProcessedComment {
 }
 
 export interface ProcessedComment {
-  id: number;
+  id: string;
   author: string;
   permlink: string;
   parentAuthor: string;

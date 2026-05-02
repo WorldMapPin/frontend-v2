@@ -32,4 +32,16 @@ export default [
       ...config,
       files,
     })),
+  {
+    // Auth-flow files: forbid console.log to prevent leaking wallet
+    // login results / OAuth tokens to the browser console (see F1).
+    files: [
+      'app/signup/**/*.{ts,tsx}',
+      'app/hivesigner/**/*.{ts,tsx}',
+      'components/AiohaProvider.tsx',
+    ],
+    rules: {
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+    },
+  },
 ];

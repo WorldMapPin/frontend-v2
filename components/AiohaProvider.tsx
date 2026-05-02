@@ -81,7 +81,6 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
       const newUser = currentUser ?? null;
       
       if (newUser !== user) {
-        console.log('User changed:', newUser);
         setUser(newUser);
       }
     };
@@ -101,7 +100,6 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
       try {
         aioha.logout();
         setUser(null);
-        console.log('User logged out successfully');
       } catch (error) {
         console.error('Failed to logout:', error);
       }
@@ -113,7 +111,6 @@ export default function AiohaProviderWrapper({ children }: AiohaProviderWrapperP
     if (aioha) {
       const currentUser = aioha.getCurrentUser();
       const newUser = currentUser ?? null;
-      console.log('Manually refreshing user:', newUser);
       setUser(newUser);
     }
   };

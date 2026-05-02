@@ -155,8 +155,6 @@ export default function WalletConnectModal({ isOpen, onClose, onLoginSuccess }: 
             // Note: aioha.login signature is typically (provider, username, options)
             const result = await aioha.login(provider, username, options);
 
-            console.log('Login result:', result);
-
             if (result && result.success) {
                 onLoginSuccess(result);
             } else {
