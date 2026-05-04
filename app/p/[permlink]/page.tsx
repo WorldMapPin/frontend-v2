@@ -1,7 +1,10 @@
 import { resolvePermlinkToCanonicalPost } from "@/lib/worldmappinApi";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import PermlinkMapClient from "./PermlinkMapClient";
 
-export default async function LegacyPermlinkRedirectPage({
+export const dynamic = "force-dynamic";
+
+export default async function LegacyPermlinkMapPage({
   params,
 }: {
   params: Promise<{ permlink: string }>;
@@ -21,7 +24,10 @@ export default async function LegacyPermlinkRedirectPage({
     notFound();
   }
 
-  permanentRedirect(
-    `/@${encodeURIComponent(canonicalPost.author)}/${encodeURIComponent(canonicalPost.permlink)}`,
+  return (
+    <PermlinkMapClient
+      permlink={decodedPermlink}
+      postPath={`/@${encodeURIComponent(canonicalPost.author)}/${encodeURIComponent(canonicalPost.permlink)}`}
+    />
   );
 }

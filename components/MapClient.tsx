@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   useRouter,
   useSearchParams as useUrlSearchParams,
@@ -67,6 +68,8 @@ const MAP_CONFIG = {
   mapId: "edce5dcfb5575af1",
   mapTypeId: "roadmap",
 };
+
+const PERMLINK_FOCUS_ZOOM = 5;
 
 const DARK_MAP_STYLE = [
   {
@@ -174,6 +177,7 @@ const DARK_MAP_STYLE = [
 interface MapClientProps {
   initialUsername?: string;
   initialPermlink?: string;
+  initialPermlinkPostPath?: string;
   initialTag?: string;
   initialCommunity?: Community;
 }
@@ -181,6 +185,7 @@ interface MapClientProps {
 export default function MapClient({
   initialUsername,
   initialPermlink,
+  initialPermlinkPostPath,
   initialTag,
   initialCommunity,
 }: MapClientProps = {}) {
@@ -788,6 +793,93 @@ export default function MapClient({
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const touchStartTime = useRef<number>(0);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const permlinkFitKeyRef = useRef<string | null>(null);
+
+  const fitPermlinkResults = useCallback(() => {
+    const features = geojson?.features as Feature<Point>[] | undefined;
+
+    if (!searchParams.permlink) {
+      permlinkFitKeyRef.current = null;
+      return;
+    }
+
+    if (
+      !features?.length ||
+      !mapInstanceRef.current ||
+      typeof window === "undefined" ||
+      !window.google?.maps
+    ) {
+      return;
+    }
+
+    const coordinates = features
+      .map((feature) => {
+        const [lng, lat] = feature.geometry?.coordinates ?? [];
+
+        if (
+          typeof lat !== "number" ||
+          typeof lng !== "number" ||
+          Number.isNaN(lat) ||
+          Number.isNaN(lng)
+        ) {
+          return null;
+        }
+
+        return { lat, lng };
+      })
+      .filter((coordinate): coordinate is google.maps.LatLngLiteral =>
+        Boolean(coordinate),
+      );
+
+    if (!coordinates.length) {
+      return;
+    }
+
+    const fitKey = `${searchParams.permlink}:${features
+      .map((feature) => feature.id)
+      .join(",")}`;
+
+    if (permlinkFitKeyRef.current === fitKey) {
+      return;
+    }
+
+    permlinkFitKeyRef.current = fitKey;
+
+    const map = mapInstanceRef.current;
+    const uniqueCoordinates = coordinates.filter(
+      (coordinate, index, allCoordinates) =>
+        allCoordinates.findIndex(
+          (candidate) =>
+            candidate.lat === coordinate.lat && candidate.lng === coordinate.lng,
+        ) === index,
+    );
+
+    if (uniqueCoordinates.length === 1) {
+      map.panTo(uniqueCoordinates[0]);
+      map.setZoom(PERMLINK_FOCUS_ZOOM);
+      return;
+    }
+
+    const bounds = new window.google.maps.LatLngBounds();
+    uniqueCoordinates.forEach((coordinate) => bounds.extend(coordinate));
+    map.fitBounds(bounds, {
+      top: 80,
+      right: 80,
+      bottom: 80,
+      left: 80,
+    });
+
+    window.google.maps.event.addListenerOnce(map, "idle", () => {
+      const zoom = map.getZoom();
+      if (typeof zoom === "number" && zoom > PERMLINK_FOCUS_ZOOM) {
+        map.setZoom(PERMLINK_FOCUS_ZOOM);
+      }
+    });
+  }, [geojson, searchParams.permlink]);
+
+  useEffect(() => {
+    fitPermlinkResults();
+  }, [fitPermlinkResults]);
 
   // Function to show temporary location highlight
   const showLocationHighlight = (position: { lat: number; lng: number }) => {
@@ -927,6 +1019,7 @@ export default function MapClient({
 
     // Store map instance for coordinate conversion
     mapInstanceRef.current = e.map;
+    fitPermlinkResults();
   };
 
   // Custom event handlers for right-click and long-press
@@ -1108,22 +1201,50 @@ export default function MapClient({
         {searchParams.permlink && (
           <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30 pointer-events-auto">
             <div className="bg-blue-500/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg border border-blue-300/30 transition-all duration-200 flex items-center space-x-2 max-w-[90vw] md:max-w-md">
-              <svg
-                className="w-4 h-4 text-white flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                />
-              </svg>
-              <span className="text-sm font-medium text-white truncate">
-                {searchParams.permlink}
-              </span>
+              {initialPermlinkPostPath ? (
+                <Link
+                  href={initialPermlinkPostPath}
+                  className="flex min-w-0 items-center space-x-2 text-white hover:underline"
+                  aria-label={`Open post ${searchParams.permlink}`}
+                  title="Open full post"
+                >
+                  <svg
+                    className="w-4 h-4 text-white flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                    />
+                  </svg>
+                  <span className="truncate text-sm font-medium">
+                    {searchParams.permlink}
+                  </span>
+                </Link>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4 text-white flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium text-white truncate">
+                    {searchParams.permlink}
+                  </span>
+                </>
+              )}
               <button
                 onClick={() => handleFilter(null)}
                 className="w-5 h-5 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ml-1"
