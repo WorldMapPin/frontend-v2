@@ -579,11 +579,11 @@ export default function MapClient({
       navigator.clipboard
         .writeText(coordStr)
         .then(() => {
-          window.open("https://peakd.com/submit", "_blank");
+          window.open("https://peakd.com/publish", "_blank");
         })
         .catch((err) => {
           console.error("Could not copy text: ", err);
-          window.open("https://peakd.com/submit", "_blank");
+          window.open("https://peakd.com/publish", "_blank");
         });
     }
     setContextMenuVisible(false);
@@ -850,7 +850,8 @@ export default function MapClient({
       (coordinate, index, allCoordinates) =>
         allCoordinates.findIndex(
           (candidate) =>
-            candidate.lat === coordinate.lat && candidate.lng === coordinate.lng,
+            candidate.lat === coordinate.lat &&
+            candidate.lng === coordinate.lng,
         ) === index,
     );
 
