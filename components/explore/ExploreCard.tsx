@@ -11,6 +11,8 @@ interface ExploreCardProps {
   hideAvatar?: boolean;
   showViewOnMap?: boolean;
   onViewOnMap?: () => void;
+  // Called when the card itself is opened (navigated into the post).
+  onOpen?: () => void;
 }
 
 export default function ExploreCard({
@@ -18,6 +20,7 @@ export default function ExploreCard({
   hideAvatar = false,
   showViewOnMap = false,
   onViewOnMap,
+  onOpen,
 }: ExploreCardProps) {
   const [avatarError, setAvatarError] = useState(false);
 
@@ -32,7 +35,7 @@ export default function ExploreCard({
   };
 
   return (
-    <Link href={`/${post.slug}`}>
+    <Link href={`/${post.slug}`} onClick={() => onOpen?.()}>
       <div
         className="group rounded-xl sm:rounded-2xl hover:shadow-xl transition-all duration-300 overflow-visible cursor-pointer flex flex-col relative h-full explore-card"
         style={{

@@ -27,18 +27,20 @@ export function useMapViewport({ padding = 0 }: MapViewportOptions = {}) {
   useEffect(() => {
     if (!map) return;
 
-    const listener = map.addListener('bounds_changed', () => {
+    const update = () => {
       const bounds = map.getBounds();
-      const zoom = map.getZoom();
+      const currentZoom = map.getZoom();
       const projection = map.getProjection();
 
-      if (!bounds || !zoom || !projection) return;
+      // Projection is only available after the map's first render/idle, so a
+      // single early bounds_changed can arrive before it is ready.
+      if (!bounds || currentZoom == null || !projection) return;
 
       const sw = bounds.getSouthWest();
       const ne = bounds.getNorthEast();
 
       // Calculate padding in degrees based on zoom level
-      const paddingDegrees = degreesPerPixel(zoom) * padding;
+      const paddingDegrees = degreesPerPixel(currentZoom) * padding;
 
       // Apply padding to bounds while respecting world boundaries
       const n = Math.min(90, ne.lat() + paddingDegrees);
@@ -48,10 +50,24 @@ export function useMapViewport({ padding = 0 }: MapViewportOptions = {}) {
       const e = ne.lng() + paddingDegrees;
 
       setBbox([w, s, e, n]);
-      setZoom(zoom);
-    });
+      setZoom(currentZoom);
+    };
 
-    return () => listener.remove();
+    const boundsListener = map.addListener('bounds_changed', update);
+    // 'idle' fires after the initial load once the projection is ready, which
+    // an early 'bounds_changed' can miss. Without this, the first clustering
+    // pass runs at the stale initial zoom (0) over the world bbox until the
+    // user manually moves the map — producing clusters at the wrong zoom level
+    // (very noticeable when the map opens at a restored, zoomed-in viewport).
+    const idleListener = map.addListener('idle', update);
+
+    // Attempt an immediate sync in case the map is already settled.
+    update();
+
+    return () => {
+      boundsListener.remove();
+      idleListener.remove();
+    };
   }, [map, padding]);
 
   return { map, bbox, zoom }; // Map Instance Exposed

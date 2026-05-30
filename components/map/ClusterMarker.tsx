@@ -4,6 +4,7 @@
 
 import React, { useCallback } from 'react';
 import { AdvancedMarker, useAdvancedMarkerRef } from '@vis.gl/react-google-maps';
+import { ViewedBadge } from './ViewedBadge';
 
 type ClusterMarkerProps = {
   clusterId: number;
@@ -14,6 +15,9 @@ type ClusterMarkerProps = {
   position: google.maps.LatLngLiteral;
   size: number;
   sizeAsText: string;
+  // When true, show a coral "Viewed" badge beside the cluster (the cluster
+  // currently containing the post the user last opened from the map).
+  isViewed?: boolean;
 };
 
 /**
@@ -33,7 +37,8 @@ export const ClusterMarker = ({
   size,
   sizeAsText,
   onMarkerClick,
-  clusterId
+  clusterId,
+  isViewed = false
 }: ClusterMarkerProps) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
 
@@ -82,7 +87,9 @@ export const ClusterMarker = ({
     <AdvancedMarker
       ref={markerRef}
       position={position}
-      zIndex={size}
+      // Lift the viewed cluster above denser neighbours (whose zIndex is their
+      // size) so its "Viewed" badge isn't occluded.
+      zIndex={isViewed ? Number.MAX_SAFE_INTEGER : size}
       onClick={handleClick}
       className={'marker cluster'}
       style={{
@@ -100,7 +107,9 @@ export const ClusterMarker = ({
         border: '2px solid white',
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         cursor: 'pointer',
-        touchAction: 'manipulation' // Improve touch responsiveness
+        touchAction: 'manipulation', // Improve touch responsiveness
+        position: 'relative',
+        zIndex: isViewed ? 1000 : undefined
       }}
     >
       <span
@@ -116,6 +125,7 @@ export const ClusterMarker = ({
       >
         {sizeAsText}
       </span>
+      {isViewed && <ViewedBadge />}
     </AdvancedMarker>
   );
 };

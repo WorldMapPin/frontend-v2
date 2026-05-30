@@ -14,6 +14,9 @@ interface PinCacheSchema extends DBSchema {
 const DB_NAME = 'worldmappin_cache';
 const STORE_NAME = 'pins';
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
+// Bump when the shape/extent of cached data changes (e.g. the API page-size
+// limit) so previously cached, now-stale entries are ignored.
+const CACHE_VERSION = 'v2';
 
 class PinCache {
     private dbPromise;
@@ -39,7 +42,7 @@ class PinCache {
                 return acc;
             }, {} as any);
 
-        return `pins_${communityId}_${JSON.stringify(sortedParams)}`;
+        return `pins_${CACHE_VERSION}_${communityId}_${JSON.stringify(sortedParams)}`;
     }
 
     async getCachedPins(communityId: string, params: SearchParams): Promise<any | null> {

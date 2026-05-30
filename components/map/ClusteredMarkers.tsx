@@ -40,6 +40,10 @@ type ClusteredMarkersProps = {
     marker: google.maps.marker.AdvancedMarkerElement,
     featureId: string
   ) => void;
+  // The post the user last opened from the map. The cluster (or individual
+  // marker) that currently contains this feature gets a "Viewed" badge so the
+  // user can re-find it as they drill back down. Null when no badge is shown.
+  viewedFeature?: { featureId: string; lat: number; lng: number } | null;
 };
 
 // Supercluster configuration options
@@ -71,6 +75,7 @@ export const ClusteredMarkers = ({
   onClustersReady,
   community,
   onMarkerContextMenu,
+  viewedFeature,
 }: ClusteredMarkersProps) => {
   // For SpendHBD community, group pins by exact coordinates first
   const processedGeojson = React.useMemo(() => {
@@ -157,6 +162,48 @@ export const ClusteredMarkers = ({
     [clusters, setInfowindowData, community]
   );
 
+  // Work out which currently-visible cluster (or individual marker) contains the
+  // viewed post, so we can badge exactly that one. cluster_ids are not stable
+  // across zoom/pan, so we recompute membership from the stable feature id every
+  // time the visible clusters change. We sort clusters by distance to the viewed
+  // coordinates (nearest first) and short-circuit on the first match to keep the
+  // getLeaves scan cheap.
+  const viewedMatch = React.useMemo<{
+    clusterId: number | null;
+    individualId: string | null;
+  }>(() => {
+    if (!viewedFeature) return { clusterId: null, individualId: null };
+
+    const wanted = String(viewedFeature.featureId);
+    const candidates: { clusterId: number; dist: number }[] = [];
+
+    for (const feature of clusters) {
+      const props = feature.properties as ClusterProperties;
+      if (props?.cluster) {
+        const [lng, lat] = feature.geometry.coordinates;
+        const dLng = lng - viewedFeature.lng;
+        const dLat = lat - viewedFeature.lat;
+        candidates.push({
+          clusterId: props.cluster_id,
+          dist: dLng * dLng + dLat * dLat,
+        });
+      } else if (String(feature.id) === wanted) {
+        // The viewed post is currently its own individual marker.
+        return { clusterId: null, individualId: String(feature.id) };
+      }
+    }
+
+    candidates.sort((a, b) => a.dist - b.dist);
+    for (const { clusterId } of candidates) {
+      const leaves = getLeaves(clusterId);
+      if (leaves.some(leaf => String(leaf.id) === wanted)) {
+        return { clusterId, individualId: null };
+      }
+    }
+
+    return { clusterId: null, individualId: null };
+  }, [viewedFeature, clusters, getLeaves]);
+
   return (
     <>
       {clusters.map(feature => {
@@ -192,6 +239,7 @@ export const ClusteredMarkers = ({
               size={clusterProperties.point_count}
               sizeAsText={String(clusterProperties.point_count_abbreviated)}
               onMarkerClick={handleClusterClick}
+              isViewed={viewedMatch.clusterId === clusterProperties.cluster_id}
             />
           )
         ) : community?.id === 'spendhbd' ? (
@@ -218,6 +266,7 @@ export const ClusteredMarkers = ({
             position={{ lat, lng }}
             onMarkerClick={handleMarkerClick}
             onMarkerContextMenu={onMarkerContextMenu}
+            isViewed={viewedMatch.individualId === String(feature.id)}
           />
         );
       })}

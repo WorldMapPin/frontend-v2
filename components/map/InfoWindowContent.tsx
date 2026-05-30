@@ -9,6 +9,7 @@ import { Feature, Point } from "geojson";
 import ExploreCard from "@/components/explore/ExploreCard";
 import { fetchPostsProgressive } from "@/utils/hivePosts";
 import { CuratedPost, ProcessedPost } from "@/types/post";
+import { saveViewedPost } from "@/utils/mapViewedState";
 
 // Post data structure from API
 interface PostData {
@@ -184,6 +185,9 @@ const handleViewOnMap = (post: ProcessedPostWithCoords) => {
 // Extended ProcessedPost with coordinates
 interface ProcessedPostWithCoords extends ProcessedPost {
   position: { lat: number; lng: number };
+  // Stable map feature id this post corresponds to. Used to mark the cluster
+  // containing this post as "Viewed" after navigating back from it.
+  featureId?: string;
 }
 
 export const InfoWindowContent = memo(
@@ -273,13 +277,18 @@ export const InfoWindowContent = memo(
           return;
         }
 
-        // Step 3: Create a map of author/permlink to coordinates
+        // Step 3: Create a map of author/permlink to coordinates and to the
+        // stable feature id (used for the "Viewed" badge on the map).
         const coordsMap = new Map<string, { lat: number; lng: number }>();
+        const featureIdMap = new Map<string, string>();
         validPosts.forEach((post: any, index: number) => {
           const author = curatedPosts[index]?.author;
           const permlink = curatedPosts[index]?.permlink;
           if (author && permlink) {
             coordsMap.set(`${author}/${permlink}`, post.position);
+            if (post.featureId != null) {
+              featureIdMap.set(`${author}/${permlink}`, String(post.featureId));
+            }
           }
         });
 
@@ -291,12 +300,12 @@ export const InfoWindowContent = memo(
           (newPosts) => {
             // Add coordinates to each post
             const postsWithCoords = newPosts.map((post) => {
-              const coords = coordsMap.get(
-                `${post.author}/${post.permlink}`,
-              ) || { lat: 0, lng: 0 };
+              const key = `${post.author}/${post.permlink}`;
+              const coords = coordsMap.get(key) || { lat: 0, lng: 0 };
               return {
                 ...post,
                 position: coords,
+                featureId: featureIdMap.get(key),
               };
             });
             allPosts.push(...postsWithCoords);
@@ -553,6 +562,15 @@ export const InfoWindowContent = memo(
                   post={post}
                   showViewOnMap={true}
                   onViewOnMap={() => handleViewOnMap(post)}
+                  onOpen={() => {
+                    if (post.featureId) {
+                      saveViewedPost(
+                        post.featureId,
+                        post.position.lat,
+                        post.position.lng,
+                      );
+                    }
+                  }}
                 />
               </div>
             ))}
