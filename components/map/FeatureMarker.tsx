@@ -8,6 +8,7 @@ import {
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps";
 import axios from "axios";
+import { ViewedBadge } from "./ViewedBadge";
 
 type FeatureMarkerProps = {
   position: google.maps.LatLngLiteral;
@@ -21,6 +22,9 @@ type FeatureMarkerProps = {
     marker: google.maps.marker.AdvancedMarkerElement,
     featureId: string,
   ) => void;
+  // When true, show a coral "Viewed" badge beside this marker (the post the
+  // user last opened from the map).
+  isViewed?: boolean;
 };
 
 // Global cache for marker images to avoid refetching
@@ -40,6 +44,7 @@ export const FeatureMarker = ({
   featureId,
   onMarkerClick,
   onMarkerContextMenu,
+  isViewed = false,
 }: FeatureMarkerProps) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [imageError, setImageError] = useState(false);
@@ -128,9 +133,21 @@ export const FeatureMarker = ({
     <AdvancedMarker
       ref={markerRef}
       position={position}
+      // Lift the viewed marker above neighbours so its "Viewed" badge shows.
+      zIndex={isViewed ? Number.MAX_SAFE_INTEGER : undefined}
       onClick={handleClick}
       className={""}
     >
+      {/* Non-rotated wrapper so the "Viewed" badge isn't affected by the pin's
+          -45deg rotation. */}
+      <div
+        style={{
+          position: "relative",
+          width: "35px",
+          height: "35px",
+          zIndex: isViewed ? 1000 : undefined,
+        }}
+      >
       {/* Enhanced marker pin with cover image */}
       <div
         onTouchStart={(e) => {
@@ -208,6 +225,8 @@ export const FeatureMarker = ({
             }}
           ></div>
         )}
+      </div>
+        {isViewed && <ViewedBadge />}
       </div>
     </AdvancedMarker>
   );

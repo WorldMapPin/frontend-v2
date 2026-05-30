@@ -10,6 +10,7 @@ import {
   setGlobalLocation,
   setGlobalZoom,
   toggleGlobalCodeMode,
+  getGlobalPinCount,
 } from "./map-global-controls";
 
 export default function MapNavbar() {
@@ -17,7 +18,11 @@ export default function MapNavbar() {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
-  const [pinCount] = useState(142194);
+  // Real pin count, published by MapClient once pins are loaded. Seeded from the
+  // store in case the map finished loading before this navbar mounted.
+  const [pinCount, setPinCount] = useState<number | null>(() =>
+    getGlobalPinCount(),
+  );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Autocomplete state (Google Maps Places library, client-side)
@@ -38,6 +43,15 @@ export default function MapNavbar() {
   // User menu state
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Keep the pin count in sync with the pins loaded on the map.
+  useEffect(() => {
+    const handlePinCount = (event: Event) => {
+      setPinCount((event as CustomEvent<number>).detail);
+    };
+    window.addEventListener("map-pin-count", handlePinCount);
+    return () => window.removeEventListener("map-pin-count", handlePinCount);
+  }, []);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -336,7 +350,7 @@ export default function MapNavbar() {
                 World<span className="text-[#ED6D28]">Map</span>Pin
               </span>
               <span className="text-[10px] sm:text-xs text-[#ED6D28] font-medium leading-none mt-0.5">
-                Found {pinCount.toLocaleString()} Pins
+                Found {pinCount !== null ? pinCount.toLocaleString() : "…"} Pins
               </span>
             </div>
           </Link>

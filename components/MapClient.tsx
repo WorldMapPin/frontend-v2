@@ -20,6 +20,7 @@ import { useAiohaSafe } from "@/hooks/use-aioha-safe";
 import { isJourneyEnabled } from "@/lib/featureFlags";
 import { useTheme } from "./ThemeProvider";
 import { ClusteredMarkers } from "@/components/map/ClusteredMarkers";
+import { setGlobalPinCount } from "@/components/map/map-global-controls";
 import { InfoWindowContent } from "@/components/map/InfoWindowContent";
 import { SpendHBDInfoWindow } from "@/components/map/community/SpendHBDInfoWindow";
 import { SpendHBDClusterInfo } from "@/components/map/community/SpendHBDClusterInfo";
@@ -59,6 +60,7 @@ import {
 } from "../utils/communityApi";
 import { pinCache } from "../utils/pinCache";
 import { searchParamsFromQuery, buildMapUrl } from "../utils/mapFilterUrl";
+import { readViewedPost } from "../utils/mapViewedState";
 
 // Global variables for zoom (local to this module)
 export let mapZoom = 2; // Start at zoom 2, skip 3
@@ -70,6 +72,100 @@ const MAP_CONFIG = {
 };
 
 const PERMLINK_FOCUS_ZOOM = 5;
+
+// Persist the map viewport (center + zoom) within the tab session so that
+// navigating into a post and pressing Back restores the exact spot/zoom the
+// user was looking at (e.g. the cluster they just opened) instead of resetting
+// to the world view. sessionStorage (not localStorage) so a brand-new tab
+// still starts at the default world view.
+const VIEWPORT_STORAGE_KEY = "wmp:map:viewport";
+
+type SavedViewport = { center: { lat: number; lng: number }; zoom: number };
+
+// Only a Back/Forward navigation should restore the saved viewport (e.g.
+// returning from a post). A full reload or a fresh navigation into the map
+// from another section of the site should start at the default world view, so
+// in those cases we discard any persisted viewport.
+//
+// In this app the post pages are client-side (SPA) routes, so pressing Back
+// from a post does NOT trigger a fresh document load — the Navigation Timing
+// "navigation" entry keeps reporting the original load type ("navigate"), which
+// is useless for detecting an in-app Back. The reliable signal for an in-app
+// Back/Forward is the window "popstate" event. We latch it in a module-scoped
+// flag (module scope survives client-side navigation but is reset on a real
+// page reload, which is exactly the distinction we want).
+let cameFromHistoryNavigation = false;
+if (typeof window !== "undefined") {
+  window.addEventListener("popstate", () => {
+    cameFromHistoryNavigation = true;
+  });
+}
+
+function shouldRestoreSavedViewport(): boolean {
+  if (typeof window === "undefined") return false;
+  if (cameFromHistoryNavigation) return true;
+  try {
+    // Fallback for the full-document Back/Forward case (e.g. if a post were a
+    // hard navigation rather than a client-side route).
+    const [entry] = performance.getEntriesByType(
+      "navigation",
+    ) as PerformanceNavigationTiming[];
+    return entry?.type === "back_forward";
+  } catch {
+    return false;
+  }
+}
+
+function readSavedViewport(): SavedViewport | null {
+  if (typeof window === "undefined") return null;
+  // Keep this a pure read: it runs on every render (via the useRef initializer
+  // argument), so it must have no side effects. A reload or fresh navigation
+  // into the map simply ignores any persisted viewport and falls back to the
+  // default world view; only a Back/Forward restores it.
+  if (!shouldRestoreSavedViewport()) return null;
+  try {
+    const raw = sessionStorage.getItem(VIEWPORT_STORAGE_KEY);
+    if (!raw) return null;
+    const { lat, lng, zoom } = JSON.parse(raw) ?? {};
+    const valid =
+      typeof lat === "number" &&
+      typeof lng === "number" &&
+      typeof zoom === "number" &&
+      !isNaN(lat) &&
+      !isNaN(lng) &&
+      !isNaN(zoom) &&
+      lat >= -85 &&
+      lat <= 85 &&
+      lng >= -180 &&
+      lng <= 180 &&
+      zoom >= 2 &&
+      zoom <= 20;
+    return valid ? { center: { lat, lng }, zoom } : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveViewport(lat: number, lng: number, zoom: number) {
+  if (typeof window === "undefined") return;
+  if (
+    [lat, lng, zoom].some((n) => typeof n !== "number" || isNaN(n)) ||
+    lat < -85 ||
+    lat > 85 ||
+    lng < -180 ||
+    lng > 180
+  ) {
+    return;
+  }
+  try {
+    sessionStorage.setItem(
+      VIEWPORT_STORAGE_KEY,
+      JSON.stringify({ lat, lng, zoom }),
+    );
+  } catch {
+    /* ignore quota / serialization errors */
+  }
+}
 
 const DARK_MAP_STYLE = [
   {
@@ -196,14 +292,42 @@ export default function MapClient({
   const router = useRouter();
   const urlQuery = useUrlSearchParams();
 
+  // Viewport restore: read the last saved center/zoom once on mount so a
+  // Back navigation from a post returns to the clicked cluster's location.
+  const savedViewportRef = useRef<SavedViewport | null>(readSavedViewport());
+
+  // "Viewed" badge: which post was last opened from the map. Gated by the same
+  // Back/Forward condition as the viewport restore (only surfaced when the user
+  // navigates back, not on a reload or fresh navigation). Read once on mount,
+  // before the latch below is consumed.
+  const viewedPostRef = useRef(
+    shouldRestoreSavedViewport() ? readViewedPost() : null,
+  );
+
+  // Consume the history-navigation latch after this mount has captured it, so a
+  // later forward navigation back into the map (e.g. via the nav menu) starts
+  // at the default world view instead of wrongly restoring the old viewport.
+  useEffect(() => {
+    cameFromHistoryNavigation = false;
+  }, []);
+
   // Basic states
   const [geojson, setGeojson] = useState<any>(null);
+
+  // Publish the number of loaded pins so the navbar can show the real count.
+  useEffect(() => {
+    if (geojson?.features) {
+      setGlobalPinCount(geojson.features.length);
+    }
+  }, [geojson]);
   const [numClusters, setNumClusters] = useState(0);
   const [loading, setLoading] = useState(true);
   const [clustersReady, setClustersReady] = useState(false);
   const [infowindowData, setInfowindowData] = useState<InfoWindowData>(null);
-  const [currentZoom, setCurrentZoom] = useState(2); // Start at 2, skip 3
-  const previousZoomRef = React.useRef(2); // Track previous zoom for direction detection
+  const [currentZoom, setCurrentZoom] = useState(
+    savedViewportRef.current?.zoom ?? 2,
+  ); // Start at 2 (skip 3) unless restoring a saved viewport
+  const previousZoomRef = React.useRef(savedViewportRef.current?.zoom ?? 2); // Track previous zoom for direction detection
   const { theme } = useTheme();
 
   // Code mode states
@@ -487,9 +611,11 @@ export default function MapClient({
         }
 
         if (targetCommunity.isDefault) {
-          // Use the original WorldMapPin API for default community
+          // Use the original WorldMapPin API for default community.
+          // The second path segment is the page size limit — keep it above the
+          // total pin count so every pin loads (150000 was capping the result).
           const response = await axios.post(
-            `https://api.worldmappin.com/marker/0/150000/`,
+            `https://api.worldmappin.com/marker/0/500000/`,
             params,
           );
           geoJsonData = await convertDatafromApitoGeojson(response.data);
@@ -1020,6 +1146,14 @@ export default function MapClient({
 
     // Store map instance for coordinate conversion
     mapInstanceRef.current = e.map;
+
+    // Persist the current viewport so a Back navigation from a post returns
+    // here (the cluster the user opened) instead of the default world view.
+    const center = e.map.getCenter();
+    if (center) {
+      saveViewport(center.lat(), center.lng(), mapZoom);
+    }
+
     fitPermlinkResults();
   };
 
@@ -1456,8 +1590,8 @@ export default function MapClient({
           <Map
             mapId={MAP_CONFIG.mapId}
             mapTypeId={mapTypeId}
-            defaultCenter={{ lat: 50, lng: 20 }}
-            defaultZoom={2}
+            defaultCenter={savedViewportRef.current?.center ?? { lat: 50, lng: 20 }}
+            defaultZoom={savedViewportRef.current?.zoom ?? 2}
             minZoom={2}
             maxZoom={20}
             zoomControl={false}
@@ -1487,6 +1621,7 @@ export default function MapClient({
                 currentZoom={currentZoom}
                 onClustersReady={handleClustersReady}
                 community={loadedCommunity}
+                viewedFeature={viewedPostRef.current}
                 onMarkerContextMenu={(e, marker, featureId) => {
                   // Setup coordinates based on mouse/touch event if possible
                   let clientX = 0;
