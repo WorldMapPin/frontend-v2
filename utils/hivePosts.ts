@@ -156,10 +156,32 @@ if (typeof window !== "undefined") {
   }
 }
 
+// In-flight request map: concurrent callers asking for the same post share one
+// promise instead of each hitting /api/hive/post. This matters because the map
+// popup can be asked for the same cluster of posts several times in the same
+// tick (e.g. React Strict Mode double-invoking effects in development).
+const inflightPosts = new Map<string, Promise<ProcessedPost | null>>();
+
 /**
- * Fetch a single post from Hive blog via API route
+ * Fetch a single post from Hive via API route (deduplicated while in flight)
  */
 async function fetchSinglePost(
+  author: string,
+  permlink: string,
+): Promise<ProcessedPost | null> {
+  const cacheKey = `${author}/${permlink}`;
+
+  const existing = inflightPosts.get(cacheKey);
+  if (existing) return existing;
+
+  const promise = fetchSinglePostUncached(author, permlink).finally(() => {
+    inflightPosts.delete(cacheKey);
+  });
+  inflightPosts.set(cacheKey, promise);
+  return promise;
+}
+
+async function fetchSinglePostUncached(
   author: string,
   permlink: string,
 ): Promise<ProcessedPost | null> {
