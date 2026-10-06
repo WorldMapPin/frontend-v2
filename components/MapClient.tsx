@@ -28,6 +28,7 @@ import { OldLoadingSpinner } from "@/components/map/OldLoadingSpinner";
 import { GetCodeButton } from "@/components/map/GetCodeButton";
 import { CodeModeInterface } from "@/components/map/CodeModeInterface";
 import { FloatingContextMenu } from "@/components/map/FloatingContextMenu";
+import { useIsDesktop } from "@/hooks/use-is-desktop";
 import FilterComponent from "@/components/map/FilterComponent";
 import CommunitySelector from "@/components/map/community/CommunitySelector";
 import MapFilterBar from "@/components/map/MapFilterBar";
@@ -430,6 +431,11 @@ export default function MapClient({
 
   // API key
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+
+  // Render only ONE post popup (mobile sheet or desktop modal). Previously both
+  // were always mounted and one was hidden via CSS, which meant every pin open
+  // ran the InfoWindowContent fetch pipeline twice.
+  const isDesktop = useIsDesktop();
 
   // Debug API key
   useEffect(() => {
@@ -1038,43 +1044,48 @@ export default function MapClient({
     (window as any).showLocationHighlight = showLocationHighlight;
   }, []);
 
-  // Function to convert screen coordinates to lat/lng
+  // Function to convert screen (client) coordinates to lat/lng.
+  //
+  // NOTE: map.getProjection().fromPointToLatLng() expects *world* coordinates
+  // (the whole globe is a 256x256 square at zoom 0), NOT screen pixels. Feeding
+  // it raw pixel offsets sends every click past the south pole. We therefore
+  // anchor on the map centre, offset by the pixel distance scaled by 2^zoom,
+  // and convert that world point back to lat/lng.
   const screenToLatLng = useCallback(
-    (x: number, y: number, mapElement: HTMLElement) => {
-      if (!mapInstanceRef.current) {
-        // Fallback to approximate calculation
-        const rect = mapElement.getBoundingClientRect();
-        const relativeX = x - rect.left;
-        const relativeY = y - rect.top;
-        const lat = 50 - (relativeY / rect.height) * 100;
-        const lng = 20 + (relativeX / rect.width) * 200;
-        return { lat, lng };
-      }
+    (x: number, y: number): { lat: number; lng: number } | null => {
+      const map = mapInstanceRef.current;
+      if (!map) return null;
 
       try {
-        const map = mapInstanceRef.current;
-        const rect = mapElement.getBoundingClientRect();
-        const relativeX = x - rect.left;
-        const relativeY = y - rect.top;
+        const projection = map.getProjection();
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        if (!projection || !center || typeof zoom !== "number") return null;
 
-        // Use Google Maps projection to convert pixel coordinates to lat/lng
-        const point = new google.maps.Point(relativeX, relativeY);
-        const latLng = map.getProjection()?.fromPointToLatLng(point);
+        const centerPoint = projection.fromLatLngToPoint(center);
+        if (!centerPoint) return null;
 
-        if (latLng) {
-          return { lat: latLng.lat(), lng: latLng.lng() };
-        }
+        const rect = map.getDiv().getBoundingClientRect();
+        const dx = x - (rect.left + rect.width / 2);
+        const dy = y - (rect.top + rect.height / 2);
+        const scale = Math.pow(2, zoom);
+
+        const worldPoint = new google.maps.Point(
+          centerPoint.x + dx / scale,
+          centerPoint.y + dy / scale,
+        );
+        const latLng = projection.fromPointToLatLng(worldPoint);
+        if (!latLng) return null;
+
+        // Normalise longitude into [-180, 180] in case the click crossed the antimeridian
+        let lng = latLng.lng();
+        lng = ((((lng + 180) % 360) + 360) % 360) - 180;
+
+        return { lat: latLng.lat(), lng };
       } catch (error) {
         console.warn("Error converting coordinates:", error);
+        return null;
       }
-
-      // Fallback to approximate calculation
-      const rect = mapElement.getBoundingClientRect();
-      const relativeX = x - rect.left;
-      const relativeY = y - rect.top;
-      const lat = 50 - (relativeY / rect.height) * 100;
-      const lng = 20 + (relativeX / rect.width) * 200;
-      return { lat, lng };
     },
     [],
   );
@@ -1169,11 +1180,12 @@ export default function MapClient({
         const x = e.clientX;
         const y = e.clientY;
 
+        // Convert screen coordinates to lat/lng; bail if the map isn't ready yet
+        const latLng = screenToLatLng(x, y);
+        if (!latLng) return;
+
         // Store the click position for the context menu
         setContextMenuPosition({ x, y });
-
-        // Convert screen coordinates to lat/lng using improved method
-        const latLng = screenToLatLng(x, y, mapElement);
         setPendingLocation(latLng);
         setContextMenuFeatureId(null);
         setContextMenuVisible(true);
@@ -1191,11 +1203,12 @@ export default function MapClient({
           const x = touch.clientX;
           const y = touch.clientY;
 
+          // Convert screen coordinates to lat/lng; bail if the map isn't ready yet
+          const latLng = screenToLatLng(x, y);
+          if (!latLng) return;
+
           // Store the touch position for the context menu
           setContextMenuPosition({ x, y });
-
-          // Convert screen coordinates to lat/lng using improved method
-          const latLng = screenToLatLng(x, y, mapElement);
           setPendingLocation(latLng);
           setContextMenuFeatureId(null);
           setContextMenuVisible(true);
@@ -1715,6 +1728,7 @@ export default function MapClient({
                 ></div>
 
                 {/* Mobile: Bottom Sheet - More rounded and polished */}
+                {!isDesktop && (
                 <div className="absolute bottom-0 left-0 right-0 pointer-events-auto lg:hidden z-10">
                   <div
                     className="mobile-post-popup backdrop-blur-xl rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transform transition-all duration-300 ease-out animate-slide-up border-t"
@@ -1784,7 +1798,10 @@ export default function MapClient({
                   </div>
                 </div>
 
+                )}
+
                 {/* Desktop: Centered Modal - Premium Glassmorphism Design */}
+                {isDesktop && (
                 <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-auto p-6 z-10">
                   <div
                     className="w-full max-w-7xl backdrop-blur-2xl rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transform transition-all duration-500 ease-out animate-modal-in border overflow-hidden flex flex-col max-h-[90vh]"
@@ -1907,6 +1924,7 @@ export default function MapClient({
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
           </Map>
